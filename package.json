@@ -19,7 +19,9 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.5",
     "react-native-dotenv": "^3.4.11",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "expo-image-picker": "~16.0.6",
+    "expo-file-system": "~18.0.10"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

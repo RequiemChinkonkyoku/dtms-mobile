@@ -1,15 +1,24 @@
 import { View, Text, Image, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchBlogs } from '../../services/BlogService';
 
 export default function BlogDetail() {
     const { id } = useLocalSearchParams();
     const [blog, setBlog] = useState(null);
+    const navigation = useNavigation();
 
     useEffect(() => {
         loadBlogDetail();
     }, []);
+
+    useEffect(() => {
+          navigation.setOptions({
+            headerTitle: 'Blog',
+            headerShown: true
+          });
+      }, []);
+    
 
     const loadBlogDetail = async () => {
         const blogs = await fetchBlogs();
