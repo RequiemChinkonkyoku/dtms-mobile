@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Button, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { fetchAccounts } from '../services/AccountService';
+import { fetchAccounts } from '../../services/AccountService';
 
-export default function Home() {
+export default function Account() {
   const [accounts, setAccounts] = useState([]); 
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Welcome to Home Page</Text>
+      <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Test api for Account</Text>
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
@@ -43,7 +43,6 @@ export default function Home() {
         <Text>No accounts found</Text>
       )}
 
-      <Button title="Go to Profile" onPress={() => router.push('/profile')} />
     </View>
   );
 }
