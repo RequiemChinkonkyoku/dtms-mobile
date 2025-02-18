@@ -37,7 +37,7 @@ export default function DogCard({ dog }) {
           Date of Birth: {dog.dateOfBirth}
         </Text>
         <Text style={{ fontFamily: 'outfit', fontSize: 14 }}>
-          Gender: {dog.gender === 1 ? 'Male' : 'Female'}
+          Gender: {dog.gender === 0 ? 'Male' : 'Female'}
         </Text>
       </View>
     </TouchableOpacity>

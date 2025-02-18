@@ -69,7 +69,7 @@ export default function DogDetail() {
           <InfoItem
             icon="face"
             label="Birthday"
-            value={dog.gender === 0 ? "Female" : "Male"} 
+            value={dog.gender === 0 ? "Male" : "Female"} 
           />
 
           <InfoItem
