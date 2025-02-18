@@ -2,6 +2,8 @@ import { View, Text, Image, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchDogById } from '../../services/DogService';
+import { MaterialIcons } from '@expo/vector-icons';
+import { dogDetailsStyles } from '../../styles/DogDetailStyles';
 
 export default function DogDetail() {
   const navigation = useNavigation();
@@ -17,7 +19,7 @@ export default function DogDetail() {
     if (dogName) {
       navigation.setOptions({
         headerTitle: dogName,
-        headerShown: true
+        headerShown: true,
       });
     }
   }, [dogName]);
@@ -25,51 +27,74 @@ export default function DogDetail() {
   const loadDogDetail = async () => {
     const dogData = await fetchDogById(id);
     if (dogData) {
-      console.log(dogData);
       setDog(dogData);
-      setDogName(dogData.name)
+      setDogName(dogData.name);
     }
   };
 
   if (!dog) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
+      <View style={dogDetailsStyles.loadingContainer}>
+        <MaterialIcons name="pets" size={50} color="#666" />
+        <Text style={dogDetailsStyles.loadingText}>Loading...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#fff', padding: 20 }}>
-      <Image
-        source={{ uri: dog.imageUrl }}
-        style={{
-          width: '100%',
-          height: 250,
-          borderRadius: 10,
-        }}
-      />
-      <Text style={{
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginTop: 15
-      }}>
-        {dog.name}
-      </Text>
-      <Text style={{
-        fontSize: 14,
-        color: 'gray',
-        marginTop: 5
-      }}>
-        Breed: {dog.dogBreedId} | Date of Birth: {dog.dateOfBirth}
-      </Text>
-      <Text style={{
-        fontSize: 16,
-        marginTop: 15,
-        lineHeight: 24
-      }}>
-        {dog.description}
-      </Text>
+    <ScrollView style={dogDetailsStyles.container}>
+      <View style={dogDetailsStyles.imageContainer}>
+        <Image
+          source={{ uri: dog.imageUrl }}
+          style={dogDetailsStyles.image}
+          resizeMode="stretch"
+        />
+      </View>
+
+      <View style={dogDetailsStyles.contentContainer}>
+        <View style={dogDetailsStyles.headerSection}>
+          <Text style={dogDetailsStyles.name}>{dog.name}</Text>
+          <View style={dogDetailsStyles.badgeContainer}>
+            <Text style={dogDetailsStyles.badge}>{dog.id}</Text>
+          </View>
+        </View>
+
+        <View style={dogDetailsStyles.infoSection}>
+          <InfoItem
+            icon="cake"
+            label="Birthday"
+            value={dog.dateOfBirth}
+          />
+
+          <InfoItem
+            icon="face"
+            label="Birthday"
+            value={dog.gender === 0 ? "Female" : "Male"} 
+          />
+
+          <InfoItem
+            icon="pets"
+            label="Breed"
+            value={dog.dogBreedId}
+          />
+        </View>
+
+        <View style={dogDetailsStyles.descriptionSection}>
+          <Text style={dogDetailsStyles.sectionTitle}>About</Text>
+          <Text style={dogDetailsStyles.description}>{dog.description}</Text>
+        </View>
+
+      </View>
     </ScrollView>
   );
 }
+
+const InfoItem = ({ icon, label, value }) => (
+  <View style={dogDetailsStyles.infoItem}>
+    <MaterialIcons name={icon} size={24} color="#666" />
+    <View style={dogDetailsStyles.infoTextContainer}>
+      <Text style={dogDetailsStyles.infoLabel}>{label}</Text>
+      <Text style={dogDetailsStyles.infoValue}>{value}</Text>
+    </View>
+  </View>
+);
