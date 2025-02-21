@@ -75,7 +75,7 @@ export default function DogDetail() {
           <InfoItem
             icon="pets"
             label="Breed"
-            value={dog.dogBreedId}
+            value={dog.dogBreedName}
           />
         </View>
 
