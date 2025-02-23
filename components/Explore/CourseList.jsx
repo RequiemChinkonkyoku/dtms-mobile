@@ -1,33 +1,49 @@
-import { View, FlatList, ScrollView } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import CourseCard from './CourseCard';
-
-const courses = [
-    { id: '0', title: 'React Native for Beginners', instructor: 'John Doe', image: require('./../../assets/images/dog.png') },
-    { id: '1', title: 'Advanced JavaScript', instructor: 'Jane Smith', image: require('./../../assets/images/dog.png') },
-    { id: '2', title: 'UI/UX Design Fundamentals', instructor: 'Alex Johnson', image: require('./../../assets/images/dog.png') },
-    { id: '3', title: 'Design Fundamentals', instructor: 'Alex Johnson', image: require('./../../assets/images/dog.png') },
-    { id: '4', title: 'Fundamentals', instructor: 'Alex Johnson', image: require('./../../assets/images/dog.png') },
-    { id: '5', title: 'Fundamentals', instructor: 'Alex Johnson', image: require('./../../assets/images/dog.png') },
-];
+import { fetchCourses } from '../../services/CourseService';
 
 export default function CourseList() {
-    return (
-        <ScrollView>
-            <FlatList
-                style={{
-                    padding: 10
-                }}
-                data={courses}
-                scrollEnabled
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => <CourseCard course={item} />}
-                contentContainerStyle={{ paddingBottom: 20 }}
-            />
+    const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-            <View style={{
-                height: 100
-            }}>
-            </View>
-        </ScrollView>
+    useEffect(() => {
+        loadCourses();
+    }, []);
+
+    const loadCourses = async () => {
+        setLoading(true);
+        const data = await fetchCourses();
+        if (data) {
+            setCourses(data);
+            console.log('Update Courses:', data);
+        }
+        setLoading(false);
+    };
+
+    return (
+
+        <View style={{ flex: 0, padding: 20 }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>Courses</Text>
+
+            {
+            loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : 
+            courses.length > 0 ? (
+                <FlatList
+                    style={{ padding: 10 }}
+                    data={courses}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (<CourseCard course={item} />)}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    ListFooterComponent={<View style={{ height: 300 }} />}
+                    onRefresh={loadCourses}
+                    refreshing={loading}
+                />
+            ) : (
+                <Text style={{ textAlign: 'center', fontSize: 16, color: 'gray' }}>No courses available</Text>
+            )}
+        </View>
     );
 }
