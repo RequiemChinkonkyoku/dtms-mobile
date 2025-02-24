@@ -16,7 +16,7 @@ export default function CourseCard({ course }) {
                 borderWidth: 1,
             }}>
             <Image
-                source={typeof course.image === 'string' ? { uri: course.image } : require('./../../assets/images/dog.png')}
+                source={typeof course.imageUrl === 'string' ? { uri: course.imageUrl } : require('./../../assets/images/dog.png')}
                 style={{
                     height: 150,
                     borderRadius: 8,

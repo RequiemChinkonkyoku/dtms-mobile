@@ -40,8 +40,8 @@ export default function CourseDetail() {
     return (
         <ScrollView style={courseDetailsStyles.container}>
             <Image
-                source={typeof course.image === 'string' 
-                    ? { uri: course.image } 
+                source={typeof course.imageUrl === 'string' 
+                    ? { uri: course.imageUrl } 
                     : require('./../../assets/images/dog.png')}
                 style={courseDetailsStyles.image}
             />
