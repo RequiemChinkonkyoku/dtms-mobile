@@ -22,3 +22,14 @@ export const fetchCourseById = async (id) => {
     return null;
   }
 };
+
+export const fetchCoursesByCategoryId = async (categoryId) => {
+  try {
+    const response = await ApiManager.get(`/courses/get-courses-by-category-id/${categoryId}`);
+    console.log('Course Details:', response.data);
+    return response.data.objectList;
+  } catch (error) {
+    console.error('Error fetching course by ID:', error);
+    return null;
+  }
+};

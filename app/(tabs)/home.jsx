@@ -18,9 +18,9 @@ export default function Home() {
           height:50
         }}></View>
 
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      {/* <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Button title="Test Api Account" onPress={() => router.push('/accounts/account')} />
-      </View>
+      </View> */}
     </ScrollView>
   );
 }
