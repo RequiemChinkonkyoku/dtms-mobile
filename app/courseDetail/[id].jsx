@@ -1,7 +1,7 @@
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { fetchCourses } from '../../services/CourseService';
+import { fetchCourseById } from '../../services/CourseService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 
@@ -22,10 +22,9 @@ export default function CourseDetail() {
     }, []);
 
     const loadCourseDetail = async () => {
-        const course = await fetchCourses();
+        const course = await fetchCourseById(id);
         if (course) {
-            const selectedCourse = course.find(item => item.id === id);
-            setCourse(selectedCourse);
+            setCourse(course);
             console.log(id)
         }
     };

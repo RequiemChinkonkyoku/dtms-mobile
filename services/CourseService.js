@@ -11,3 +11,14 @@ export const fetchCourses = async () => {
     return null;
   }
 };
+
+export const fetchCourseById = async (id) => {
+  try {
+    const response = await ApiManager.get(`/courses/${id}`);
+    console.log('Course Details:', response.data);
+    return response.data.object;
+  } catch (error) {
+    console.error('Error fetching course by ID:', error);
+    return null;
+  }
+};

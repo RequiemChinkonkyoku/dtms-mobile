@@ -1,9 +1,9 @@
 import { View, FlatList, Text, ActivityIndicator } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import CourseCard from './CourseCard';
 import { fetchCourses } from '../../services/CourseService';
 
-export default function CourseList() {
+export default function CourseList({ searchQuery }) {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -21,19 +21,24 @@ export default function CourseList() {
         setLoading(false);
     };
 
-    return (
+    const filteredCourses = useMemo(() => {
+        if (!searchQuery) return courses;
+        return courses.filter(course => 
+            course.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [courses, searchQuery]);
 
+    return (
         <View style={{ flex: 0, padding: 20 }}>
             <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>Courses</Text>
 
-            {
-            loading ? (
+            {loading ? (
                 <ActivityIndicator size="large" color="#0000ff" />
             ) : 
-            courses.length > 0 ? (
+            filteredCourses.length > 0 ? (
                 <FlatList
                     style={{ padding: 10 }}
-                    data={courses}
+                    data={filteredCourses}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (<CourseCard course={item} />)}
                     contentContainerStyle={{ paddingBottom: 20 }}
@@ -42,7 +47,9 @@ export default function CourseList() {
                     refreshing={loading}
                 />
             ) : (
-                <Text style={{ textAlign: 'center', fontSize: 16, color: 'gray' }}>No courses available</Text>
+                <Text style={{ textAlign: 'center', fontSize: 16, color: 'gray' }}>
+                    {searchQuery ? 'No matching courses found' : 'No courses available'}
+                </Text>
             )}
         </View>
     );

@@ -1,8 +1,11 @@
 import { View, Text, TextInput } from 'react-native';
 import Feather from '@expo/vector-icons/Feather'
 import CourseList from '../../components/Explore/CourseList';
+import { useState } from 'react';
 
 export default function Explore() {
+  const [searchQuery, setSearchQuery] = useState('');
+
   return (
     <View style={{
       padding: 20
@@ -28,15 +31,19 @@ export default function Explore() {
         borderWidth: 1,
       }}>
         <Feather name="search" size={24} />
-        <TextInput placeholder='Search...'
+        <TextInput 
+          placeholder='Search...'
+          value={searchQuery}
+          onChangeText={setSearchQuery}
           style={{
             fontFamily: 'outfit',
-            fontSize: 17
+            fontSize: 17,
+            flex: 1
           }}
         />
       </View>
 
-      <CourseList />
+      <CourseList searchQuery={searchQuery} />
 
     </View>
   );
