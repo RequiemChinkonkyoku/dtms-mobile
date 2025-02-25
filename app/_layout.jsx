@@ -15,23 +15,22 @@ function ProtectedRoute() {
     const checkAuthStatus = async () => {
       const token = await SecureStore.getItemAsync('user_token');
       console.log('Current Auth State:', {
-          isAuthenticated,
-          token,
-          currentSegment: segments[0],
-          loading
+        isAuthenticated,
+        token,
+        currentSegment: segments[0],
+        loading
       });
-  };
+    };
 
-      if (!loading) {
-        checkAuthStatus();
-          const inAuthGroup = segments[0] === '(auth)';
-          
-          if (!isAuthenticated && !inAuthGroup) {
-              router.replace('/login');
-          } else if (isAuthenticated && inAuthGroup) {
-              router.replace('/home');
-          }
+    if (!loading) {
+      checkAuthStatus();
+      const inAuthGroup = segments[0] === '(auth)';
+      if (!isAuthenticated && !inAuthGroup) {
+        router.replace('/login');
+      } else if (isAuthenticated && inAuthGroup) {
+        router.replace('/home');
       }
+    }
   }, [isAuthenticated, loading, segments]);
 
   return null;
@@ -39,9 +38,9 @@ function ProtectedRoute() {
 
 export default function RootLayout() {
   return (
-      <AuthProvider>
-          <ProtectedRoute />
-          <Stack screenOptions={{ headerShown: false }} />
-      </AuthProvider>
+    <AuthProvider>
+      <ProtectedRoute />
+      <Stack screenOptions={{ headerShown: false }} />
+    </AuthProvider>
   );
 }

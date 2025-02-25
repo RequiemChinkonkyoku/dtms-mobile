@@ -1,8 +1,8 @@
 import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { loginAccount } from '../services/AccountService';
-import { useAuth } from '../contexts/AuthContext';
+import { loginAccount } from '../../services/AccountService';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -69,7 +69,7 @@ export default function Login() {
                     marginBottom: 40,
                 }}>
                     <Image
-                        source={require('../assets/images/dog.png')}
+                        source={require('../../assets/images/dog.png')}
                         style={{
                             width: 120,
                             height: 120,

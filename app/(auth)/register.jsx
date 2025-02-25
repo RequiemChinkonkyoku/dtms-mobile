@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { registerAccount } from '../services/AccountService';
-import { RegisterStyles } from '../styles/RegisterStyles';
+import { registerAccount } from '../../services/AccountService';
+import { RegisterStyles } from '../../styles/RegisterStyles';
 
 export default function Register() {
     const router = useRouter();
@@ -91,7 +91,7 @@ export default function Register() {
                     {/* Header */}
                     <View style={RegisterStyles.headerContainer}>
                         <Image
-                            source={require('../assets/images/dog.png')}
+                            source={require('../../assets/images/dog.png')}
                             style={RegisterStyles.logo}
                         />
                         <Text style={RegisterStyles.title}>
