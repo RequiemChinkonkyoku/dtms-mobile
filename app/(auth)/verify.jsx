@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { verifyOTP } from '../services/AccountService';
+import { verifyOTP } from '../../services/AccountService';
 
 export default function Verify() {
   const [otp, setOtp] = useState('');
@@ -60,7 +60,7 @@ export default function Verify() {
         alignItems: 'center',
       }}>
         <Image
-          source={require('../assets/images/dog.png')}
+          source={require('../../assets/images/dog.png')}
           style={{
             width: 100,
             height: 100,
@@ -95,7 +95,7 @@ export default function Verify() {
           placeholder="Enter OTP Code"
           value={otp}
           onChangeText={setOtp}
-          keyboardType="number-pad"
+          autoCapitalize="characters"
           maxLength={7}
           style={{
             backgroundColor: '#f5f5f5',

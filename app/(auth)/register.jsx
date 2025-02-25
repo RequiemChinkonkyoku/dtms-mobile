@@ -1,13 +1,18 @@
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import {
+    View, Text, TextInput, TouchableOpacity,
+    Image, ScrollView, KeyboardAvoidingView,
+    Platform, Alert, ActivityIndicator
+} from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { registerAccount } from '../services/AccountService';
-import { RegisterStyles } from '../styles/RegisterStyles';
+import { registerAccount } from '../../services/AccountService';
+import { RegisterStyles } from '../../styles/RegisterStyles';
 
 export default function Register() {
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -44,24 +49,34 @@ export default function Register() {
             return;
         }
 
-        const result = await registerAccount(formData);
-        if (result.success) {
-            Alert.alert(
-                'Registration Successful',
-                'Please check your email for the verification code.',
-                [
-                    { text: 'OK', onPress: () => 
-                        router.push({
-                            pathname: '/verify',
-                            params: { email: formData.email }
-                        }) }
-                ]
-            );
-        } else {
-            Alert.alert(
-                'Registration Failed',
-                result.error || 'An error occurred during registration.'
-            );
+        setIsLoading(true);
+        try {
+            const result = await registerAccount(formData);
+            if (result.success) {
+                Alert.alert(
+                    'Registration Successful',
+                    'Please check your email for the verification code.',
+                    [
+                        {
+                            text: 'OK', onPress: () =>
+                                router.push({
+                                    pathname: '/verify',
+                                    params: { email: formData.email }
+                                })
+                        }
+                    ]
+                );
+            } else {
+                Alert.alert(
+                    'Registration Failed',
+                    result.error || 'An error occurred during registration.'
+                );
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to register. Please try again.');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -81,6 +96,13 @@ export default function Register() {
             style={RegisterStyles.container}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 50}
         >
+
+            {isLoading && (
+                <View style={RegisterStyles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#007AFF" />
+            </View>
+            )}
+
             <ScrollView
                 contentContainerStyle={{ flexGrow: 1 }}
                 showsVerticalScrollIndicator={false}
@@ -91,7 +113,7 @@ export default function Register() {
                     {/* Header */}
                     <View style={RegisterStyles.headerContainer}>
                         <Image
-                            source={require('../assets/images/dog.png')}
+                            source={require('../../assets/images/dog.png')}
                             style={RegisterStyles.logo}
                         />
                         <Text style={RegisterStyles.title}>
