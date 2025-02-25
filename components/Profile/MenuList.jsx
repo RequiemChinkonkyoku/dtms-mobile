@@ -1,15 +1,16 @@
 import { View, Text, FlatList, Image, TouchableOpacity, Share, Alert } from 'react-native'
 import React from 'react'
 import { useRouter } from 'expo-router'
-import * as SecureStore from 'expo-secure-store';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function MenuList() {
   
     const router = useRouter();
+    const { logout } = useAuth();
 
     const handleLogout = async () => {
         try {
-            await SecureStore.deleteItemAsync('user_token');
+            await logout();
             router.replace('/login');
         } catch (error) {
             Alert.alert('Error', 'Failed to logout. Please try again.');

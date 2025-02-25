@@ -2,13 +2,14 @@ import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, P
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { loginAccount } from '../services/AccountService';
-import * as SecureStore from 'expo-secure-store';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { login } = useAuth();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -19,18 +20,14 @@ export default function Login() {
         try {
             const result = await loginAccount({ email, password });
             if (result.success) {
-                try {
-                    await SecureStore.setItemAsync('user_token', result.token);
-                    router.push('/home');
-                } catch (error) {
-                    Alert.alert('Error', 'Failed to save authentication token');
-                }
+                await login(result.token);
+                router.replace('/(tabs)/home');
             } else {
-                Alert.alert(
-                    'Login Failed',
-                    result?.error || 'Invalid email or password'
-                );
+                Alert.alert('Login Failed', result?.error || 'Invalid credentials');
             }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to login. Please try again.');
+            console.error(error);
         } finally {
             setIsLoading(false);
         }
