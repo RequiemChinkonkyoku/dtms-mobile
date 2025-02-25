@@ -95,7 +95,7 @@ export default function Verify() {
           placeholder="Enter OTP Code"
           value={otp}
           onChangeText={setOtp}
-          keyboardType="number-pad"
+          autoCapitalize="characters"
           maxLength={7}
           style={{
             backgroundColor: '#f5f5f5',
