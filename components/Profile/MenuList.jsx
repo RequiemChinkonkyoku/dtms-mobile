@@ -1,20 +1,41 @@
-import { View, Text, FlatList, Image, TouchableOpacity, Share } from 'react-native'
+import { View, Text, FlatList, Image, TouchableOpacity, Share, Alert } from 'react-native'
 import React from 'react'
-// import { Colors } from '../../constants/Colors'
 import { useRouter } from 'expo-router'
-// import { useAuth } from '@clerk/clerk-expo';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function MenuList() {
   
     const router = useRouter();
+    const { logout } = useAuth();
 
-    // const {signOut} = useAuth();
+    const handleLogout = async () => {
+        try {
+            await logout();
+            router.replace('/login');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to logout. Please try again.');
+        }
+    };
 
     const onMenuClick=(item)=>{
-        // if (item.path == 'logout'){
-        //     signOut();
-        //     return ;
-        // }
+        if (item.path === 'logout') {
+            Alert.alert(
+                'Logout',
+                'Are you sure you want to logout?',
+                [
+                    {
+                        text: 'Cancel',
+                        style: 'cancel'
+                    },
+                    {
+                        text: 'Logout',
+                        onPress: handleLogout,
+                        style: 'destructive'
+                    }
+                ]
+            );
+            return;
+        }
 
         if (item.path == 'share'){
             Share.share(
