@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { loginAccount } from '../services/AccountService';
@@ -7,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     const handleLogin = async () => {
@@ -14,20 +15,24 @@ export default function Login() {
             Alert.alert('Missing fields', 'Please enter both email and password');
             return;
         }
-
-        const result = await loginAccount({ email, password });
-        if (result.success) {
-            try {
-                await SecureStore.setItemAsync('user_token', result.token);
-                router.push('/home');
-            } catch (error) {
-                Alert.alert('Error', 'Failed to save authentication token');
+        setIsLoading(true);
+        try {
+            const result = await loginAccount({ email, password });
+            if (result.success) {
+                try {
+                    await SecureStore.setItemAsync('user_token', result.token);
+                    router.push('/home');
+                } catch (error) {
+                    Alert.alert('Error', 'Failed to save authentication token');
+                }
+            } else {
+                Alert.alert(
+                    'Login Failed',
+                    result?.error || 'Invalid email or password'
+                );
             }
-        } else {
-            Alert.alert(
-                'Login Failed',
-                result?.error || 'Invalid email or password'
-            );
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -39,6 +44,23 @@ export default function Login() {
                 backgroundColor: '#fff',
             }}
         >
+
+            {isLoading && (
+                <View style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    zIndex: 1000,
+                }}>
+                    <ActivityIndicator size="large" color="#007AFF" />
+                </View>
+            )}
+
             <View style={{
                 flex: 1,
                 padding: 20,
