@@ -1,13 +1,17 @@
 import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { fetchDogs } from '../../services/DogService';
+import { fetchDogs, fetchUserDog } from '../../services/DogService';
 import DogCard from '../../components/DogList/DogCard';
 import { useNavigation } from 'expo-router';
+import { useAuth } from "../../contexts/AuthContext";
+import { MaterialIcons } from '@expo/vector-icons';
+import { fetchCustomerProfile } from '../../services/ProfileService';
 
 export default function MyDogs() {
   const navigation = useNavigation();
   const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { userInfo } = useAuth();
 
   useEffect(() => {
     navigation.setOptions({
@@ -18,13 +22,50 @@ export default function MyDogs() {
   }, []);
 
   const loadDogs = async () => {
-    setLoading(true);
-    const data = await fetchDogs();
-    if (data) {
-      setDogs(data);
+    try {
+      setLoading(true);
+      if (!userInfo) return;
+      const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
+      const data = await fetchUserDog(customerProfile.id);
+      if (data) {
+        setDogs(data);
+      }
+    } catch (error) {
+      console.error('Error fetching dogs:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  const EmptyDogList = () => (
+    <View style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 50,
+      paddingHorizontal: 20,
+    }}>
+      <MaterialIcons name="pets" size={60} color="#bdbdbd" />
+      <Text style={{
+        fontFamily: 'outfit-bold',
+        fontSize: 20,
+        color: '#666',
+        marginTop: 20,
+        textAlign: 'center'
+      }}>
+        No Dogs Found
+      </Text>
+      <Text style={{
+        fontFamily: 'outfit',
+        fontSize: 16,
+        color: '#888',
+        textAlign: 'center',
+        marginTop: 10,
+      }}>
+        Add your first dog to start managing their training journey
+      </Text>
+    </View>
+  );
 
   return (
     <View style={{ padding: 20 }}>
@@ -39,6 +80,7 @@ export default function MyDogs() {
           onRefresh={loadDogs}
           refreshing={loading}
           renderItem={({ item }) => <DogCard dog={item} />}
+          ListEmptyComponent={EmptyDogList}
         />
       )}
     </View>

@@ -22,6 +22,17 @@ export const fetchDogById = async (id) => {
   }
 };
 
+export const fetchUserDog = async (id) => {
+  try {
+    const response = await ApiManager.get(`/dogs/by-customer/${id}`);
+    console.log('Dog Details:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching dog by ID:', error);
+    return null;
+  }
+};
+
 export const AddNewDog = async (dogData) => {
   try {
     const response = await ApiManager.post('/dogs', dogData, {});

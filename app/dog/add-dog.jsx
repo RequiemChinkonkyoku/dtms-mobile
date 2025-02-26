@@ -6,6 +6,9 @@ import { AddNewDog } from '../../services/DogService';
 import { uploadImageToCloudinary } from '../../services/UploadFileService';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import { useAuth } from "../../contexts/AuthContext";
+import { fetchCustomerProfile } from '../../services/ProfileService';
+import { fetchDogBreeds } from '../../services/DogBreedService';
 
 export default function AddDog() {
     const navigation = useNavigation();
@@ -15,7 +18,8 @@ export default function AddDog() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [gender, setGender] = useState(null);
     const [dogBreedId, setDogBreedId] = useState('');
-    const [customerProfileId, setCustomerProfileId] = useState('');
+    const [dogBreeds, setDogBreeds] = useState([]);
+    const { userInfo } = useAuth();
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -23,7 +27,20 @@ export default function AddDog() {
             headerTitle: 'Add New Dog',
             headerShown: true
         });
+        loadDogBreeds();
     }, []);
+
+    const loadDogBreeds = async () => {
+        try {
+            const breeds = await fetchDogBreeds();
+            if (breeds) {
+                setDogBreeds(breeds);
+            }
+        } catch (error) {
+            console.error('Error loading dog breeds:', error);
+            ToastAndroid.show('Failed to load dog breeds', ToastAndroid.SHORT);
+        }
+    };
 
     const onImagePick = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -49,36 +66,52 @@ export default function AddDog() {
     const onAddNewDog = async () => {
         setLoading(true);
 
-        if (!name || !dateOfBirth || !dogBreedId || !image || !customerProfileId) {
-            ToastAndroid.show('All fields are required!', ToastAndroid.LONG);
+        try {
+            if (!name || !dateOfBirth || !dogBreedId || !image || !userInfo) {
+                ToastAndroid.show('All fields are required!', ToastAndroid.LONG);
+                setLoading(false);
+                return;
+            }
+
+            if (gender === null) {
+                ToastAndroid.show('Gender must be selected!', ToastAndroid.LONG);
+                setLoading(false);
+                return;
+            }
+
+            const imageUrl = await uploadImageToCloudinary(image);
+            if (!imageUrl) {
+                ToastAndroid.show('Image upload failed!', ToastAndroid.LONG);
+                setLoading(false);
+                return;
+            }
+
+            const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
+            if (!customerProfile || !customerProfile.id) {
+                ToastAndroid.show('Failed to get customer profile!', ToastAndroid.LONG);
+                return;
+            }
+
+            const newDog = {
+                name,
+                imageUrl,
+                dateOfBirth,
+                gender: parseInt(gender),
+                dogBreedId,
+                customerProfileId: customerProfile.id
+            };
+
+            const result = await AddNewDog(newDog);
+            if (result) {
+                ToastAndroid.show('Dog Added Successfully!', ToastAndroid.LONG);
+                navigation.goBack();
+            }
+        } catch (error) {
+            console.error('Error adding dog:', error);
+            ToastAndroid.show('Failed to add dog: ' + (error.message || 'Unknown error'), ToastAndroid.LONG);
+        } finally {
             setLoading(false);
-            return;
         }
-
-        const imageUrl = await uploadImageToCloudinary(image);
-        if (!imageUrl) {
-            ToastAndroid.show('Image upload failed!', ToastAndroid.LONG);
-            setLoading(false);
-            return;
-        }
-
-        const newDog = {
-            name,
-            imageUrl,
-            dateOfBirth,
-            gender,
-            dogBreedId,
-            customerProfileId
-        };
-
-        const result = await AddNewDog(newDog);
-        if (result) {
-            ToastAndroid.show('Dog Added Successfully!', ToastAndroid.LONG);
-            navigation.goBack();
-        } else {
-            ToastAndroid.show('Failed to add dog.', ToastAndroid.LONG);
-        }
-        setLoading(false);
     };
 
     return (
@@ -112,8 +145,30 @@ export default function AddDog() {
                     />
                 )}
 
-                <TextInput placeholder='Dog Breed ID' onChangeText={(v) => setDogBreedId(v)} style={inputStyle} />
-                <TextInput placeholder='Customer Profile ID' onChangeText={(v) => setCustomerProfileId(v)} style={inputStyle} />
+                <View style={{
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    fontSize: 17,
+                    backgroundColor: '#fff',
+                    marginTop: 10,
+                }}>
+                    <Picker
+                        selectedValue={dogBreedId}
+                        onValueChange={(itemValue) => setDogBreedId(itemValue)}
+                    >
+                        <Picker.Item label="Select Dog Breed" value="" />
+                        {dogBreeds.map(breed => (
+                            <Picker.Item
+                                key={breed.id}
+                                label={breed.name}
+                                value={breed.id}
+                            />
+                        ))}
+                    </Picker>
+                </View>
+
+                {/* <TextInput placeholder='Dog Breed ID' onChangeText={(v) => setDogBreedId(v)} style={inputStyle} /> */}
+                {/* <TextInput placeholder='Customer Profile ID' onChangeText={(v) => setCustomerProfileId(v)} style={inputStyle} /> */}
 
                 {/* <TextInput placeholder='Gender (0 for Male, 1 for Female)' keyboardType='numeric' onChangeText={(v) => setGender(parseInt(v))} style={inputStyle} /> */}
                 {/* Gender Picker */}
@@ -126,11 +181,14 @@ export default function AddDog() {
                 }}>
                     <Picker
                         selectedValue={gender}
-                        onValueChange={(itemValue) => setGender(itemValue)}
+                        onValueChange={(itemValue) => {
+                            console.log('Selected gender:', itemValue); // Add this for debugging
+                            setGender(itemValue);
+                        }}
                     >
                         <Picker.Item label="Select Gender" value={null} />
-                        <Picker.Item label="Male" value={0} />
-                        <Picker.Item label="Female" value={1} />
+                        <Picker.Item label="Male" value="0" />
+                        <Picker.Item label="Female" value="1" />
                     </Picker>
                 </View>
 
