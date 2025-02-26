@@ -43,3 +43,25 @@ export const AddNewDog = async (dogData) => {
     return null;
   }
 };
+
+export const updateDog = async (id, dogData) => {
+  try {
+    const response = await ApiManager.put(`/dogs/${id}`, dogData);
+    console.log('Dog Updated:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating dog:', error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const deleteDog = async (id) => {
+  try {
+    const response = await ApiManager.delete(`/dogs/${id}`);
+    console.log('Dog Deleted:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting dog:', error.response?.data || error.message);
+    return null;
+  }
+};

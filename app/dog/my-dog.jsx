@@ -1,8 +1,8 @@
 import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { fetchDogs, fetchUserDog } from '../../services/DogService';
+import { fetchUserDog } from '../../services/DogService';
 import DogCard from '../../components/DogList/DogCard';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useFocusEffect } from 'expo-router';
 import { useAuth } from "../../contexts/AuthContext";
 import { MaterialIcons } from '@expo/vector-icons';
 import { fetchCustomerProfile } from '../../services/ProfileService';
@@ -20,6 +20,12 @@ export default function MyDogs() {
     });
     loadDogs();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadDogs();
+    }, [])
+  );
 
   const loadDogs = async () => {
     try {
@@ -79,8 +85,14 @@ export default function MyDogs() {
           keyExtractor={(item) => item.id}
           onRefresh={loadDogs}
           refreshing={loading}
-          renderItem={({ item }) => <DogCard dog={item} />}
+          renderItem={({ item }) => (
+            <DogCard
+              dog={item}
+              onRefresh={loadDogs}
+            />
+          )}
           ListEmptyComponent={EmptyDogList}
+          ListFooterComponent={<View style={{ height: 40 }} />}
         />
       )}
     </View>
