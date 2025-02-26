@@ -4,11 +4,15 @@ import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchCourseById } from '../../services/CourseService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
+import { fetchLessonById } from '../../services/LessonService';
+import { fetchDogBreedById } from '../../services/DogBreedService';
 
 export default function CourseDetail() {
     const navigation = useNavigation();
     const { id } = useLocalSearchParams();
     const [course, setCourse] = useState(null);
+    const [lessons, setLessons] = useState([]);
+    const [dogBreeds, setDogBreeds] = useState([]);
 
     useEffect(() => {
         loadCourseDetail();
@@ -22,10 +26,31 @@ export default function CourseDetail() {
     }, []);
 
     const loadCourseDetail = async () => {
-        const course = await fetchCourseById(id);
-        if (course) {
-            setCourse(course);
-            console.log(id)
+        const courseData = await fetchCourseById(id);
+        if (courseData) {
+            setCourse(courseData);
+
+            // Fetch lessons
+            if (courseData.lessonIds && courseData.lessonIds.length > 0) {
+                const lessonPromises = courseData.lessonIds.map(lessonId =>
+                    fetchLessonById(lessonId)
+                );
+                const lessonResults = await Promise.all(lessonPromises);
+                // Filter out null responses and map to the correct structure
+                const validLessons = lessonResults
+                    .filter(result => result && result)
+                    .map(result => result);
+                setLessons(validLessons);
+            }
+
+            // Fetch dog breeds
+            if (courseData.dogBreedIds && courseData.dogBreedIds.length > 0) {
+                const breedPromises = courseData.dogBreedIds.map(breedId =>
+                    fetchDogBreedById(breedId)
+                );
+                const breedResults = await Promise.all(breedPromises);
+                setDogBreeds(breedResults.filter(breed => breed !== null));
+            }
         }
     };
 
@@ -40,12 +65,12 @@ export default function CourseDetail() {
     return (
         <ScrollView style={courseDetailsStyles.container}>
             <Image
-                source={typeof course.imageUrl === 'string' 
-                    ? { uri: course.imageUrl } 
+                source={typeof course.imageUrl === 'string'
+                    ? { uri: course.imageUrl }
                     : require('./../../assets/images/dog.png')}
                 style={courseDetailsStyles.image}
             />
-            
+
             {/* Course Header */}
             <View style={courseDetailsStyles.headerContainer}>
                 <Text style={courseDetailsStyles.title}>{course.name}</Text>
@@ -73,6 +98,19 @@ export default function CourseDetail() {
                 />
             </View>
 
+            {/* Eligible Dog Breeds */}
+            <View style={courseDetailsStyles.breedContainer}>
+                <Text style={courseDetailsStyles.breedTitle}>Suitable for</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={courseDetailsStyles.breedScroll}>
+                    {dogBreeds.map(breed => (
+                        <View key={breed.id} style={courseDetailsStyles.breedTag}>
+                            <MaterialIcons name="pets" size={16} color="#007AFF" />
+                            <Text style={courseDetailsStyles.breedName}>{breed.name}</Text>
+                        </View>
+                    ))}
+                </ScrollView>
+            </View>
+
             {/* Price Section */}
             <View style={courseDetailsStyles.priceContainer}>
                 <Text style={courseDetailsStyles.priceLabel}>Course Price</Text>
@@ -97,6 +135,37 @@ export default function CourseDetail() {
                     <DetailItem label="Status" value={course.status === 1 ? 'Active' : 'Inactive'} />
                 </View>
             </View>
+
+            {/* Lessons Section */}
+            <View style={courseDetailsStyles.section}>
+                <Text style={courseDetailsStyles.sectionTitle}>Course Lessons</Text>
+                {lessons && lessons.length > 0 ? (
+                    lessons.map((lesson, index) => (
+                        <View key={lesson.id} style={courseDetailsStyles.lessonContainer}>
+                            <MaterialIcons name="class" size={24} color="#007AFF" />
+                            <View style={{ flex: 1, marginLeft: 12 }}>
+                                <Text style={courseDetailsStyles.lessonTitle}>
+                                    {index + 1}. {lesson.lessonTitle}
+                                </Text>
+                                <Text style={courseDetailsStyles.lessonDescription}>
+                                    {lesson.description}
+                                </Text>
+                                <View style={courseDetailsStyles.lessonDetails}>
+                                    <Text style={courseDetailsStyles.lessonInfo}>
+                                        <MaterialIcons name="schedule" size={16} color="#666" /> {lesson.duration} minutes
+                                    </Text>
+                                    <Text style={courseDetailsStyles.lessonInfo}>
+                                        <MaterialIcons name="room" size={16} color="#666" /> {lesson.environment}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                    ))
+                ) : (
+                    <Text style={courseDetailsStyles.description}>No lessons available</Text>
+                )}
+            </View>
+
         </ScrollView>
     );
 }
