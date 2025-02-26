@@ -4,7 +4,7 @@ import { CustomerProfileStyles } from "../../styles/CustomerProfileStyles";
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 
-export default function CustomerProfileCard({ customer }) {
+export default function ProfileDetailCard({ profileData }) {
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
 
@@ -46,8 +46,8 @@ export default function CustomerProfileCard({ customer }) {
         >
           <Image
             source={
-              customer.imageUrl
-                ? { uri: customer.imageUrl }
+              profileData.imageUrl
+                ? { uri: profileData.imageUrl }
                 : require("../../assets/images/placeholder.png")
             }
             style={{
@@ -75,15 +75,15 @@ export default function CustomerProfileCard({ customer }) {
         elevation: 3,
       }}>
         <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 5 }}>
-          {customer.fullName}
+          {profileData.fullName}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
           <MaterialCommunityIcons name="email-outline" size={20} color="#666" style={{ marginRight: 8 }} />
-          <Text style={{ fontSize: 16, color: "#666" }}>{customer.email}</Text>
+          <Text style={{ fontSize: 16, color: "#666" }}>{profileData.email}</Text>
         </View>
 
         <View style={{
-          backgroundColor: customer.status === 1 ? "#E8F5E9" : "#FFEBEE",
+          backgroundColor: profileData.status === 1 ? "#E8F5E9" : "#FFEBEE",
           paddingVertical: 8,
           paddingHorizontal: 15,
           borderRadius: 20,
@@ -91,17 +91,17 @@ export default function CustomerProfileCard({ customer }) {
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-          <MaterialCommunityIcons 
-            name={customer.status === 1 ? "check-circle-outline" : "close-circle-outline"} 
-            size={20} 
-            color={customer.status === 1 ? "#2E7D32" : "#C62828"} 
+          <MaterialCommunityIcons
+            name={profileData.status === 1 ? "check-circle-outline" : "close-circle-outline"}
+            size={20}
+            color={profileData.status === 1 ? "#2E7D32" : "#C62828"}
             style={{ marginRight: 5 }}
           />
           <Text style={{
-            color: customer.status === 1 ? "#2E7D32" : "#C62828",
+            color: profileData.status === 1 ? "#2E7D32" : "#C62828",
             fontWeight: "600",
           }}>
-            {customer.status === 1 ? "Active" : "Inactive"}
+            {profileData.status === 1 ? "Active" : "Inactive"}
           </Text>
         </View>
       </View>
@@ -130,7 +130,7 @@ export default function CustomerProfileCard({ customer }) {
             <MaterialCommunityIcons name="phone-outline" size={24} color="#007AFF" style={{ width: 35 }} />
             <View>
               <Text style={{ color: "#666", fontSize: 14 }}>Phone</Text>
-              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>{customer.phoneNumber}</Text>
+              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>{profileData.phoneNumber}</Text>
             </View>
           </View>
 
@@ -138,7 +138,20 @@ export default function CustomerProfileCard({ customer }) {
             <MaterialCommunityIcons name="map-marker-outline" size={24} color="#007AFF" style={{ width: 35 }} />
             <View style={{ flex: 1 }}>
               <Text style={{ color: "#666", fontSize: 14 }}>Address</Text>
-              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>{customer.address}</Text>
+              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>{profileData.address}</Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <MaterialCommunityIcons name="calendar" size={24} color="#007AFF" style={{ width: 35 }} />
+            <View>
+              <Text style={{ color: "#666", fontSize: 14 }}>Date of Birth</Text>
+              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>
+                {new Date(profileData.dateOfBirth).toLocaleDateString('vi-VN', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                })}</Text>
             </View>
           </View>
 
@@ -146,7 +159,7 @@ export default function CustomerProfileCard({ customer }) {
             <MaterialCommunityIcons name="gender-male-female" size={24} color="#007AFF" style={{ width: 35 }} />
             <View>
               <Text style={{ color: "#666", fontSize: 14 }}>Gender</Text>
-              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>{customer.gender === 1 ? "Male" : "Female"}</Text>
+              <Text style={{ fontSize: 16, color: "#1a1a1a" }}>{profileData.gender === 1 ? "Male" : "Female"}</Text>
             </View>
           </View>
         </View>
@@ -182,7 +195,7 @@ export default function CustomerProfileCard({ customer }) {
         }}>
           <MaterialCommunityIcons name="star" size={32} color="#007AFF" />
           <Text style={{ fontSize: 32, fontWeight: "bold", color: "#007AFF" }}>
-            {customer.membershipPoints}
+            {profileData.membershipPoints}
           </Text>
           <Text style={{ color: "#666", fontSize: 16, fontWeight: "500" }}>Points</Text>
         </View>

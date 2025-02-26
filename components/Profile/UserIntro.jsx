@@ -1,9 +1,35 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
+import { fetchCustomerProfile, fetchTrainerProfile } from "../../services/ProfileService";
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function UserIntro() {
   const router = useRouter();
+  const [userProfile, setUserProfile] = useState(null);
+  const { userInfo } = useAuth();
+
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        if (!userInfo) return;
+
+        const userId = userInfo.unique_name;
+        const userRole = parseInt(userInfo.role);
+
+        const profile = userRole === 1
+          ? await fetchCustomerProfile(userId)
+          : await fetchTrainerProfile(userId);
+
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [userInfo]);
 
   return (
     <View
@@ -14,11 +40,16 @@ export default function UserIntro() {
         marginTop: 30,
       }}
     >
-      <TouchableOpacity onPress={() => router.push("/customerProfileDetail/1")}>
+      <TouchableOpacity
+        onPress={() => userProfile &&
+          router.push(`/profileDetail/${userInfo.unique_name}`)}
+      >
         <Image
-          source={{
-            uri: "https://res.cloudinary.com/djy6ydaxz/image/upload/v1739695785/wxsydxyqpedbnbelinhe.jpg",
-          }}
+          source={
+            userProfile?.imageUrl
+              ? { uri: userProfile.imageUrl }
+              : require("../../assets/images/placeholder.png")
+          }
           style={{
             width: 100,
             height: 100,
@@ -32,7 +63,7 @@ export default function UserIntro() {
           fontSize: 20,
         }}
       >
-        UserName
+        {userProfile?.fullName || "Loading..."}
       </Text>
 
       <Text
@@ -40,7 +71,7 @@ export default function UserIntro() {
           fontSize: 16,
         }}
       >
-        Email Address
+        {userProfile?.email || "Loading..."}
       </Text>
     </View>
   );

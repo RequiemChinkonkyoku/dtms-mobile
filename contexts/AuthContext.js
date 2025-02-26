@@ -1,12 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import ApiManager from '../services/ApiManager';
+import { decodeToken } from "../utils/TokenUtils";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [userInfo, setUserInfo] = useState(null);
 
     useEffect(() => {
         checkAuth();
@@ -17,6 +19,8 @@ export function AuthProvider({ children }) {
             const token = await SecureStore.getItemAsync('user_token');
             if (token) {
                 ApiManager.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                const decodedToken = decodeToken(token);
+                setUserInfo(decodedToken);
                 setIsAuthenticated(true);
             }
         } catch (error) {
@@ -44,7 +48,8 @@ export function AuthProvider({ children }) {
             loading,
             login, 
             logout,
-            checkAuth 
+            checkAuth,
+            userInfo 
         }}>
             {children}
         </AuthContext.Provider>
