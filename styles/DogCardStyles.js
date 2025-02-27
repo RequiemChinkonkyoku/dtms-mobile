@@ -1,0 +1,62 @@
+export const dogCardStyles = {
+    container: {
+        padding: 15,
+        margin: 10,
+        marginBottom: 15,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    mainContent: {
+        flexDirection: 'row',
+        gap: 15,
+        alignItems: 'center',
+    },
+    image: {
+        width: 110,
+        height: 110,
+        borderRadius: 18,
+        borderWidth: 3,
+        borderColor: '#f0f0f0',
+        resizeMode: 'stretch',
+    },
+    details: {
+        flex: 1,
+        gap: 8,
+        paddingVertical: 5,
+    },
+    name: {
+        fontFamily: 'outfit-bold',
+        fontSize: 20,
+        color: '#2c3e50',
+        marginBottom: 4,
+    },
+    info: {
+        fontFamily: 'outfit',
+        color: '#7f8c8d',
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
+        paddingTop: 12,
+        gap: 8,
+    },
+    actionButton: {
+        padding: 8,
+        borderRadius: 12,
+        backgroundColor: '#f8f9fa',
+        marginLeft: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    }
+};

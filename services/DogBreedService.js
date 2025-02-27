@@ -1,5 +1,16 @@
 import ApiManager from './ApiManager';
 
+export const fetchDogBreeds = async () => {
+    try {
+      const response = await ApiManager.get('/dogBreeds');
+      console.log('DogBreeds:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching dogBreeds:', error);
+      return null;
+    }
+  };
+
 export const fetchDogBreedById = async (id) => {
     try {
         const response = await ApiManager.get(`/dogBreeds/${id}`);
