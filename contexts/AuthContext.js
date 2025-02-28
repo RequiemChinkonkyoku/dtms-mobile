@@ -33,23 +33,26 @@ export function AuthProvider({ children }) {
     const login = async (token) => {
         await SecureStore.setItemAsync('user_token', token);
         ApiManager.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const decodedToken = decodeToken(token);
+        setUserInfo(decodedToken);
         setIsAuthenticated(true);
     };
 
     const logout = async () => {
         await SecureStore.deleteItemAsync('user_token');
         delete ApiManager.defaults.headers.common['Authorization'];
+        setUserInfo(null);
         setIsAuthenticated(false);
     };
 
     return (
-        <AuthContext.Provider value={{ 
-            isAuthenticated, 
+        <AuthContext.Provider value={{
+            isAuthenticated,
             loading,
-            login, 
+            login,
             logout,
             checkAuth,
-            userInfo 
+            userInfo
         }}>
             {children}
         </AuthContext.Provider>
