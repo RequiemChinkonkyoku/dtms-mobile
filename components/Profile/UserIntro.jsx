@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { fetchCustomerProfile, fetchTrainerProfile } from "../../services/ProfileService";
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -9,27 +9,35 @@ export default function UserIntro() {
   const [userProfile, setUserProfile] = useState(null);
   const { userInfo } = useAuth();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadUserProfile();
+    }, [userInfo])
+  );
 
   useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        if (!userInfo) return;
-
-        const userId = userInfo.unique_name;
-        const userRole = parseInt(userInfo.role);
-
-        const profile = userRole === 1
-          ? await fetchCustomerProfile(userId)
-          : await fetchTrainerProfile(userId);
-
-        setUserProfile(profile);
-      } catch (error) {
-        console.error('Error loading user profile:', error);
-      }
-    };
-
     loadUserProfile();
   }, [userInfo]);
+
+  const loadUserProfile = async () => {
+    try {
+      if (!userInfo) return;
+
+      const userId = userInfo.unique_name;
+      const userRole = parseInt(userInfo.role);
+
+      console.log('Loading profile for user id:', userId);
+
+      const profile = userRole === 1
+        ? await fetchCustomerProfile(userId)
+        : await fetchTrainerProfile(userId);
+
+      setUserProfile(profile);
+      console.log('User Profile loaded:', profile);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   return (
     <View
