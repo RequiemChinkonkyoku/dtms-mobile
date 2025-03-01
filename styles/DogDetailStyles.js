@@ -89,4 +89,18 @@ export const dogDetailsStyles = StyleSheet.create({
     lineHeight: 24,
     color: '#444',
   },
+  documentButton: {
+      backgroundColor: '#1877f2',
+      padding: 15,
+      margin: 15,
+      borderRadius: 10,
+      alignItems: 'center',
+      marginTop: 20,
+      marginBottom: 30
+  },
+  documentButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '500'
+  }
 });
