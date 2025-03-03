@@ -12,16 +12,17 @@ import DogDocumentCard from "../../components/DogDocument/DogDocumentCard";
 import { MaterialIcons } from "@expo/vector-icons";
 
 export default function DogDocumentPage() {
-  const { id } = useLocalSearchParams();
+  const { id, refresh } = useLocalSearchParams();
   const router = useRouter();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDogDocuments();
-  }, []);
+  }, [refresh]); // Add refresh as a dependency to trigger reload
 
   const loadDogDocuments = async () => {
+    setLoading(true);
     try {
       const data = await getDogDocuments(id);
       setDocuments(data);
@@ -42,12 +43,22 @@ export default function DogDocumentPage() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
-      <FlatList
-        data={documents}
-        renderItem={({ item }) => <DogDocumentCard document={item} />}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={{ padding: 10 }}
-      />
+      {documents.length === 0 ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 16, color: "#666" }}>
+            No documents available
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={documents}
+          renderItem={({ item }) => <DogDocumentCard document={item} />}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={{ padding: 10 }}
+        />
+      )}
 
       <TouchableOpacity
         style={{
@@ -68,10 +79,10 @@ export default function DogDocumentPage() {
           shadowRadius: 3.84,
           elevation: 5,
         }}
-        onPress={() => router.push(`/dogDocument/add/${id}`)}
+        onPress={() => router.push(`/dogDocument/add-document?id=${id}`)}
       >
         <MaterialIcons
-          name="note_add"
+          name="add"
           size={24}
           color="#fff"
           style={{ marginRight: 8 }}

@@ -22,7 +22,9 @@ export const addDogDocument = async (documentData) => {
 // Add this function to your existing DogDocumentService.js
 export const getDogDocumentById = async (id) => {
     try {
+        console.log(`Fetching document with ID: ${id}`);
         const response = await ApiManager.get(`/dogDocuments/${id}`);
+        console.log('API Response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching dog document:', error);
