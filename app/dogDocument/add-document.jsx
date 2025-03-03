@@ -31,6 +31,13 @@ export default function AddDogDocument() {
   const [issueDate, setIssueDate] = useState("");
   const [documentTypeId, setDocumentTypeId] = useState("");
 
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      setIssueDate(formattedDate);
+    }
+  };
   useEffect(() => {
     navigation.setOptions({
       headerTitle: "Add Document",
@@ -77,9 +84,8 @@ export default function AddDogDocument() {
         setLoading(false);
         return;
       }
-      // Get the image URI in the correct format
-      const imageUri = image.replace("file://", "");
-      const imageUrl = await uploadImageToCloudinary(imageUri);
+      // Just pass the image URI directly
+      const imageUrl = await uploadImageToCloudinary(image);
 
       if (!imageUrl) {
         ToastAndroid.show("Image upload failed!", ToastAndroid.LONG);
@@ -97,10 +103,12 @@ export default function AddDogDocument() {
         dogDocumentTypeId: documentTypeId,
       };
 
+      console.log("Document data being sent:", newDocument);
       const result = await addDogDocument(newDocument);
       if (result) {
         ToastAndroid.show("Document Added Successfully!", ToastAndroid.LONG);
-        router.back();
+        // Navigate back to the dog document page with refresh parameter
+        router.replace(`/dogDocument/${id}?refresh=${Date.now()}`);
       }
     } catch (error) {
       console.error("Error adding document:", error);
@@ -207,6 +215,7 @@ export default function AddDogDocument() {
     </View>
   );
 }
+// For the handleDateChange function that's missing:
 
 const inputStyle = {
   padding: 10,
