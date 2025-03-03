@@ -6,7 +6,7 @@ import {
   Text,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { getDogDocuments } from "../../services/DogDocumentService";
 import DogDocumentCard from "../../components/DogDocument/DogDocumentCard";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -16,8 +16,13 @@ export default function DogDocumentPage() {
   const router = useRouter();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
+    navigation.setOptions({
+      headerTitle: "Dog's Documents",
+      headerShown: true,
+    });
     loadDogDocuments();
   }, [refresh]); // Add refresh as a dependency to trigger reload
 
