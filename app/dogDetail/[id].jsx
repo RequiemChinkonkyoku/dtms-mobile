@@ -1,12 +1,13 @@
-import { View, Text, Image, ScrollView } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { fetchDogById } from '../../services/DogService';
-import { MaterialIcons } from '@expo/vector-icons';
-import { dogDetailsStyles } from '../../styles/DogDetailStyles';
+import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { fetchDogById } from "../../services/DogService";
+import { MaterialIcons } from "@expo/vector-icons";
+import { dogDetailsStyles } from "../../styles/DogDetailStyles";
 
 export default function DogDetail() {
   const navigation = useNavigation();
+  const router = useRouter();
   const { id } = useLocalSearchParams();
   const [dog, setDog] = useState(null);
   const [dogName, setDogName] = useState(null);
@@ -60,23 +61,15 @@ export default function DogDetail() {
         </View>
 
         <View style={dogDetailsStyles.infoSection}>
-          <InfoItem
-            icon="cake"
-            label="Birthday"
-            value={dog.dateOfBirth}
-          />
+          <InfoItem icon="cake" label="Birthday" value={dog.dateOfBirth} />
 
           <InfoItem
             icon="face"
             label="Gender"
-            value={dog.gender === 0 ? "Male" : "Female"} 
+            value={dog.gender === 0 ? "Male" : "Female"}
           />
 
-          <InfoItem
-            icon="pets"
-            label="Breed"
-            value={dog.dogBreedName}
-          />
+          <InfoItem icon="pets" label="Breed" value={dog.dogBreedName} />
         </View>
 
         <View style={dogDetailsStyles.descriptionSection}>
@@ -84,6 +77,14 @@ export default function DogDetail() {
           <Text style={dogDetailsStyles.description}>{dog.description}</Text>
         </View>
 
+        <TouchableOpacity
+          style={dogDetailsStyles.documentButton}
+          onPress={() => router.push(`/dogDocument/${id}`)}
+        >
+          <Text style={dogDetailsStyles.documentButtonText}>
+            View Dog Documents
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
