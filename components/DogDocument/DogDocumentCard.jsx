@@ -10,6 +10,8 @@ export default function DogDocumentCard({ document }) {
     return null;
   }
 
+  console.log("Document data:", document); // Add this line to check the document structure
+
   return (
     <TouchableOpacity
       style={{
@@ -23,12 +25,23 @@ export default function DogDocumentCard({ document }) {
         shadowOpacity: 0.2,
         shadowRadius: 2,
       }}
-      onPress={() => router.push(`/dogDocumentDetail/${document.id}`)}
+      onPress={() => {
+        console.log("Document ID:", document.id);
+        if (document.id) {
+          router.push({
+            pathname: "/dogDocumentDetail/[id]",
+            params: { id: document.id },
+          });
+        } else {
+          console.error("No document ID found");
+        }
+      }}
     >
       <View>
         <Text style={{ fontSize: 16, fontWeight: "600" }}>
           {document?.name}
         </Text>
+        <Text style={{ color: "#666", marginTop: 5 }}>ID: {document?.id}</Text>
         <Text style={{ color: "#666", marginTop: 5 }}>
           Type: {document?.dogDocumentType?.name}
         </Text>

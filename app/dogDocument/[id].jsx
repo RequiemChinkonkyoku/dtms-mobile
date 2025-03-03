@@ -68,7 +68,7 @@ export default function DogDocumentPage() {
           shadowRadius: 3.84,
           elevation: 5,
         }}
-        onPress={() => router.push(`/dogDocument/add/${id}`)}
+        onPress={() => router.push(`/dogDocument/add-document?id=${dogId}`)}
       >
         <MaterialIcons
           name="note_add"
