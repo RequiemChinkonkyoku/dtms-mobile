@@ -114,7 +114,7 @@ export default function CourseDetail() {
             {/* Price Section */}
             <View style={courseDetailsStyles.priceContainer}>
                 <Text style={courseDetailsStyles.priceLabel}>Course Price</Text>
-                <Text style={courseDetailsStyles.price}>${course.price}</Text>
+                <Text style={courseDetailsStyles.price}>{course.price}VNĐ</Text>
             </View>
 
             {/* Description */}
