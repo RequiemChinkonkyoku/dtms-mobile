@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Text,
+  RefreshControl,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
@@ -16,6 +17,7 @@ export default function DogDocumentPage() {
   const router = useRouter();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -46,6 +48,12 @@ export default function DogDocumentPage() {
     );
   }
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDogDocuments();
+    setRefreshing(false);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
       {documents.length === 0 ? (
@@ -58,8 +66,13 @@ export default function DogDocumentPage() {
         </View>
       ) : (
         <FlatList
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           data={documents}
-          renderItem={({ item }) => <DogDocumentCard document={item} />}
+          renderItem={({ item }) => (
+            <DogDocumentCard document={item} onRefresh={loadDogDocuments} />
+          )}
           keyExtractor={(item, index) => index.toString()}
           contentContainerStyle={{ padding: 10 }}
         />

@@ -1,57 +1,212 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Image } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
-import { dogDocumentStyles } from "../../styles/DogDocumentStyles";
+import { MaterialIcons } from "@expo/vector-icons";
+import { deleteDogDocument } from "../../services/DogDocumentService";
 
-export default function DogDocumentCard({ document }) {
+export default function DogDocumentCard({ document, onRefresh }) {
   const router = useRouter();
+
+  const handleEdit = () => {
+    router.push({
+      pathname: "/dogDocument/update-document",
+      params: {
+        id: document.id,
+        document: JSON.stringify(document),
+        dogId: document.dogId || document.dog.id,
+        refresh: () => {
+          if (onRefresh) {
+            onRefresh();
+          }
+        },
+      },
+    });
+  };
 
   if (!document) {
     return null;
   }
 
-  console.log("Document data:", document); // Add this line to check the document structure
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Document",
+      "Are you sure you want to delete this document?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              await deleteDogDocument(document.id);
+              onRefresh && onRefresh();
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete document");
+            }
+          },
+          style: "destructive",
+        },
+      ]
+    );
+  };
 
   return (
-    <TouchableOpacity
-      style={{
-        backgroundColor: "#fff",
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-      }}
-      onPress={() => {
-        console.log("Document ID:", document.id);
-        if (document.id) {
-          router.push({
-            pathname: "/dogDocumentDetail/[id]",
-            params: { id: document.id },
-          });
-        } else {
-          console.error("No document ID found");
-        }
-      }}
-    >
-      <View>
-        <Text style={{ fontSize: 16, fontWeight: "600" }}>
-          {document?.name}
-        </Text>
-        <Text style={{ color: "#666", marginTop: 5 }}>ID: {document?.id}</Text>
-        <Text style={{ color: "#666", marginTop: 5 }}>
-          Type: {document?.dogDocumentType?.name}
-        </Text>
-        <Text style={{ color: "#666", marginTop: 5 }}>
-          Issue Date:{" "}
-          {document?.issueDate
-            ? new Date(document.issueDate).toLocaleDateString()
-            : ""}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.mainContent}>
+        <Image
+          source={
+            document.imageUrl
+              ? { uri: document.imageUrl }
+              : require("../../assets/images/placeholder.png")
+          }
+          style={styles.image}
+        />
+        <View style={styles.infoContainer}>
+          <View style={styles.headerRow}>
+            <Text style={styles.name}>{document?.name}</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor:
+                    document.status === 0
+                      ? "#ffebee"
+                      : document.status === 1
+                      ? "#fff3e0"
+                      : "#e8f5e9",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusText,
+                  {
+                    color:
+                      document.status === 0
+                        ? "#d32f2f"
+                        : document.status === 1
+                        ? "#f57c00"
+                        : "#2e7d32",
+                  },
+                ]}
+              >
+                {document.status === 0
+                  ? "Rejected"
+                  : document.status === 1
+                  ? "Pending"
+                  : "Approved"}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.info}>
+            Type: {document?.dogDocumentType?.name}
+          </Text>
+          <Text style={styles.info}>
+            Issue Date:{" "}
+            {document?.issueDate
+              ? new Date(document.issueDate).toLocaleDateString()
+              : ""}
+          </Text>
+          <Text style={styles.issuer}>By: {document?.issuingAuthority}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {(document.status === 0 || document.status === 1) && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            onPress={handleEdit}
+            style={[styles.actionButton, { backgroundColor: "#e3f2fd" }]}
+          >
+            <MaterialIcons name="edit" size={20} color="#1976d2" />
+            <Text style={{ color: "#1976d2", fontFamily: "outfit-medium" }}>
+              Edit
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDelete}
+            style={[styles.actionButton, { backgroundColor: "#ffebee" }]}
+          >
+            <MaterialIcons name="delete" size={20} color="#d32f2f" />
+            <Text style={{ color: "#d32f2f", fontFamily: "outfit-medium" }}>
+              Delete
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
   );
 }
+
+const styles = {
+  container: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 15,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  mainContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    marginRight: 15,
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 18,
+    fontFamily: "outfit-bold",
+    color: "#333",
+    marginBottom: 5,
+  },
+  info: {
+    fontSize: 14,
+    fontFamily: "outfit-regular",
+    color: "#666",
+    marginBottom: 2,
+  },
+  issuer: {
+    fontSize: 14,
+    fontFamily: "outfit-medium",
+    color: "#1976d2",
+    marginTop: 3,
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: "outfit-medium",
+  },
+};
