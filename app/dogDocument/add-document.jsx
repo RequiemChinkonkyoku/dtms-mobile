@@ -215,7 +215,6 @@ export default function AddDogDocument() {
     </View>
   );
 }
-// For the handleDateChange function that's missing:
 
 const inputStyle = {
   padding: 10,

@@ -49,9 +49,21 @@ export default function DogDocumentCard({ document, onRefresh }) {
     );
   };
 
+  // Add a new handler for card click
+  // Update the handleCardClick function to navigate to the correct path
+  const handleCardClick = () => {
+    router.push({
+      pathname: `/dogDocumentDetail/${document.id}`,
+      params: {
+        document: JSON.stringify(document),
+        dogId: document.dogId || document.dog.id,
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.mainContent}>
+      <TouchableOpacity style={styles.mainContent} onPress={handleCardClick}>
         <Image
           source={
             document.imageUrl
