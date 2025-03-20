@@ -16,31 +16,12 @@ export default function DogDocumentDetail() {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // This will run every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      console.log("Screen focused, reloading document data");
-      // Force reload by setting document to null first
-      setDocument(null);
-      setLoading(true);
       loadDocumentDetail();
-      return () => {
-        // Cleanup function when screen loses focus
-        console.log("Screen unfocused");
-      };
-    }, [id]) // Add id as dependency to ensure it reloads when id changes
+      return () => {};
+    }, [id])
   );
-
-  // Keep the refresh parameter effect as well
-  useEffect(() => {
-    if (params.refresh) {
-      console.log("Refresh parameter detected:", params.refresh);
-      // Force reload by setting document to null first
-      setDocument(null);
-      setLoading(true);
-      loadDocumentDetail();
-    }
-  }, [params.refresh]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -52,9 +33,7 @@ export default function DogDocumentDetail() {
   const loadDocumentDetail = async () => {
     try {
       setLoading(true);
-      console.log("Fetching document with ID:", id);
       const data = await getDogDocumentById(id);
-      console.log("Fetched document data:", data);
       setDocument(data);
     } catch (error) {
       console.error("Error loading document:", error);
@@ -93,20 +72,30 @@ export default function DogDocumentDetail() {
           <View
             style={[
               styles.statusBadge,
-              document.status === 1
-                ? styles.statusBadgeActive
-                : styles.statusBadgeInactive,
+              document.status === 2
+                ? styles.statusBadgeApproved
+                : document.status === 1
+                ? styles.statusBadgePending
+                : styles.statusBadgeRejected,
             ]}
           >
             <Text
               style={[
                 styles.statusText,
-                document.status === 1
-                  ? styles.statusTextActive
-                  : styles.statusTextInactive,
+                document.status === 2
+                  ? styles.statusTextApproved
+                  : document.status === 1
+                  ? styles.statusTextPending
+                  : styles.statusTextRejected,
               ]}
             >
-              {document.status === 1 ? "● Active" : "● Inactive"}
+              {`● ${
+                document.status === 2
+                  ? "Approved"
+                  : document.status === 1
+                  ? "Pending"
+                  : "Rejected"
+              }`}
             </Text>
           </View>
         </View>
@@ -132,23 +121,6 @@ export default function DogDocumentDetail() {
             label="Upload Time"
             value={new Date(document.uploadTime).toLocaleString()}
           />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Dog Information</Text>
-          <View style={styles.dogInfoContainer}>
-            <InfoItem icon="pets" label="Dog Name" value={document.dog.name} />
-            <InfoItem
-              icon="cake"
-              label="Date of Birth"
-              value={document.dog.dateOfBirth}
-            />
-            <InfoItem
-              icon="person"
-              label="Owner"
-              value={document.dog.ownerName}
-            />
-          </View>
         </View>
 
         {document.description && (
@@ -178,5 +150,3 @@ const InfoItem = ({ icon, label, value }) => (
     </View>
   </View>
 );
-
-// Inside your DogDocumentDetail component

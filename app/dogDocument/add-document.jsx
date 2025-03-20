@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import {
   View,
   Text,
@@ -6,6 +7,7 @@ import {
   TextInput,
   ToastAndroid,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
@@ -15,6 +17,7 @@ import { addDogDocument } from "../../services/DogDocumentService";
 import { uploadImageToCloudinary } from "../../services/UploadFileService";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { updateDogDocumentStyles as styles } from "../../styles/UpdateDogDocumentStyles";
 
 export default function AddDogDocument() {
   const { id } = useLocalSearchParams();
@@ -84,7 +87,6 @@ export default function AddDogDocument() {
         setLoading(false);
         return;
       }
-      // Just pass the image URI directly
       const imageUrl = await uploadImageToCloudinary(image);
 
       if (!imageUrl) {
@@ -107,8 +109,7 @@ export default function AddDogDocument() {
       const result = await addDogDocument(newDocument);
       if (result) {
         ToastAndroid.show("Document Added Successfully!", ToastAndroid.LONG);
-        // Navigate back to the dog document page with refresh parameter
-        router.replace(`/dogDocument/${id}?refresh=${Date.now()}`);
+        navigation.goBack();
       }
     } catch (error) {
       console.error("Error adding document:", error);
@@ -121,114 +122,108 @@ export default function AddDogDocument() {
     }
   };
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 25 }}>Add New Document</Text>
-      <Text>Fill all details to add a new document</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.contentContainer}>
+        <View style={styles.imageContainer}>
+          <TouchableOpacity onPress={onImagePick}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.documentImage} />
+            ) : (
+              <Image
+                source={require("../../assets/images/placeholder.png")}
+                style={styles.documentImage}
+              />
+            )}
+            <View style={styles.cameraIconContainer}>
+              <MaterialIcons name="camera-alt" size={22} color="#fff" />
+            </View>
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity style={{ marginTop: 20 }} onPress={onImagePick}>
-        {image ? (
-          <Image
-            source={{ uri: image }}
-            style={{ width: 100, height: 100, borderRadius: 15 }}
+        <View style={styles.formContainer}>
+          <Text style={styles.sectionTitle}>Document Information</Text>
+
+          <Text style={styles.inputLabel}>Document Name</Text>
+          <TextInput
+            placeholder="Enter document name"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+            placeholderTextColor="#999"
           />
-        ) : (
-          <Image
-            source={require("../../assets/images/placeholder.png")}
-            style={{ width: 100, height: 100 }}
+
+          <Text style={styles.inputLabel}>Description</Text>
+          <TextInput
+            placeholder="Enter description"
+            value={description}
+            onChangeText={setDescription}
+            style={[styles.input, styles.textArea]}
+            multiline
+            numberOfLines={3}
+            placeholderTextColor="#999"
           />
-        )}
-      </TouchableOpacity>
 
-      <View>
-        <TextInput
-          placeholder="Document Name"
-          onChangeText={setName}
-          style={inputStyle}
-        />
+          <Text style={styles.inputLabel}>Issuing Authority</Text>
+          <TextInput
+            placeholder="Enter issuing authority"
+            value={issuingAuthority}
+            onChangeText={setIssuingAuthority}
+            style={styles.input}
+            placeholderTextColor="#999"
+          />
 
-        <TextInput
-          placeholder="Description"
-          onChangeText={setDescription}
-          style={[inputStyle, { height: 100, textAlignVertical: "top" }]}
-          multiline
-        />
+          <Text style={styles.inputLabel}>
+            Issue Date <Text style={styles.requiredStar}>*</Text>
+          </Text>
+          <TouchableOpacity
+            style={[styles.datePickerButton, !issueDate && styles.invalidInput]}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text
+              style={[styles.dateText, !issueDate && styles.placeholderText]}
+            >
+              {issueDate ? issueDate : "Select Issue Date"}
+            </Text>
+            <MaterialIcons name="calendar-today" size={20} color="#666" />
+          </TouchableOpacity>
 
-        <TextInput
-          placeholder="Issuing Authority"
-          onChangeText={setIssuingAuthority}
-          style={inputStyle}
-        />
+          {showDatePicker && (
+            <DateTimePicker
+              value={issueDate ? new Date(issueDate) : new Date()}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+            />
+          )}
+
+          <Text style={styles.inputLabel}>Document Type</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={documentTypeId}
+              onValueChange={setDocumentTypeId}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Document Type" value="" />
+              {documentTypes.map((type) => (
+                <Picker.Item key={type.id} label={type.name} value={type.id} />
+              ))}
+            </Picker>
+          </View>
+        </View>
 
         <TouchableOpacity
-          style={inputStyle}
-          onPress={() => setShowDatePicker(true)}
+          disabled={loading}
+          style={[styles.updateButton, loading && styles.disabledButton]}
+          onPress={onAddNewDocument}
         >
-          <Text>{issueDate ? issueDate : "Select Issue Date"}</Text>
+          {loading ? (
+            <ActivityIndicator size={"large"} color={"#fff"} />
+          ) : (
+            <Text style={styles.buttonText}>Add Document</Text>
+          )}
         </TouchableOpacity>
-
-        {showDatePicker && (
-          <DateTimePicker
-            value={issueDate ? new Date(issueDate) : new Date()}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
-
-        <View style={pickerStyle}>
-          <Picker
-            selectedValue={documentTypeId}
-            onValueChange={setDocumentTypeId}
-          >
-            <Picker.Item label="Select Document Type" value="" />
-            {documentTypes.map((type) => (
-              <Picker.Item key={type.id} label={type.name} value={type.id} />
-            ))}
-          </Picker>
-        </View>
       </View>
-
-      <TouchableOpacity
-        disabled={loading}
-        style={{
-          padding: 15,
-          borderRadius: 5,
-          marginTop: 20,
-          backgroundColor: "#1877f2",
-        }}
-        onPress={onAddNewDocument}
-      >
-        {loading ? (
-          <ActivityIndicator size={"large"} color={"#fff"} />
-        ) : (
-          <Text
-            style={{
-              textAlign: "center",
-              fontFamily: "outfit-medium",
-              color: "#fff",
-            }}
-          >
-            Add Document
-          </Text>
-        )}
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
-
-const inputStyle = {
-  padding: 10,
-  borderWidth: 1,
-  borderRadius: 5,
-  fontSize: 17,
-  backgroundColor: "#fff",
-  marginTop: 10,
-};
-
-const pickerStyle = {
-  borderWidth: 1,
-  borderRadius: 5,
-  fontSize: 17,
-  backgroundColor: "#fff",
-  marginTop: 10,
-};

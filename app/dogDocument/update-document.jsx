@@ -19,6 +19,7 @@ import { uploadImageToCloudinary } from "../../services/UploadFileService";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { MaterialIcons } from "@expo/vector-icons";
+import { updateDogDocumentStyles as styles } from "../../styles/UpdateDogDocumentStyles";
 
 export default function UpdateDocument() {
   const params = useLocalSearchParams();
@@ -38,6 +39,13 @@ export default function UpdateDocument() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(1); // Default to pending
 
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      setIssueDate(formattedDate);
+    }
+  };
   useEffect(() => {
     navigation.setOptions({
       headerTitle: "Update Document",
@@ -79,25 +87,6 @@ export default function UpdateDocument() {
     }
   };
 
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (selectedDate > today) {
-        ToastAndroid.show(
-          "Issue date cannot be in the future",
-          ToastAndroid.LONG
-        );
-        return;
-      }
-
-      const formattedDate = selectedDate.toISOString().split("T")[0];
-      setIssueDate(formattedDate);
-    }
-  };
-
   const onUpdateDocument = async () => {
     setLoading(true);
     try {
@@ -106,7 +95,6 @@ export default function UpdateDocument() {
         return;
       }
 
-      // Additional validation for issue date
       const selectedDate = new Date(issueDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -137,15 +125,13 @@ export default function UpdateDocument() {
         imageUrl,
         dogDocumentTypeId,
         dogId: dogId,
-        status: 1, // Always set status to 1 (pending)
+        status: 1,
       };
 
       const result = await updateDogDocument(id, updatedDocument);
       if (result) {
         ToastAndroid.show("Document Updated Successfully!", ToastAndroid.LONG);
-
-        // Use router.replace with refresh parameter like in add-document.jsx
-        router.replace(`/dogDocumentDetail/${id}?refresh=${Date.now()}`);
+        navigation.goBack();
       }
     } catch (error) {
       console.error("Error updating document:", error);
@@ -154,7 +140,6 @@ export default function UpdateDocument() {
       setLoading(false);
     }
   };
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.contentContainer}>
@@ -261,129 +246,3 @@ export default function UpdateDocument() {
     </ScrollView>
   );
 }
-
-// Update styles to include contentContainer
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f7",
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  documentImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
-  },
-  cameraIconContainer: {
-    position: "absolute",
-    bottom: 5,
-    right: 5,
-    backgroundColor: "#007AFF",
-    borderRadius: 20,
-    width: 36,
-    height: 36,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  formContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "outfit-bold",
-    marginBottom: 15,
-    color: "#333",
-  },
-  input: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-    fontSize: 16,
-    backgroundColor: "#fff",
-    marginBottom: 15,
-    fontFamily: "outfit-regular",
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: "top",
-  },
-  datePickerButton: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    marginBottom: 15,
-  },
-  dateText: {
-    fontSize: 16,
-    fontFamily: "outfit-regular",
-    color: "#333",
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    marginBottom: 15,
-    overflow: "hidden",
-  },
-  pickerLabel: {
-    fontSize: 14,
-    fontFamily: "outfit-medium",
-    color: "#666",
-    paddingHorizontal: 12,
-    paddingTop: 8,
-  },
-  picker: {
-    height: 50,
-  },
-  updateButton: {
-    padding: 16,
-    borderRadius: 10,
-    backgroundColor: "#007AFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  disabledButton: {
-    backgroundColor: "#a0c4ff",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "outfit-medium",
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontFamily: "outfit-medium",
-    color: "#333",
-    marginBottom: 6,
-    marginTop: 5,
-  },
-};

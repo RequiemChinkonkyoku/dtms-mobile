@@ -11,6 +11,8 @@ import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import { getDogDocuments } from "../../services/DogDocumentService";
 import DogDocumentCard from "../../components/DogDocument/DogDocumentCard";
 import { MaterialIcons } from "@expo/vector-icons";
+import { fetchDogById } from "../../services/DogService";
+import { useFocusEffect } from "expo-router";
 
 export default function DogDocumentPage() {
   const { id, refresh } = useLocalSearchParams();
@@ -20,13 +22,25 @@ export default function DogDocumentPage() {
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: "Dog's Documents",
-      headerShown: true,
-    });
-    loadDogDocuments();
-  }, [refresh]); // Add refresh as a dependency to trigger reload
+  const [dogName, setDogName] = useState("");
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadDogName = async () => {
+        const dogData = await fetchDogById(id);
+        if (dogData) {
+          setDogName(dogData.name);
+          navigation.setOptions({
+            headerTitle: `${dogData.name}'s Documents`,
+            headerShown: true,
+          });
+        }
+      };
+
+      loadDogName();
+      loadDogDocuments();
+    }, [])
+  );
 
   const loadDogDocuments = async () => {
     setLoading(true);
