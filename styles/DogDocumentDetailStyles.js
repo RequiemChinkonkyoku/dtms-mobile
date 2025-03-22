@@ -87,4 +87,22 @@ export const dogDocumentDetailStyles = StyleSheet.create({
         padding: 15,
         borderRadius: 10,
     },
+    statusBadgeApproved: {
+        backgroundColor: '#e6f4ea',
+    },
+    statusBadgePending: {
+        backgroundColor: '#fff4e5',
+    },
+    statusBadgeRejected: {
+        backgroundColor: '#fce8e8',
+    },
+    statusTextApproved: {
+        color: '#34a853',
+    },
+    statusTextPending: {
+        color: '#f9a825',
+    },
+    statusTextRejected: {
+        color: '#ea4335',
+    },
 });

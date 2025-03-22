@@ -1,4 +1,3 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import {
   View,
   Text,
@@ -9,30 +8,36 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
-import { Picker } from "@react-native-picker/picker";
-import { fetchDogDocumentTypes } from "../../services/DogDocumentTypeService";
-import { addDogDocument } from "../../services/DogDocumentService";
-import { uploadImageToCloudinary } from "../../services/UploadFileService";
+import React, { useEffect, useState } from "react";
+import { useNavigation, useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import {
+  updateDogDocument,
+  getDogDocumentTypes,
+} from "../../services/DogDocumentService";
+import { uploadImageToCloudinary } from "../../services/UploadFileService";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { MaterialIcons } from "@expo/vector-icons";
 import { updateDogDocumentStyles as styles } from "../../styles/UpdateDogDocumentStyles";
 
-export default function AddDogDocument() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
+export default function UpdateDocument() {
+  const params = useLocalSearchParams();
+  const id = params.id;
+  const document = params.document ? JSON.parse(params.document) : null;
+  const dogId = params.dogId;
   const navigation = useNavigation();
-  const [documentTypes, setDocumentTypes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const router = useRouter();
   const [image, setImage] = useState(null);
-
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [issuingAuthority, setIssuingAuthority] = useState("");
   const [issueDate, setIssueDate] = useState("");
-  const [documentTypeId, setDocumentTypeId] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dogDocumentTypeId, setDogDocumentTypeId] = useState("");
+  const [documentTypes, setDocumentTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(1); // Default to pending
 
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
@@ -43,16 +48,27 @@ export default function AddDogDocument() {
   };
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: "Add Document",
+      headerTitle: "Update Document",
       headerShown: true,
     });
     loadDocumentTypes();
+
+    if (document) {
+      setName(document.name);
+      setDescription(document.description || "");
+      setIssuingAuthority(document.issuingAuthority);
+      setImage(document.imageUrl);
+      setIssueDate(document.issueDate.split("T")[0]);
+      setDogDocumentTypeId(document.dogDocumentTypeId);
+    }
   }, []);
 
   const loadDocumentTypes = async () => {
     try {
-      const types = await fetchDogDocumentTypes();
-      setDocumentTypes(types);
+      const types = await getDogDocumentTypes();
+      if (types) {
+        setDocumentTypes(types);
+      }
     } catch (error) {
       console.error("Error loading document types:", error);
       ToastAndroid.show("Failed to load document types", ToastAndroid.SHORT);
@@ -61,62 +77,65 @@ export default function AddDogDocument() {
 
   const onImagePick = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      console.log(image);
     }
   };
 
-  const onAddNewDocument = async () => {
+  const onUpdateDocument = async () => {
     setLoading(true);
-
     try {
-      if (
-        !name ||
-        !issueDate ||
-        !documentTypeId ||
-        !image ||
-        !issuingAuthority
-      ) {
-        ToastAndroid.show("All fields are required!", ToastAndroid.LONG);
-        setLoading(false);
-        return;
-      }
-      const imageUrl = await uploadImageToCloudinary(image);
-
-      if (!imageUrl) {
-        ToastAndroid.show("Image upload failed!", ToastAndroid.LONG);
-        setLoading(false);
+      if (!name || !issueDate || !dogDocumentTypeId || !issuingAuthority) {
+        ToastAndroid.show("Required fields must be filled!", ToastAndroid.LONG);
         return;
       }
 
-      const newDocument = {
+      const selectedDate = new Date(issueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        ToastAndroid.show(
+          "Issue date cannot be in the future",
+          ToastAndroid.LONG
+        );
+        setLoading(false);
+        return;
+      }
+
+      let imageUrl = image;
+      if (image && !image.startsWith("http")) {
+        imageUrl = await uploadImageToCloudinary(image);
+        if (!imageUrl) {
+          ToastAndroid.show("Image upload failed!", ToastAndroid.LONG);
+          return;
+        }
+      }
+
+      const updatedDocument = {
         name,
-        imageUrl,
-        description: description || "",
+        description,
         issuingAuthority,
         issueDate,
-        dogId: id,
-        dogDocumentTypeId: documentTypeId,
+        imageUrl,
+        dogDocumentTypeId,
+        dogId: dogId,
+        status: 1,
       };
 
-      console.log("Document data being sent:", newDocument);
-      const result = await addDogDocument(newDocument);
+      const result = await updateDogDocument(id, updatedDocument);
       if (result) {
-        ToastAndroid.show("Document Added Successfully!", ToastAndroid.LONG);
+        ToastAndroid.show("Document Updated Successfully!", ToastAndroid.LONG);
         navigation.goBack();
       }
     } catch (error) {
-      console.error("Error adding document:", error);
-      ToastAndroid.show(
-        "Failed to add document: " + (error.message || "Unknown error"),
-        ToastAndroid.LONG
-      );
+      console.error("Error updating document:", error);
+      ToastAndroid.show("Failed to update document", ToastAndroid.LONG);
     } finally {
       setLoading(false);
     }
@@ -130,7 +149,7 @@ export default function AddDogDocument() {
               <Image source={{ uri: image }} style={styles.documentImage} />
             ) : (
               <Image
-                source={require("../../assets/images/placeholder.png")}
+                source={require("./../../assets/images/placeholder.png")}
                 style={styles.documentImage}
               />
             )}
@@ -200,8 +219,8 @@ export default function AddDogDocument() {
           <Text style={styles.inputLabel}>Document Type</Text>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={documentTypeId}
-              onValueChange={setDocumentTypeId}
+              selectedValue={dogDocumentTypeId}
+              onValueChange={setDogDocumentTypeId}
               style={styles.picker}
             >
               <Picker.Item label="Select Document Type" value="" />
@@ -215,12 +234,12 @@ export default function AddDogDocument() {
         <TouchableOpacity
           disabled={loading}
           style={[styles.updateButton, loading && styles.disabledButton]}
-          onPress={onAddNewDocument}
+          onPress={onUpdateDocument}
         >
           {loading ? (
             <ActivityIndicator size={"large"} color={"#fff"} />
           ) : (
-            <Text style={styles.buttonText}>Add Document</Text>
+            <Text style={styles.buttonText}>Update Document</Text>
           )}
         </TouchableOpacity>
       </View>

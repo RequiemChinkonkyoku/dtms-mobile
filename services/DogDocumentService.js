@@ -19,7 +19,7 @@ export const addDogDocument = async (documentData) => {
         throw error;
     }
 };
-// Add this function to your existing DogDocumentService.js
+
 export const getDogDocumentById = async (id) => {
     try {
         console.log(`Fetching document with ID: ${id}`);
@@ -28,6 +28,27 @@ export const getDogDocumentById = async (id) => {
         return response.data;
     } catch (error) {
         console.error('Error fetching dog document:', error);
+        throw error;
+    }
+};
+
+export const updateDogDocument = async (id, documentData) => {
+    try {
+        const response = await ApiManager.put(`/dogDocuments/${id}`, documentData);
+        console.log('Document Updated:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating document:', error.response?.data || error.message);
+        return null;
+    }
+};
+
+export const getDogDocumentTypes = async () => {
+    try {
+        const response = await ApiManager.get('/dogDocumentTypes');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching dog document types:', error);
         throw error;
     }
 };

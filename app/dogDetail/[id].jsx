@@ -79,10 +79,21 @@ export default function DogDetail() {
 
         <TouchableOpacity
           style={dogDetailsStyles.documentButton}
-          onPress={() => router.push(`/dogDocument/${id}`)}
+          onPress={() =>
+            router.push({
+              pathname: "/dogDocument/mydog-document",
+              params: { id: id, refresh: true },
+            })
+          }
         >
+          <MaterialIcons
+            name="description"
+            size={24}
+            color="#fff"
+            style={dogDetailsStyles.documentButtonIcon}
+          />
           <Text style={dogDetailsStyles.documentButtonText}>
-            View Dog Documents
+            View Documents
           </Text>
         </TouchableOpacity>
       </View>

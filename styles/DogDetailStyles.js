@@ -90,17 +90,19 @@ export const dogDetailsStyles = StyleSheet.create({
     color: '#444',
   },
   documentButton: {
-      backgroundColor: '#1877f2',
-      padding: 15,
-      margin: 15,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginTop: 20,
-      marginBottom: 30
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1877f2',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  documentButtonIcon: {
+    marginRight: 10
   },
   documentButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '500'
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500'
   }
 });
