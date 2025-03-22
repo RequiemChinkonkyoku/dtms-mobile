@@ -35,7 +35,10 @@ export default function EditDog() {
             if (dogData) {
                 setName(dogData.name);
                 setImage(dogData.imageUrl);
-                setDateOfBirth(dogData.dateOfBirth.split('T')[0]);
+                const [month, day, year] = dogData.dateOfBirth.split('/');
+                const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                console.log('Formatted date:', formattedDate);
+                setDateOfBirth(formattedDate);
                 setGender(dogData.gender.toString());
                 setDogBreedId(dogData.dogBreedId);
             }
@@ -84,7 +87,17 @@ export default function EditDog() {
                 ToastAndroid.show('All fields are required!', ToastAndroid.LONG);
                 return;
             }
-            console.log(dateOfBirth);
+
+            // Add date validation
+            const selectedDate = new Date(dateOfBirth);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate > today) {
+                ToastAndroid.show('Date of Birth cannot be in the future', ToastAndroid.LONG);
+                setLoading(false);
+                return;
+            }
 
             let imageUrl = image;
             if (!image.startsWith('http')) {
@@ -127,11 +140,11 @@ export default function EditDog() {
             </TouchableOpacity>
 
             <View>
-                <TextInput 
-                    placeholder='Dog Name' 
+                <TextInput
+                    placeholder='Dog Name'
                     value={name}
-                    onChangeText={setName} 
-                    style={styles.input} 
+                    onChangeText={setName}
+                    style={styles.input}
                 />
 
                 <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
@@ -144,6 +157,7 @@ export default function EditDog() {
                         mode="date"
                         display="default"
                         onChange={handleDateChange}
+                        maximumDate={new Date()} // Add maximum date
                     />
                 )}
 
@@ -180,8 +194,8 @@ export default function EditDog() {
                 style={styles.updateButton}
                 onPress={onUpdateDog}
             >
-                {loading ? 
-                    <ActivityIndicator size={'large'} color={'#fff'} /> : 
+                {loading ?
+                    <ActivityIndicator size={'large'} color={'#fff'} /> :
                     <Text style={styles.buttonText}>Update Dog</Text>
                 }
             </TouchableOpacity>
