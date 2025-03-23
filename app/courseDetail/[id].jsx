@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchCourseById } from '../../services/CourseService';
@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchLessonById } from '../../services/LessonService';
 import { fetchDogBreedById } from '../../services/DogBreedService';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function CourseDetail() {
     const navigation = useNavigation();
@@ -63,6 +64,7 @@ export default function CourseDetail() {
     }
 
     return (
+        <>
         <ScrollView style={courseDetailsStyles.container}>
             <Image
                 source={typeof course.imageUrl === 'string'
@@ -166,7 +168,35 @@ export default function CourseDetail() {
                 )}
             </View>
 
+            <View style={{ height: 100 }} />
         </ScrollView>
+
+        <View style={courseDetailsStyles.enrollButtonContainer}>
+                <LinearGradient
+                    colors={['#007AFF', '#00A2FF']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={courseDetailsStyles.gradientContainer}
+                >
+                    <TouchableOpacity
+                        style={courseDetailsStyles.enrollButton}
+                        onPress={() => {
+                            // TODO: Implement enrollment logic
+                            console.log('Enroll pressed for course:', id);
+                        }}
+                    >
+                        <View>
+                            <Text style={courseDetailsStyles.enrollButtonText}>Enroll Now</Text>
+                            <Text style={courseDetailsStyles.enrollSubText}>Start Your Dog's Journey Today</Text>
+                        </View>
+                        <Text style={courseDetailsStyles.enrollPrice}>
+                            {course.price.toLocaleString()}
+                            <Text style={courseDetailsStyles.currencyText}> VNĐ</Text>
+                        </Text>
+                    </TouchableOpacity>
+                </LinearGradient>
+            </View>
+        </>
     );
 }
 

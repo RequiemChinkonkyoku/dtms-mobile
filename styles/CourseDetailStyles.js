@@ -1,6 +1,7 @@
 // CourseDetailStyles.js
 import { StyleSheet } from 'react-native';
 
+
 export const courseDetailsStyles = StyleSheet.create({
     container: {
         flex: 1,
@@ -179,5 +180,51 @@ export const courseDetailsStyles = StyleSheet.create({
         color: '#007AFF',
         marginLeft: 4,
         fontWeight: '500',
+    },
+    enrollButtonContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.1)',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    gradientContainer: {
+        borderRadius: 15,
+        overflow: 'hidden',
+    },
+    enrollButton: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+    },
+    enrollButtonText: {
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    enrollSubText: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 14,
+    },
+    enrollPrice: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    currencyText: {
+        fontSize: 14,
+        fontWeight: 'normal',
     },
 });
