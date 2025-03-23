@@ -6,7 +6,7 @@ export const fetchCustomerProfile = async (accountId) => {
         console.log('Customer account Details:', response.data);
         return response.data;
     } catch (error) {
-        console.error('Error fetching Account by ID:', error);
+        // console.error('Error fetching Account by ID:', error);
         return null;
     }
 };
@@ -17,7 +17,7 @@ export const fetchTrainerProfile = async (accountId) => {
         console.log('Trainer account Details:', response.data);
         return response.data;
     } catch (error) {
-        console.error('Error fetching Account by ID:', error);
+        // console.error('Error fetching Account by ID:', error);
         return null;
     }
 };

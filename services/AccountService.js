@@ -12,6 +12,17 @@ export const fetchAccounts = async () => {
   }
 };
 
+export const fetchAccountById = async (accountId) => {
+  try {
+      const response = await ApiManager.get(`/accounts/${accountId}`);
+      console.log('Account Details:', response.data);
+      return response.data;
+  } catch (error) {
+      console.error('Error fetching Account by ID:', error);
+      return null;
+  }
+};
+
 export const loginAccount = async (credentials) => {
   try {
     const response = await ApiManager.post('/accounts/login', credentials);

@@ -1,7 +1,7 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
-import { fetchCustomerProfile, fetchTrainerProfile } from "../../services/ProfileService";
+import { fetchAccountById } from "../../services/AccountService";
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function UserIntro() {
@@ -24,16 +24,15 @@ export default function UserIntro() {
       if (!userInfo) return;
 
       const userId = userInfo.unique_name;
-      const userRole = parseInt(userInfo.role);
-
+      const userRoleId = userInfo.role;
+      console.log('User role id:', userRoleId);
       console.log('Loading profile for user id:', userId);
 
-      const profile = userRole === 1
-        ? await fetchCustomerProfile(userId)
-        : await fetchTrainerProfile(userId);
-
-      setUserProfile(profile);
-      console.log('User Profile loaded:', profile);
+      const profile = await fetchAccountById(userId);
+      if (profile) {
+        setUserProfile(profile);
+        console.log('User Profile loaded:', profile);
+      }
     } catch (error) {
       console.error('Error loading user profile:', error);
     }

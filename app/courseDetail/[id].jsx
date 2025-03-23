@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchCourseById } from '../../services/CourseService';
@@ -6,6 +6,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchLessonById } from '../../services/LessonService';
 import { fetchDogBreedById } from '../../services/DogBreedService';
+import { LinearGradient } from 'expo-linear-gradient';
+import EnrollmentModal from '../../components/CourseDetail/EnrollmentModal';
+import { fetchAccountById } from '../../services/AccountService';
 
 export default function CourseDetail() {
     const navigation = useNavigation();
@@ -13,6 +16,8 @@ export default function CourseDetail() {
     const [course, setCourse] = useState(null);
     const [lessons, setLessons] = useState([]);
     const [dogBreeds, setDogBreeds] = useState([]);
+    const [trainerName, setTrainerName] = useState('Unknown');
+    const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
 
     useEffect(() => {
         loadCourseDetail();
@@ -29,6 +34,13 @@ export default function CourseDetail() {
         const courseData = await fetchCourseById(id);
         if (courseData) {
             setCourse(courseData);
+            // Load trainer name
+            if (courseData.createdTrainerId) {
+                const trainerData = await fetchAccountById(courseData.createdTrainerId);
+                if (trainerData) {
+                    setTrainerName(trainerData.fullName);
+                }
+            }
 
             // Fetch lessons
             if (courseData.lessonIds && courseData.lessonIds.length > 0) {
@@ -63,110 +75,144 @@ export default function CourseDetail() {
     }
 
     return (
-        <ScrollView style={courseDetailsStyles.container}>
-            <Image
-                source={typeof course.imageUrl === 'string'
-                    ? { uri: course.imageUrl }
-                    : require('./../../assets/images/dog.png')}
-                style={courseDetailsStyles.image}
-            />
-
-            {/* Course Header */}
-            <View style={courseDetailsStyles.headerContainer}>
-                <Text style={courseDetailsStyles.title}>{course.name}</Text>
-                <Text style={courseDetailsStyles.trainer}>
-                    Created by {course.createdTrainerId || 'Unknown'}
-                </Text>
-            </View>
-
-            {/* Course Stats */}
-            <View style={courseDetailsStyles.statsContainer}>
-                <InfoItem
-                    icon="schedule"
-                    label="Duration"
-                    value={`${course.durationInWeeks} weeks`}
+        <>
+            <ScrollView style={courseDetailsStyles.container}>
+                <Image
+                    source={typeof course.imageUrl === 'string'
+                        ? { uri: course.imageUrl }
+                        : require('./../../assets/images/dog.png')}
+                    style={courseDetailsStyles.image}
                 />
-                <InfoItem
-                    icon="calendar-today"
-                    label="Sessions"
-                    value={`${course.daysPerWeek} days/week`}
-                />
-                <InfoItem
-                    icon="groups"
-                    label="Capacity"
-                    value={`${course.minDogs}-${course.maxDogs} dogs`}
-                />
-            </View>
 
-            {/* Eligible Dog Breeds */}
-            <View style={courseDetailsStyles.breedContainer}>
-                <Text style={courseDetailsStyles.breedTitle}>Suitable for</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={courseDetailsStyles.breedScroll}>
-                    {dogBreeds.map(breed => (
-                        <View key={breed.id} style={courseDetailsStyles.breedTag}>
-                            <MaterialIcons name="pets" size={16} color="#007AFF" />
-                            <Text style={courseDetailsStyles.breedName}>{breed.name}</Text>
-                        </View>
-                    ))}
-                </ScrollView>
-            </View>
-
-            {/* Price Section */}
-            <View style={courseDetailsStyles.priceContainer}>
-                <Text style={courseDetailsStyles.priceLabel}>Course Price</Text>
-                <Text style={courseDetailsStyles.price}>{course.price}VNĐ</Text>
-            </View>
-
-            {/* Description */}
-            <View style={courseDetailsStyles.section}>
-                <Text style={courseDetailsStyles.sectionTitle}>Description</Text>
-                <Text style={courseDetailsStyles.description}>
-                    {course.description || 'No description available'}
-                </Text>
-            </View>
-
-            {/* Additional Details */}
-            <View style={courseDetailsStyles.section}>
-                <Text style={courseDetailsStyles.sectionTitle}>Course Details</Text>
-                <View style={courseDetailsStyles.detailsGrid}>
-                    <DetailItem label="Slots per Day" value={course.slotsPerDay} />
-                    <DetailItem label="Trainers" value={`${course.minTrainers}-${course.maxTrainers}`} />
-                    <DetailItem label="Complexity" value={`Level ${course.complexity}`} />
-                    <DetailItem label="Status" value={course.status === 1 ? 'Active' : 'Inactive'} />
+                {/* Course Header */}
+                <View style={courseDetailsStyles.headerContainer}>
+                    <Text style={courseDetailsStyles.title}>{course.name}</Text>
+                    <Text style={courseDetailsStyles.trainer}>
+                        Created by {trainerName}
+                    </Text>
                 </View>
-            </View>
 
-            {/* Lessons Section */}
-            <View style={courseDetailsStyles.section}>
-                <Text style={courseDetailsStyles.sectionTitle}>Course Lessons</Text>
-                {lessons && lessons.length > 0 ? (
-                    lessons.map((lesson, index) => (
-                        <View key={lesson.id} style={courseDetailsStyles.lessonContainer}>
-                            <MaterialIcons name="class" size={24} color="#007AFF" />
-                            <View style={{ flex: 1, marginLeft: 12 }}>
-                                <Text style={courseDetailsStyles.lessonTitle}>
-                                    {index + 1}. {lesson.lessonTitle}
-                                </Text>
-                                <Text style={courseDetailsStyles.lessonDescription}>
-                                    {lesson.description}
-                                </Text>
-                                <View style={courseDetailsStyles.lessonDetails}>
-                                    <Text style={courseDetailsStyles.lessonInfo}>
-                                        <MaterialIcons name="schedule" size={16} color="#666" /> {lesson.duration} minutes
+                {/* Course Stats */}
+                <View style={courseDetailsStyles.statsContainer}>
+                    <InfoItem
+                        icon="schedule"
+                        label="Duration"
+                        value={`${course.durationInWeeks} weeks`}
+                    />
+                    <InfoItem
+                        icon="calendar-today"
+                        label="Sessions"
+                        value={`${course.daysPerWeek} days/week`}
+                    />
+                    <InfoItem
+                        icon="groups"
+                        label="Capacity"
+                        value={`${course.minDogs}-${course.maxDogs} dogs`}
+                    />
+                </View>
+
+                {/* Eligible Dog Breeds */}
+                <View style={courseDetailsStyles.breedContainer}>
+                    <Text style={courseDetailsStyles.breedTitle}>Suitable for</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={courseDetailsStyles.breedScroll}>
+                        {dogBreeds.map(breed => (
+                            <View key={breed.id} style={courseDetailsStyles.breedTag}>
+                                <MaterialIcons name="pets" size={16} color="#007AFF" />
+                                <Text style={courseDetailsStyles.breedName}>{breed.name}</Text>
+                            </View>
+                        ))}
+                    </ScrollView>
+                </View>
+
+                {/* Price Section */}
+                <View style={courseDetailsStyles.priceContainer}>
+                    <Text style={courseDetailsStyles.priceLabel}>Course Price</Text>
+                    <Text style={courseDetailsStyles.price}>{course.price}VNĐ</Text>
+                </View>
+
+                {/* Description */}
+                <View style={courseDetailsStyles.section}>
+                    <Text style={courseDetailsStyles.sectionTitle}>Description</Text>
+                    <Text style={courseDetailsStyles.description}>
+                        {course.description || 'No description available'}
+                    </Text>
+                </View>
+
+                {/* Additional Details */}
+                <View style={courseDetailsStyles.section}>
+                    <Text style={courseDetailsStyles.sectionTitle}>Course Details</Text>
+                    <View style={courseDetailsStyles.detailsGrid}>
+                        <DetailItem label="Slots per Day" value={course.slotsPerDay} />
+                        <DetailItem label="Trainers" value={`${course.minTrainers}-${course.maxTrainers}`} />
+                        <DetailItem label="Complexity" value={`Level ${course.complexity}`} />
+                        <DetailItem label="Status" value={course.status === 1 ? 'Active' : 'Inactive'} />
+                    </View>
+                </View>
+
+                {/* Lessons Section */}
+                <View style={courseDetailsStyles.section}>
+                    <Text style={courseDetailsStyles.sectionTitle}>Course Lessons</Text>
+                    {lessons && lessons.length > 0 ? (
+                        lessons.map((lesson, index) => (
+                            <View key={lesson.id} style={courseDetailsStyles.lessonContainer}>
+                                <MaterialIcons name="class" size={24} color="#007AFF" />
+                                <View style={{ flex: 1, marginLeft: 12 }}>
+                                    <Text style={courseDetailsStyles.lessonTitle}>
+                                        {index + 1}. {lesson.lessonTitle}
                                     </Text>
-                                    <Text style={courseDetailsStyles.lessonInfo}>
-                                        <MaterialIcons name="room" size={16} color="#666" /> {lesson.environment}
+                                    <Text style={courseDetailsStyles.lessonDescription}>
+                                        {lesson.description}
                                     </Text>
+                                    <View style={courseDetailsStyles.lessonDetails}>
+                                        <Text style={courseDetailsStyles.lessonInfo}>
+                                            <MaterialIcons name="schedule" size={16} color="#666" /> {lesson.duration} minutes
+                                        </Text>
+                                        <Text style={courseDetailsStyles.lessonInfo}>
+                                            <MaterialIcons name="room" size={16} color="#666" /> {lesson.environment}
+                                        </Text>
+                                    </View>
                                 </View>
                             </View>
-                        </View>
-                    ))
-                ) : (
-                    <Text style={courseDetailsStyles.description}>No lessons available</Text>
-                )}
-            </View>
+                        ))
+                    ) : (
+                        <Text style={courseDetailsStyles.description}>No lessons available</Text>
+                    )}
+                </View>
 
-        </ScrollView>
+                <View style={{ height: 100 }} />
+            </ScrollView>
+
+            <View style={courseDetailsStyles.enrollButtonContainer}>
+                <LinearGradient
+                    colors={['#007AFF', '#00A2FF']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={courseDetailsStyles.gradientContainer}
+                >
+                    <TouchableOpacity
+                        style={courseDetailsStyles.enrollButton}
+                        onPress={() => {
+                            console.log('Enroll pressed for course:', id);
+                            setIsEnrollmentModalVisible(true);
+                        }}
+                    >
+                        <View>
+                            <Text style={courseDetailsStyles.enrollButtonText}>Enroll Now</Text>
+                            <Text style={courseDetailsStyles.enrollSubText}>Start Your Dog's Journey Today</Text>
+                        </View>
+                        <Text style={courseDetailsStyles.enrollPrice}>
+                            {course.price.toLocaleString()}
+                            <Text style={courseDetailsStyles.currencyText}> VNĐ</Text>
+                        </Text>
+                    </TouchableOpacity>
+                    <EnrollmentModal
+                        visible={isEnrollmentModalVisible}
+                        onClose={() => setIsEnrollmentModalVisible(false)}
+                        courseId={id}
+                    />
+                </LinearGradient>
+            </View>
+        </>
     );
 }
 
