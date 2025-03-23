@@ -8,6 +8,7 @@ import { fetchLessonById } from '../../services/LessonService';
 import { fetchDogBreedById } from '../../services/DogBreedService';
 import { LinearGradient } from 'expo-linear-gradient';
 import EnrollmentModal from '../../components/CourseDetail/EnrollmentModal';
+import { fetchAccountById } from '../../services/AccountService';
 
 export default function CourseDetail() {
     const navigation = useNavigation();
@@ -15,7 +16,7 @@ export default function CourseDetail() {
     const [course, setCourse] = useState(null);
     const [lessons, setLessons] = useState([]);
     const [dogBreeds, setDogBreeds] = useState([]);
-
+    const [trainerName, setTrainerName] = useState('Unknown');
     const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
 
     useEffect(() => {
@@ -33,6 +34,13 @@ export default function CourseDetail() {
         const courseData = await fetchCourseById(id);
         if (courseData) {
             setCourse(courseData);
+            // Load trainer name
+            if (courseData.createdTrainerId) {
+                const trainerData = await fetchAccountById(courseData.createdTrainerId);
+                if (trainerData) {
+                    setTrainerName(trainerData.fullName);
+                }
+            }
 
             // Fetch lessons
             if (courseData.lessonIds && courseData.lessonIds.length > 0) {
@@ -80,7 +88,7 @@ export default function CourseDetail() {
                 <View style={courseDetailsStyles.headerContainer}>
                     <Text style={courseDetailsStyles.title}>{course.name}</Text>
                     <Text style={courseDetailsStyles.trainer}>
-                        Created by {course.createdTrainerId || 'Unknown'}
+                        Created by {trainerName}
                     </Text>
                 </View>
 

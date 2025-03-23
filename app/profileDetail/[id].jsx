@@ -1,26 +1,18 @@
 import { View, ScrollView, ActivityIndicator } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { customerProfileStyles } from "../../styles/CustomerProfileStyles";
 import ProfileDetailCard from "../../components/ProfileDetail/ProfileDetailCard";
-import { fetchCustomerProfile, fetchTrainerProfile } from "../../services/ProfileService";
-import { useAuth } from "../../contexts/AuthContext";
+import { fetchAccountById } from "../../services/AccountService";
 
 export default function ProfileDetailPage() {
   const { id } = useLocalSearchParams();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { userInfo } = useAuth();
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        if (!userInfo) return;
-        const userRole = parseInt(userInfo.role);
-        const profile = userRole === 1 
-          ? await fetchCustomerProfile(id)
-          : await fetchTrainerProfile(id);
-
+        const profile = await fetchAccountById(id);
         if (profile) {
           setProfileData(profile);
         }
@@ -32,7 +24,7 @@ export default function ProfileDetailPage() {
     };
 
     loadProfile();
-  }, [id, userInfo]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -43,7 +35,7 @@ export default function ProfileDetailPage() {
   }
 
   return (
-    <ScrollView style={customerProfileStyles.container}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
       {profileData && <ProfileDetailCard profileData={profileData} />}
     </ScrollView>
   );
