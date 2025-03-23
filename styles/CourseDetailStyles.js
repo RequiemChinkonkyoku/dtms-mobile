@@ -227,4 +227,106 @@ export const courseDetailsStyles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'normal',
     },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 20,
+        maxHeight: '80%',
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    classItem: {
+        padding: 15,
+        borderRadius: 10,
+        backgroundColor: '#f5f5f5',
+        marginBottom: 10,
+    },
+    selectedClassItem: {
+        backgroundColor: '#e3f2fd',
+        borderColor: '#007AFF',
+        borderWidth: 1,
+    },
+    className: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    classInfo: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 5,
+    },
+    slotsContainer: {
+        marginTop: 20,
+    },
+    slotsTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    slotItem: {
+        padding: 10,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        marginRight: 10,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+    },
+    cancelButton: {
+        padding: 15,
+        borderRadius: 10,
+        backgroundColor: '#f5f5f5',
+        flex: 1,
+        marginRight: 10,
+    },
+    confirmButton: {
+        padding: 15,
+        borderRadius: 10,
+        backgroundColor: '#007AFF',
+        flex: 1,
+        marginLeft: 10,
+    },
+    disabledButton: {
+        backgroundColor: '#cccccc',
+    },
+    cancelButtonText: {
+        textAlign: 'center',
+        color: '#666',
+        fontSize: 16,
+    },
+    confirmButtonText: {
+        textAlign: 'center',
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    noClassesContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 40,
+    },
+    noClassesText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#666',
+        marginTop: 16,
+        textAlign: 'center',
+    },
+    noClassesSubText: {
+        fontSize: 14,
+        color: '#999',
+        marginTop: 8,
+        textAlign: 'center',
+    },
 });
