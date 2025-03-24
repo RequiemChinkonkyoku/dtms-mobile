@@ -237,7 +237,7 @@ export const courseDetailsStyles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         padding: 20,
-        maxHeight: '80%',
+        maxHeight: '90%',
     },
     modalTitle: {
         fontSize: 24,
@@ -328,5 +328,158 @@ export const courseDetailsStyles = StyleSheet.create({
         color: '#999',
         marginTop: 8,
         textAlign: 'center',
+    },
+    stepContainer: {
+        // padding: 20,
+        // maxHeight: '70%',
+        flex: 1,
+        marginBottom: 20,
+    },
+    dogList: {
+        maxHeight: '70%',
+    },
+    stepIndicator: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        paddingVertical: 20,
+        gap: 8,
+    },
+    stepDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#ddd',
+    },
+    activeStepDot: {
+        backgroundColor: '#007AFF',
+    },
+    stepTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#333',
+    },
+
+    // Dog Selection Styles
+    dogItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 15,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 10,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    selectedDogItem: {
+        borderColor: '#007AFF',
+        backgroundColor: '#f0f7ff',
+    },
+    dogInfo: {
+        marginLeft: 15,
+    },
+    dogName: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333',
+    },
+    dogBreed: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 2,
+    },
+
+    // Boarding Option Styles
+    boardingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 20,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 10,
+    },
+    boardingInfo: {
+        flex: 1,
+        marginRight: 20,
+    },
+    boardingTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 5,
+        color: '#333',
+    },
+    boardingDescription: {
+        fontSize: 14,
+        color: '#666',
+        lineHeight: 20,
+    },
+
+    // Terms and Conditions Styles
+    termsContainer: {
+        flex: 1,
+        backgroundColor: '#f8f9fa',
+        padding: 15,
+        borderRadius: 10,
+    },
+    termsWrapper: {
+        height: 300,
+        marginBottom: 20,
+    },
+    termsText: {
+        fontSize: 14,
+        lineHeight: 22,
+        color: '#333',
+    },
+    termsCheckbox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    termsCheckboxText: {
+        marginLeft: 10,
+        fontSize: 16,
+        color: '#333',
+    },
+
+    // Enrollment Modal Button Styles
+    enrollmentButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+    },
+    enrollmentCancel: {
+        padding: 15,
+        borderRadius: 8,
+        backgroundColor: '#f8f9fa',
+    },
+    enrollmentCancelText: {
+        color: '#666',
+        fontSize: 16,
+    },
+    enrollmentBack: {
+        padding: 15,
+        borderRadius: 8,
+        backgroundColor: '#f0f7ff',
+    },
+    enrollmentBackText: {
+        color: '#007AFF',
+        fontSize: 16,
+    },
+    enrollmentNext: {
+        padding: 15,
+        borderRadius: 8,
+        backgroundColor: '#007AFF',
+        minWidth: 100,
+        alignItems: 'center',
+    },
+    enrollmentNextText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    enrollmentDisabled: {
+        opacity: 0.5,
     },
 });

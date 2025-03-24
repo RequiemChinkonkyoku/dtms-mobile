@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchClassesByCourseId, fetchClassSlots } from '../../services/ClassService';
+import EnrollmentSteps from './EnrollmentSteps';
 
 export default function EnrollmentModal({ visible, onClose, courseId }) {
     const [availableClasses, setAvailableClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [classSlots, setClassSlots] = useState([]);
+    const [showEnrollmentSteps, setShowEnrollmentSteps] = useState(false);
 
     useEffect(() => {
         if (visible) {
@@ -56,62 +58,69 @@ export default function EnrollmentModal({ visible, onClose, courseId }) {
     };
 
     return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            transparent={true}
-            onRequestClose={onClose}
-        >
-            <View style={courseDetailsStyles.modalContainer}>
-                <View style={courseDetailsStyles.modalContent}>
-                    <Text style={courseDetailsStyles.modalTitle}>Available Classes</Text>
-                    <ScrollView>
-                        {availableClasses.length > 0 ? (
-                            availableClasses.map(renderClassItem)
-                        ) : (
-                            <View style={courseDetailsStyles.noClassesContainer}>
-                                <MaterialIcons name="error-outline" size={48} color="#666" />
-                                <Text style={courseDetailsStyles.noClassesText}>No classes available at the moment</Text>
-                                <Text style={courseDetailsStyles.noClassesSubText}>Please check back later</Text>
+        <>
+            <Modal
+                visible={visible && !showEnrollmentSteps}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={onClose}
+            >
+                <View style={courseDetailsStyles.modalContainer}>
+                    <View style={courseDetailsStyles.modalContent}>
+                        <Text style={courseDetailsStyles.modalTitle}>Available Classes</Text>
+                        <ScrollView>
+                            {availableClasses.length > 0 ? (
+                                availableClasses.map(renderClassItem)
+                            ) : (
+                                <View style={courseDetailsStyles.noClassesContainer}>
+                                    <MaterialIcons name="error-outline" size={48} color="#666" />
+                                    <Text style={courseDetailsStyles.noClassesText}>No classes available at the moment</Text>
+                                    <Text style={courseDetailsStyles.noClassesSubText}>Please check back later</Text>
+                                </View>
+                            )}
+                        </ScrollView>
+                        {selectedClass && (
+                            <View style={courseDetailsStyles.slotsContainer}>
+                                <Text style={courseDetailsStyles.slotsTitle}>Class Schedule</Text>
+                                <ScrollView horizontal>
+                                    {classSlots.map((slot) => (
+                                        <View key={slot.id} style={courseDetailsStyles.slotItem}>
+                                            <Text>{new Date(slot.date).toLocaleDateString()}</Text>
+                                        </View>
+                                    ))}
+                                </ScrollView>
                             </View>
                         )}
-                    </ScrollView>
-                    {selectedClass && (
-                        <View style={courseDetailsStyles.slotsContainer}>
-                            <Text style={courseDetailsStyles.slotsTitle}>Class Schedule</Text>
-                            <ScrollView horizontal>
-                                {classSlots.map((slot) => (
-                                    <View key={slot.id} style={courseDetailsStyles.slotItem}>
-                                        <Text>{new Date(slot.date).toLocaleDateString()}</Text>
-                                    </View>
-                                ))}
-                            </ScrollView>
+                        <View style={courseDetailsStyles.modalButtons}>
+                            <TouchableOpacity
+                                style={courseDetailsStyles.cancelButton}
+                                onPress={onClose}
+                            >
+                                <Text style={courseDetailsStyles.cancelButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[
+                                    courseDetailsStyles.confirmButton,
+                                    !selectedClass && courseDetailsStyles.disabledButton
+                                ]}
+                                disabled={!selectedClass}
+                                onPress={() => setShowEnrollmentSteps(true)}
+                            >
+                                <Text style={courseDetailsStyles.confirmButtonText}>Continue to Enrollment</Text>
+                            </TouchableOpacity>
                         </View>
-                    )}
-                    <View style={courseDetailsStyles.modalButtons}>
-                        <TouchableOpacity
-                            style={courseDetailsStyles.cancelButton}
-                            onPress={onClose}
-                        >
-                            <Text style={courseDetailsStyles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[
-                                courseDetailsStyles.confirmButton,
-                                !selectedClass && courseDetailsStyles.disabledButton
-                            ]}
-                            disabled={!selectedClass}
-                            onPress={() => {
-                                // TODO: Implement final enrollment logic
-                                console.log('Enrolling in class:', selectedClass.id);
-                                onClose();
-                            }}
-                        >
-                            <Text style={courseDetailsStyles.confirmButtonText}>Confirm Enrollment</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
-            </View>
-        </Modal>
+            </Modal>
+            <EnrollmentSteps
+                visible={showEnrollmentSteps}
+                onClose={() => {
+                    setShowEnrollmentSteps(false);
+                    onClose();
+                }}
+                selectedClass={selectedClass}
+                courseId={courseId}
+            />
+        </>
     );
 }
