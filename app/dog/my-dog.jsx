@@ -31,8 +31,8 @@ export default function MyDogs() {
     try {
       setLoading(true);
       if (!userInfo) return;
-      const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
-      const data = await fetchUserDog(customerProfile.id);
+      // const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
+      const data = await fetchUserDog(userInfo.unique_name);
       if (data) {
         setDogs(data);
       }
