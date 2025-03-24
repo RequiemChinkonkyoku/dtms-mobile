@@ -2,7 +2,7 @@ import { View, Text, Image, TextInput } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchCustomerProfile, fetchTrainerProfile } from "../../services/ProfileService";
+import { fetchAccountById } from "../../services/AccountService";
 
 export default function Header() {
 
@@ -15,11 +15,8 @@ export default function Header() {
                 if (!userInfo) return;
 
                 const userId = userInfo.unique_name;
-                const userRole = parseInt(userInfo.role);
                 
-                const profile = userRole === 1
-                    ? await fetchCustomerProfile(userId)
-                    : await fetchTrainerProfile(userId);
+                const profile = await fetchAccountById(userId);
                 
                 if (profile) {
                     setUserName(profile.fullName);
