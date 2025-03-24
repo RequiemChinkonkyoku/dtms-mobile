@@ -1,19 +1,9 @@
 import ApiManager from './ApiManager';
 
-// export const fetchClassesByCourseId = async (courseId) => {
-//     try {
-//         const response = await axios.get(`/class?courseId=${courseId}`);
-//         return response.data.objectList;
-//     } catch (error) {
-//         console.error('Error fetching classes:', error);
-//         return [];
-//     }
-// };
-
 export const fetchClassesByCourseId = async (courseId) => {
     try {
-        const response = await ApiManager.get('/class');
-        return response.data.objectList.filter(classItem => classItem.courseId === courseId);
+        const response = await ApiManager.get(`/class/get-classes-by-course-id/${courseId}`);
+        return response.data.objectList;
     } catch (error) {
         console.error('Error fetching classes:', error);
         return [];
@@ -27,5 +17,21 @@ export const fetchClassSlots = async (classId) => {
     } catch (error) {
         console.error('Error fetching class slots:', error);
         return [];
+    }
+};
+
+export const enrollInClass = async (enrollmentData) => {
+    try {
+        const response = await ApiManager.post('/class/enroll-class', enrollmentData);
+        return {
+            success: true,
+            data: response.data
+        };
+    } catch (error) {
+        console.error('Error enrolling in class:', error);
+        return {
+            success: false,
+            error: error.response?.data?.message || 'Failed to enroll in class'
+        };
     }
 };
