@@ -33,46 +33,70 @@ export default function Header() {
         <View style={{
             padding: 20,
             paddingTop: 20,
-            borderBottomLeftRadius:20,
-            borderBottomRightRadius:20
+            borderBottomLeftRadius: 25,
+            borderBottomRightRadius: 25,
+            backgroundColor: '#f0f8ff',
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+            marginBottom: 20,
         }}>
             <View style={{
-                display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 10
+                justifyContent: 'space-between',
+                marginBottom: 15,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={{
-                        color: "black",
+                        color: "#666",
                         fontSize: 19,
+                        fontWeight: '500',
                     }}>Welcome, </Text>
                     <Text style={{
                         fontSize: 19,
                         fontWeight: 'bold',
-                        color: '#333'
+                        color: '#007AFF',
                     }}>{userName || 'User'}</Text>
                 </View>
+                <Feather name="bell" size={24} color="#007AFF" />
             </View>
 
             {/*Search bar*/}
             <View style={{
-                display:'flex',
-                flexDirection:'row',
-                gap:10,
-                alignItems:'center',
-                backgroundColor:'#fff',
-                padding:10,
-                marginVertical:10,
-                marginTop:15,
-                borderRadius:8
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#ffffff',
+                padding: 12,
+                borderRadius: 12,
+                shadowColor: '#000',
+                shadowOffset: {
+                    width: 0,
+                    height: 1,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 2,
+                elevation: 2,
             }}>
-                <Feather name="search" size={24} />
-                <TextInput placeholder='Search...'
+                <Feather name="search" size={24} color="#007AFF" />
+                <TextInput 
+                    placeholder='Search for courses, trainers...'
+                    placeholderTextColor="#999"
                     style={{
-                        fontSize:17
+                        flex: 1,
+                        fontSize: 16,
+                        marginLeft: 10,
+                        color: '#333',
                     }}
                 />
+            </View>
+            <View style={{ height: 10}}>
+
             </View>
         </View>
     )
