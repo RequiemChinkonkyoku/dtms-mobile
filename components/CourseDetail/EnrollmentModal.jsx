@@ -5,7 +5,7 @@ import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchClassesByCourseId, fetchClassSlots } from '../../services/ClassService';
 import EnrollmentSteps from './EnrollmentSteps';
 
-export default function EnrollmentModal({ visible, onClose, courseId }) {
+export default function EnrollmentModal({ visible, onClose, courseId, maxDogs }) {
     const [availableClasses, setAvailableClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [classSlots, setClassSlots] = useState([]);
@@ -36,7 +36,7 @@ export default function EnrollmentModal({ visible, onClose, courseId }) {
                 Starting: {new Date(classItem.startingDate).toLocaleDateString()}
             </Text>
             <Text style={courseDetailsStyles.classInfo}>
-                Students: {classItem.enrolledDogCount} enrolled
+                Students: {classItem.enrolledDogCount} / {maxDogs} dogs enrolled
             </Text>
         </TouchableOpacity>
     ), [selectedClass]);
@@ -82,12 +82,27 @@ export default function EnrollmentModal({ visible, onClose, courseId }) {
                         {selectedClass && (
                             <View style={courseDetailsStyles.slotsContainer}>
                                 <Text style={courseDetailsStyles.slotsTitle}>Class Schedule</Text>
-                                <ScrollView horizontal>
-                                    {classSlots.map((slot) => (
-                                        <View key={slot.id} style={courseDetailsStyles.slotItem}>
-                                            <Text>{new Date(slot.date).toLocaleDateString()}</Text>
-                                        </View>
-                                    ))}
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                    {classSlots
+                                        .sort((a, b) => new Date(a.date) - new Date(b.date))
+                                        .map((slot) => (
+                                            <View key={slot.id} style={courseDetailsStyles.slotItem}>
+                                                <MaterialIcons name="event" size={24} color="#007AFF" />
+                                                <Text style={courseDetailsStyles.slotDate}>
+                                                    {new Date(slot.date).toLocaleDateString('en-US', {
+                                                        weekday: 'short',
+                                                        month: 'short',
+                                                        day: 'numeric'
+                                                    })}
+                                                </Text>
+                                                <Text style={courseDetailsStyles.slotTime}>
+                                                    {new Date(slot.date).toLocaleTimeString('en-US', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </Text>
+                                            </View>
+                                        ))}
                                 </ScrollView>
                             </View>
                         )}

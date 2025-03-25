@@ -209,6 +209,7 @@ export default function CourseDetail() {
                         visible={isEnrollmentModalVisible}
                         onClose={() => setIsEnrollmentModalVisible(false)}
                         courseId={id}
+                        maxDogs={course.maxDogs}
                     />
                 </LinearGradient>
             </View>

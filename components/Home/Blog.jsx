@@ -2,6 +2,7 @@ import { View, Text, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { fetchBlogs } from '../../services/BlogService';
 import BlogCard from './BlogCard';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function BlogList() {
     const [blogs, setBlogs] = useState([]);
@@ -20,14 +21,14 @@ export default function BlogList() {
     return (
         <View>
             <View style={{
-                padding: 20,
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                marginTop: 15,
+                alignItems: 'center',
+                paddingHorizontal: 20,
+                paddingBottom: 15,
             }}>
                 <Text style={{
-                    paddingLeft: 5,
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: 'bold',
                 }}>
                     Latest Blogs
@@ -46,7 +47,9 @@ export default function BlogList() {
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => <BlogCard blog={item} />}
+                contentContainerStyle={{ paddingBottom: 10 }}
             />
+            <View style={{ height: 15 }} />
         </View>
     );
 }
