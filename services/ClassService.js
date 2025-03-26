@@ -35,3 +35,13 @@ export const enrollInClass = async (enrollmentData) => {
         };
     }
 };
+
+export const fetchDogEnrolledClasses = async (dogId) => {
+    try {
+        const response = await ApiManager.get(`/class/get-dog-enrolled-classes/${dogId}`);
+        return response.data.objectList;
+    } catch (error) {
+        console.error('Error fetching enrolled classes:', error);
+        return [];
+    }
+};

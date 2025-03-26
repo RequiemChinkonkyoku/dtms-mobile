@@ -52,12 +52,21 @@ export default function DogCard({ dog, onRefresh }) {
 
             <View style={dogCardStyles.actions}>
                 <TouchableOpacity
+                    onPress={() => router.push(`/enrolledClasses/${dog.id}`)}
+                    style={[dogCardStyles.actionButton, { backgroundColor: '#e6f3ff' }]}
+                >
+                    <MaterialIcons name="class" size={20} color="#007AFF" />
+                    <Text style={{ color: '#007AFF', fontFamily: 'outfit-medium' }}>Classes</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                     onPress={() => router.push(`/dog/edit-dog?id=${dog.id}`)}
                     style={[dogCardStyles.actionButton, { backgroundColor: '#e3f2fd' }]}
                 >
                     <MaterialIcons name="edit" size={20} color="#1976d2" />
                     <Text style={{ color: '#1976d2', fontFamily: 'outfit-medium' }}>Edit</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                     onPress={handleDelete}
                     style={[dogCardStyles.actionButton, { backgroundColor: '#ffebee' }]}
