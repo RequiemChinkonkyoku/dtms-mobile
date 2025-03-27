@@ -2,13 +2,13 @@ import { View, Text, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
-import { fetchClassesByCourseId, fetchClassSlots } from '../../services/ClassService';
+import { fetchClassesByCourseId, fetchClassById } from '../../services/ClassService';
 import EnrollmentSteps from './EnrollmentSteps';
 
 export default function EnrollmentModal({ visible, onClose, courseId, maxDogs }) {
     const [availableClasses, setAvailableClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
-    const [classSlots, setClassSlots] = useState([]);
+    const [classDetails, setClassDetails] = useState(null);
     const [showEnrollmentSteps, setShowEnrollmentSteps] = useState(false);
 
     useEffect(() => {
@@ -17,7 +17,7 @@ export default function EnrollmentModal({ visible, onClose, courseId, maxDogs })
         } else {
             // Cleanup when modal closes
             setSelectedClass(null);
-            setClassSlots([]);
+            setClassDetails(null);
             setAvailableClasses([]);
         }
     }, [visible]);
@@ -38,6 +38,11 @@ export default function EnrollmentModal({ visible, onClose, courseId, maxDogs })
             <Text style={courseDetailsStyles.classInfo}>
                 Students: {classItem.enrolledDogCount} / {maxDogs} dogs enrolled
             </Text>
+            {classItem.assignedTrainerCount > 0 && (
+                <Text style={courseDetailsStyles.classInfo}>
+                    Number Of Trainers: {classItem.assignedTrainerCount}
+                </Text>
+            )}
         </TouchableOpacity>
     ), [selectedClass]);
 
@@ -49,12 +54,19 @@ export default function EnrollmentModal({ visible, onClose, courseId, maxDogs })
     const handleClassSelect = async (classItem) => {
         if (selectedClass?.id === classItem.id) {
             setSelectedClass(null);
-            setClassSlots([]);
+            setClassDetails(null);
         } else {
             setSelectedClass(classItem);
-            const slots = await fetchClassSlots(classItem.id);
-            setClassSlots(slots);
+            const details = await fetchClassById(classItem.id);
+            setClassDetails(details);
         }
+    };
+
+    const formatTime = (timeString) => {
+        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -79,31 +91,38 @@ export default function EnrollmentModal({ visible, onClose, courseId, maxDogs })
                                 </View>
                             )}
                         </ScrollView>
-                        {selectedClass && (
+                        {classDetails && (
                             <View style={courseDetailsStyles.slotsContainer}>
                                 <Text style={courseDetailsStyles.slotsTitle}>Class Schedule</Text>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    {classSlots
-                                        .sort((a, b) => new Date(a.date) - new Date(b.date))
-                                        .map((slot) => (
-                                            <View key={slot.id} style={courseDetailsStyles.slotItem}>
+                                    {classDetails.classSlots
+                                        .sort((a, b) => new Date(a.slotDate) - new Date(b.slotDate))
+                                        .map((slot, index) => (
+                                            <View key={index} style={courseDetailsStyles.slotItem}>
                                                 <MaterialIcons name="event" size={24} color="#007AFF" />
                                                 <Text style={courseDetailsStyles.slotDate}>
-                                                    {new Date(slot.date).toLocaleDateString('en-US', {
+                                                    {new Date(slot.slotDate).toLocaleDateString('en-US', {
                                                         weekday: 'short',
                                                         month: 'short',
                                                         day: 'numeric'
                                                     })}
                                                 </Text>
                                                 <Text style={courseDetailsStyles.slotTime}>
-                                                    {new Date(slot.date).toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
+                                                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                                                 </Text>
                                             </View>
                                         ))}
                                 </ScrollView>
+                                {classDetails.assignedTrainers.length > 0 && (
+                                    <View style={courseDetailsStyles.trainersSection}>
+                                        <Text style={courseDetailsStyles.trainersTitle}>Assigned Trainers:</Text>
+                                        {classDetails.assignedTrainers.map(trainer => (
+                                            <Text key={trainer.id} style={courseDetailsStyles.trainerName}>
+                                                • {trainer.name}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                )}
                             </View>
                         )}
                         <View style={courseDetailsStyles.modalButtons}>

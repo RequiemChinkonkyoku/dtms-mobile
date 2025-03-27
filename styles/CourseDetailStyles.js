@@ -499,4 +499,21 @@ export const courseDetailsStyles = StyleSheet.create({
     enrollmentDisabled: {
         opacity: 0.5,
     },
+    trainersSection: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#e0e0e0',
+    },
+    trainersTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+    },
+    trainerName: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 4,
+    },
 });
