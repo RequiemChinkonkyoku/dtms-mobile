@@ -10,6 +10,16 @@ export const fetchClassesByCourseId = async (courseId) => {
     }
 };
 
+export const fetchClassById = async (classId) => {
+    try {
+        const response = await ApiManager.get(`/class/${classId}`);
+        return response.data.object;
+    } catch (error) {
+        console.error('Error fetching class details:', error);
+        return null;
+    }
+};
+
 export const fetchClassSlots = async (classId) => {
     try {
         const response = await ApiManager.get(`/class/get-class-slots/${classId}`);

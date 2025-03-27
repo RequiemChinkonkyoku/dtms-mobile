@@ -2,15 +2,16 @@ import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
-import { fetchDogEnrolledClasses, fetchClassSlots } from '../../services/ClassService';
+import { fetchDogEnrolledClasses, fetchClassById } from '../../services/ClassService';
 
 export default function EnrolledClasses({ dogId }) {
     const [enrolledClasses, setEnrolledClasses] = useState([]);
     const [expandedClass, setExpandedClass] = useState(null);
-    const [classSlots, setClassSlots] = useState({});
+    const [classDetails, setClassDetails] = useState({});
     const [showCalendar, setShowCalendar] = useState(false);
     const [selectedClass, setSelectedClass] = useState(null);
     const [markedDates, setMarkedDates] = useState({});
+    const [selectedDateSlots, setSelectedDateSlots] = useState([]);
 
     useEffect(() => {
         loadEnrolledClasses();
@@ -18,7 +19,10 @@ export default function EnrolledClasses({ dogId }) {
 
     const loadEnrolledClasses = async () => {
         const classes = await fetchDogEnrolledClasses(dogId);
-        setEnrolledClasses(classes);
+        const sortedClasses = classes.sort((a, b) => 
+            new Date(a.startingDate) - new Date(b.startingDate)
+        );
+        setEnrolledClasses(sortedClasses);
     };
 
     const handleClassExpand = async (classId) => {
@@ -26,20 +30,43 @@ export default function EnrolledClasses({ dogId }) {
             setExpandedClass(null);
         } else {
             setExpandedClass(classId);
-            if (!classSlots[classId]) {
-                const slots = await fetchClassSlots(classId);
-                setClassSlots(prev => ({ ...prev, [classId]: slots }));
+            if (!classDetails[classId]) {
+                const details = await fetchClassById(classId);
+                setClassDetails(prev => ({ ...prev, [classId]: details }));
             }
+        }
+    };
+
+    const handleDayPress = (day) => {
+        const selectedDate = day.dateString;
+        if (selectedDateSlots.length > 0 &&
+            new Date(selectedDateSlots[0].slotDate).toISOString().split('T')[0] === selectedDate) {
+            // If clicking the same date, clear the selection
+            setSelectedDateSlots([]);
+        } else {
+            // If clicking a different date, show its slots
+            const slots = classDetails[selectedClass.id]?.classSlots.filter(
+                slot => new Date(slot.slotDate).toISOString().split('T')[0] === selectedDate
+            ) || [];
+            const sortedSlots = slots.sort((a, b) => {
+                const timeA = new Date(`2000-01-01T${a.startTime}`);
+                const timeB = new Date(`2000-01-01T${b.startTime}`);
+                return timeA - timeB;
+            });
+            setSelectedDateSlots(sortedSlots);
         }
     };
 
     const handleShowCalendar = async (classItem) => {
         setSelectedClass(classItem);
-        const slots = classSlots[classItem.id] || await fetchClassSlots(classItem.id);
+        const details = classDetails[classItem.id] || await fetchClassById(classItem.id);
+        if (!classDetails[classItem.id]) {
+            setClassDetails(prev => ({ ...prev, [classItem.id]: details }));
+        }
         const marked = {};
 
-        slots.forEach(slot => {
-            const dateStr = new Date(slot.date).toISOString().split('T')[0];
+        details.classSlots.forEach(slot => {
+            const dateStr = new Date(slot.slotDate).toISOString().split('T')[0];
             marked[dateStr] = {
                 selected: true,
                 marked: true,
@@ -77,6 +104,13 @@ export default function EnrolledClasses({ dogId }) {
             case 3: return 'Completed';
             default: return 'Unknown';
         }
+    };
+
+    const formatTime = (timeString) => {
+        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -155,9 +189,9 @@ export default function EnrolledClasses({ dogId }) {
                                         horizontal
                                         showsHorizontalScrollIndicator={false}
                                     >
-                                        {classSlots[classItem.id]?.map((slot) => (
+                                        {classDetails[classItem.id]?.classSlots.map((slot, index) => (
                                             <View
-                                                key={slot.id}
+                                                key={index}
                                                 style={{
                                                     backgroundColor: '#f8f9fa',
                                                     borderRadius: 8,
@@ -169,21 +203,31 @@ export default function EnrolledClasses({ dogId }) {
                                             >
                                                 <MaterialIcons name="event" size={24} color="#007AFF" />
                                                 <Text style={{ marginTop: 4, fontWeight: '500' }}>
-                                                    {new Date(slot.date).toLocaleDateString('en-US', {
+                                                    {new Date(slot.slotDate).toLocaleDateString('en-US', {
                                                         weekday: 'short',
                                                         month: 'short',
                                                         day: 'numeric'
                                                     })}
                                                 </Text>
                                                 <Text style={{ color: '#666', marginTop: 4 }}>
-                                                    {new Date(slot.date).toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    })}
+                                                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                                                 </Text>
                                             </View>
                                         ))}
                                     </ScrollView>
+
+                                    {classDetails[classItem.id]?.assignedTrainers && (
+                                        <View style={{ marginTop: 16, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8 }}>
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 8 }}>
+                                                Assigned Trainers
+                                            </Text>
+                                            {classDetails[classItem.id].assignedTrainers.map(trainer => (
+                                                <Text key={trainer.id} style={{ color: '#666', marginBottom: 4 }}>
+                                                    • {trainer.name}
+                                                </Text>
+                                            ))}
+                                        </View>
+                                    )}
                                 </View>
                             )}
                         </View>
@@ -229,7 +273,10 @@ export default function EnrolledClasses({ dogId }) {
                 visible={showCalendar}
                 animationType="slide"
                 transparent={true}
-                onRequestClose={() => setShowCalendar(false)}
+                onRequestClose={() => {
+                    setShowCalendar(false);
+                    setSelectedDateSlots([]);
+                }}
             >
                 <View style={{ flex: 1, backgroundColor: 'white' }}>
                     <View style={{
@@ -240,7 +287,10 @@ export default function EnrolledClasses({ dogId }) {
                         borderBottomColor: '#e0e0e0'
                     }}>
                         <TouchableOpacity
-                            onPress={() => setShowCalendar(false)}
+                            onPress={() => {
+                                setShowCalendar(false);
+                                setSelectedDateSlots([]);
+                            }}
                             style={{ padding: 8 }}
                         >
                             <MaterialIcons name="close" size={24} color="#666" />
@@ -253,6 +303,7 @@ export default function EnrolledClasses({ dogId }) {
                     <Calendar
                         markedDates={markedDates}
                         markingType={'custom'}
+                        onDayPress={handleDayPress}
                         theme={{
                             selectedDayBackgroundColor: '#007AFF',
                             todayTextColor: '#007AFF',
@@ -262,6 +313,41 @@ export default function EnrolledClasses({ dogId }) {
                             textDayHeaderFontWeight: '500',
                         }}
                     />
+
+                    {selectedDateSlots.length > 0 && (
+                        <View style={{
+                            padding: 16,
+                            borderTopWidth: 1,
+                            borderTopColor: '#e0e0e0',
+                            backgroundColor: '#f8f9fa'
+                        }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 12 }}>
+                                Class Times for {new Date(selectedDateSlots[0].slotDate).toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </Text>
+                            {selectedDateSlots.map((slot, index) => (
+                                <View
+                                    key={index}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: 'white',
+                                        padding: 12,
+                                        borderRadius: 8,
+                                        marginBottom: 8
+                                    }}
+                                >
+                                    <MaterialIcons name="access-time" size={20} color="#007AFF" />
+                                    <Text style={{ marginLeft: 8, color: '#333', fontSize: 16 }}>
+                                        {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
                 </View>
             </Modal>
         </>
