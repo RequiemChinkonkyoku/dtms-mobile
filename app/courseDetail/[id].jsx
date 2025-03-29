@@ -210,6 +210,7 @@ export default function CourseDetail() {
                         onClose={() => setIsEnrollmentModalVisible(false)}
                         courseId={id}
                         maxDogs={course.maxDogs}
+                        coursePrice={course.price}
                     />
                 </LinearGradient>
             </View>
