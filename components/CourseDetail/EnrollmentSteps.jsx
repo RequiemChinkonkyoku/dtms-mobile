@@ -1,12 +1,15 @@
-import { View, Text, Modal, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, Modal, ScrollView, TouchableOpacity, Switch, Alert, Linking } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchUserDog } from '../../services/DogService';
 import { useAuth } from '../../contexts/AuthContext';
 import { enrollInClass } from '../../services/ClassService';
+import { createVNPayPayment, checkPaymentStatus } from '../../services/PaymentService';
+import { router } from 'expo-router';
+import * as ExpoLinking from 'expo-linking';
 
-export default function EnrollmentSteps({ visible, onClose, selectedClass, courseId }) {
+export default function EnrollmentSteps({ visible, onClose, selectedClass, courseId, coursePrice }) {
     const [step, setStep] = useState(1);
     const [dogs, setDogs] = useState([]);
     const [selectedDog, setSelectedDog] = useState(null);
@@ -50,13 +53,30 @@ export default function EnrollmentSteps({ visible, onClose, selectedClass, cours
                 isBoarding: isBoarding
             };
 
-            console.log('Enrollment Data:', enrollmentData); // For debugging
-
             const result = await enrollInClass(enrollmentData);
             
+            console.log('Enrollment Data:', result); // For debugging
+
             if (result && result.success) {
-                Alert.alert('Success', 'Successfully enrolled in the class!');
-                onClose();
+                const paymentData = {
+                    orderType: "ClassEnrollment",
+                    amount: coursePrice,
+                    enrollmentId: result.data.object.enrollments[0].id,
+                    customerID: userInfo.unique_name
+                };
+
+                console.log('Payment Data:', paymentData); // For debugging
+
+                // Initiate VNPay payment
+                const paymentResult = await createVNPayPayment(paymentData);
+                
+                if (paymentResult.success && paymentResult.data) {
+                    // Open VNPay URL in browser
+                    // await ExpoLinking.openURL(paymentResult.data);
+                    onClose();
+                } else {
+                    Alert.alert('Payment Failed', 'Unable to initiate payment. Please try again.');
+                }
             } else {
                 const errorMessage = result?.error || 'Failed to enroll in class. Please try again.';
                 Alert.alert('Enrollment Failed', errorMessage);
@@ -69,6 +89,45 @@ export default function EnrollmentSteps({ visible, onClose, selectedClass, cours
             );
         }
     };
+
+    // const handlePaymentCallback = async (event) => {
+    //     try {
+    //         const url = new URL(event.url);
+    //         const params = new URLSearchParams(url.search);
+            
+    //         const vnp_ResponseCode = params.get('vnp_ResponseCode');
+    //         const vnp_TransactionNo = params.get('vnp_TransactionNo');
+
+    //         const paymentStatus = await checkPaymentStatus(vnp_ResponseCode, vnp_TransactionNo);
+
+    //         if (paymentStatus.success) {
+    //             Alert.alert(
+    //                 'Payment Successful',
+    //                 'Your enrollment has been confirmed!',
+    //                 [
+    //                     {
+    //                         text: 'OK',
+    //                         onPress: () => router.push('/dog/my-dog')
+    //                     }
+    //                 ]
+    //             );
+    //         } else {
+    //             Alert.alert(
+    //                 'Payment Failed',
+    //                 'Your payment could not be verified. Please try again.',
+    //                 [
+    //                     {
+    //                         text: 'OK',
+    //                         onPress: () => router.back()
+    //                     }
+    //                 ]
+    //             );
+    //         }
+    //     } catch (error) {
+    //         console.error('Payment callback error:', error);
+    //         Alert.alert('Error', 'Failed to verify payment status.');
+    //     }
+    // };
 
     const renderDogSelection = () => (
         <ScrollView style={courseDetailsStyles.stepContainer}>

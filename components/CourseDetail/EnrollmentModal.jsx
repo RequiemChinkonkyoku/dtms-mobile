@@ -5,7 +5,7 @@ import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchClassesByCourseId, fetchClassById } from '../../services/ClassService';
 import EnrollmentSteps from './EnrollmentSteps';
 
-export default function EnrollmentModal({ visible, onClose, courseId, maxDogs }) {
+export default function EnrollmentModal({ visible, onClose, courseId, maxDogs, coursePrice }) {
     const [availableClasses, setAvailableClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [classDetails, setClassDetails] = useState(null);
@@ -154,6 +154,7 @@ export default function EnrollmentModal({ visible, onClose, courseId, maxDogs })
                 }}
                 selectedClass={selectedClass}
                 courseId={courseId}
+                coursePrice={coursePrice}
             />
         </>
     );
