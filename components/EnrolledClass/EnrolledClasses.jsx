@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { fetchDogEnrolledClasses, fetchClassById } from '../../services/ClassService';
+import { fetchClassPretests } from '../../services/PretestService';
 
 export default function EnrolledClasses({ dogId }) {
     const [enrolledClasses, setEnrolledClasses] = useState([]);
@@ -12,6 +13,7 @@ export default function EnrolledClasses({ dogId }) {
     const [selectedClass, setSelectedClass] = useState(null);
     const [markedDates, setMarkedDates] = useState({});
     const [selectedDateSlots, setSelectedDateSlots] = useState([]);
+    const [classPretests, setClassPretests] = useState({});
 
     useEffect(() => {
         loadEnrolledClasses();
@@ -32,7 +34,9 @@ export default function EnrolledClasses({ dogId }) {
             setExpandedClass(classId);
             if (!classDetails[classId]) {
                 const details = await fetchClassById(classId);
+                const pretests = await fetchClassPretests(classId);
                 setClassDetails(prev => ({ ...prev, [classId]: details }));
+                setClassPretests(prev => ({ ...prev, [classId]: pretests }));
             }
         }
     };
@@ -41,10 +45,8 @@ export default function EnrolledClasses({ dogId }) {
         const selectedDate = day.dateString;
         if (selectedDateSlots.length > 0 &&
             new Date(selectedDateSlots[0].slotDate).toISOString().split('T')[0] === selectedDate) {
-            // If clicking the same date, clear the selection
             setSelectedDateSlots([]);
         } else {
-            // If clicking a different date, show its slots
             const slots = classDetails[selectedClass.id]?.classSlots.filter(
                 slot => new Date(slot.slotDate).toISOString().split('T')[0] === selectedDate
             ) || [];
@@ -64,25 +66,64 @@ export default function EnrolledClasses({ dogId }) {
             setClassDetails(prev => ({ ...prev, [classItem.id]: details }));
         }
         const marked = {};
+        const today = new Date().toISOString().split('T')[0];
 
-        details.classSlots.forEach(slot => {
-            const dateStr = new Date(slot.slotDate).toISOString().split('T')[0];
-            marked[dateStr] = {
-                selected: true,
+        // Mark all pretest dates first
+        classPretests[classItem.id]?.forEach(pretest => {
+            const pretestDate = new Date(pretest.testDate).toISOString().split('T')[0];
+            marked[pretestDate] = {
                 marked: true,
-                selectedColor: getStatusColor(classItem.status),
-                dotColor: 'white',
+                selected: true,
+                selectedColor: '#ffA500',
+                selectedTextColor: '#FFF',
                 customStyles: {
                     container: {
+                        backgroundColor: getPretestStatusColor(pretest.status),
                         borderRadius: 8,
                     },
                     text: {
-                        color: 'white',
+                        color: '#FFF',
                         fontWeight: 'bold'
                     }
                 }
             };
         });
+
+        // Then mark class slots
+        details.classSlots.forEach(slot => {
+            const dateStr = new Date(slot.slotDate).toISOString().split('T')[0];
+            const pretestForDate = classPretests[classItem.id]?.find(
+                pretest => new Date(pretest.testDate).toISOString().split('T')[0] === dateStr
+            );
+
+            // If there's no pretest for this date, mark it as a regular class slot
+            if (!pretestForDate) {
+                marked[dateStr] = {
+                    selected: true,
+                    marked: dateStr === today,
+                    selectedColor: getStatusColor(classItem.status),
+                    dots: dateStr === today ? [{ color: '#007AFF' }] : undefined,
+                    customStyles: {
+                        container: {
+                            backgroundColor: getStatusColor(classItem.status),
+                            borderRadius: 8,
+                        },
+                        text: {
+                            color: 'white',
+                            fontWeight: 'bold'
+                        }
+                    }
+                };
+            }
+        });
+
+        // Make sure today is always marked if it's not already marked
+        if (!marked[today]) {
+            marked[today] = {
+                marked: true,
+                dots: [{ color: '#007AFF' }]
+            };
+        }
 
         setMarkedDates(marked);
         setShowCalendar(true);
@@ -90,18 +131,22 @@ export default function EnrolledClasses({ dogId }) {
 
     const getStatusColor = (status) => {
         switch (status) {
+            case 0: return '#8E8E93'; // Inactive
             case 1: return '#34C759'; // Active
-            case 2: return '#FF9500'; // Pending
-            case 3: return '#FF3B30'; // Completed
-            default: return '#8E8E93'; // Unknown
+            case 2: return '#007AFF'; // Ongoing
+            case 3: return '#FF9500'; // Closed
+            case 4: return '#FF3B30'; // Completed
+            default: return '#8E8E93';
         }
     };
 
     const getStatusText = (status) => {
         switch (status) {
+            case 0: return 'Inactive';
             case 1: return 'Active';
-            case 2: return 'Pending';
-            case 3: return 'Completed';
+            case 2: return 'Ongoing';
+            case 3: return 'Closed';
+            case 4: return 'Completed';
             default: return 'Unknown';
         }
     };
@@ -111,6 +156,26 @@ export default function EnrolledClasses({ dogId }) {
             hour: '2-digit',
             minute: '2-digit'
         });
+    };
+
+    const getPretestStatusText = (status) => {
+        switch (status) {
+            case -1: return 'Cancelled';
+            case 0: return 'Pending';
+            case 1: return 'Accepted';
+            case 2: return 'Rejected';
+            default: return 'Unknown';
+        }
+    };
+
+    const getPretestStatusColor = (status) => {
+        switch (status) {
+            case -1: return '#8E8E93'; // Cancelled
+            case 0: return '#FF9500';  // Pending
+            case 1: return '#34C759';  // Accepted
+            case 2: return '#FF3B30';  // Rejected
+            default: return '#8E8E93';
+        }
     };
 
     return (
@@ -216,6 +281,74 @@ export default function EnrolledClasses({ dogId }) {
                                         ))}
                                     </ScrollView>
 
+                                    {/* Pretest Section */}
+                                    <View style={{ marginTop: 16, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 8 }}>
+                                            Pretest Information
+                                        </Text>
+                                        {classPretests[classItem.id]?.length > 0 ? (
+                                            classPretests[classItem.id].map((pretest) => (
+                                                <View
+                                                    key={pretest.id}
+                                                    style={{
+                                                        backgroundColor: 'white',
+                                                        padding: 12,
+                                                        borderRadius: 8,
+                                                        marginBottom: 8,
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between'
+                                                    }}
+                                                >
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <MaterialIcons
+                                                            name="assignment"
+                                                            size={24}
+                                                            color="#ffA500"
+                                                        />
+                                                        <View style={{ marginLeft: 12 }}>
+                                                            <Text style={{ fontSize: 15, color: '#333' }}>
+                                                                {new Date(pretest.testDate).toLocaleDateString('en-US', {
+                                                                    weekday: 'long',
+                                                                    month: 'long',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                    <View
+                                                        style={{
+                                                            backgroundColor: getPretestStatusColor(pretest.status),
+                                                            paddingHorizontal: 8,
+                                                            paddingVertical: 4,
+                                                            borderRadius: 12,
+                                                        }}
+                                                    >
+                                                        <Text style={{ color: 'white', fontWeight: '500' }}>
+                                                            {getPretestStatusText(pretest.status)}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            ))
+                                        ) : (
+                                            <View style={{
+                                                padding: 16,
+                                                backgroundColor: 'white',
+                                                borderRadius: 8,
+                                                alignItems: 'center'
+                                            }}>
+                                                <MaterialIcons name="info-outline" size={24} color="#666" />
+                                                <Text style={{
+                                                    color: '#666',
+                                                    marginTop: 8,
+                                                    textAlign: 'center'
+                                                }}>
+                                                    No pretests scheduled for this class yet
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+
                                     {classDetails[classItem.id]?.assignedTrainers && (
                                         <View style={{ marginTop: 16, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8 }}>
                                             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 8 }}>
@@ -302,7 +435,7 @@ export default function EnrolledClasses({ dogId }) {
 
                     <Calendar
                         markedDates={markedDates}
-                        markingType={'custom'}
+                        markingType={'multi-dot'}
                         onDayPress={handleDayPress}
                         theme={{
                             selectedDayBackgroundColor: '#007AFF',
@@ -346,6 +479,31 @@ export default function EnrolledClasses({ dogId }) {
                                     </Text>
                                 </View>
                             ))}
+
+                            {/* Show pretest information if available for the selected date */}
+                            {selectedClass && classPretests[selectedClass.id]?.some(pretest =>
+                                new Date(pretest.testDate).toISOString().split('T')[0] ===
+                                new Date(selectedDateSlots[0].slotDate).toISOString().split('T')[0]
+                            ) && (
+                                <View style={{
+                                    marginTop: 16,
+                                    padding: 12,
+                                    backgroundColor: '#fff4e6',
+                                    borderRadius: 8
+                                }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <MaterialIcons name="assignment" size={20} color="#FF9500" />
+                                        <Text style={{
+                                            marginLeft: 8,
+                                            fontSize: 16,
+                                            fontWeight: 'bold',
+                                            color: '#FF9500'
+                                        }}>
+                                            Pretest Scheduled for this day
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
                         </View>
                     )}
                 </View>
