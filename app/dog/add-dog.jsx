@@ -15,7 +15,6 @@ import { uploadImageToCloudinary } from "../../services/UploadFileService";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "../../contexts/AuthContext";
-import { fetchCustomerProfile } from "../../services/ProfileService";
 import { fetchDogBreeds } from "../../services/DogBreedService";
 
 export default function AddDog() {
@@ -94,8 +93,9 @@ export default function AddDog() {
         return;
       }
 
-      const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
-      if (!customerProfile || !customerProfile.id) {
+      const customerProfile = userInfo.unique_name;
+      console.log(customerProfile);
+      if (!customerProfile) {
         ToastAndroid.show("Failed to get customer profile!", ToastAndroid.LONG);
         return;
       }
@@ -106,7 +106,7 @@ export default function AddDog() {
         dateOfBirth,
         gender: parseInt(gender),
         dogBreedId,
-        customerProfileId: customerProfile.id,
+        customerId: customerProfile,
       };
 
       const result = await AddNewDog(newDog);
