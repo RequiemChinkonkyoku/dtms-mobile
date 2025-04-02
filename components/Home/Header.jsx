@@ -1,13 +1,21 @@
-import { View, Text, Image, TextInput } from 'react-native'
+import { View, Text, Image, TextInput, TouchableOpacity, RefreshControl } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '../../contexts/AuthContext';
 import { fetchAccountById } from "../../services/AccountService";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function Header() {
+export default function Header({ onRefresh }) {
 
     const [userName, setUserName] = useState('');
     const { userInfo } = useAuth();
+
+    const handleRefresh = async () => {
+        if (onRefresh) {
+            onRefresh();
+        }
+        await loadUserProfile();
+    };
 
     useEffect(() => {
         const loadUserProfile = async () => {
@@ -37,10 +45,7 @@ export default function Header() {
             borderBottomRightRadius: 25,
             backgroundColor: '#f0f8ff',
             shadowColor: '#000',
-            shadowOffset: {
-                width: 0,
-                height: 2,
-            },
+            shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 3,
@@ -53,18 +58,31 @@ export default function Header() {
                 marginBottom: 15,
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{
-                        color: "#666",
-                        fontSize: 19,
-                        fontWeight: '500',
-                    }}>Welcome, </Text>
+                    <TouchableOpacity
+                        onPress={handleRefresh}
+                        style={{
+                            backgroundColor: '#007AFF',
+                            padding: 8,
+                            borderRadius: 12,
+                            marginRight: 10,
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons name="dog" size={24} color="white" />
+                    </TouchableOpacity>
                     <Text style={{
                         fontSize: 19,
                         fontWeight: 'bold',
                         color: '#007AFF',
                     }}>{userName || 'User'}</Text>
                 </View>
-                <Feather name="bell" size={24} color="#007AFF" />
+                <View style={{
+                    backgroundColor: '#E8F1FF',
+                    padding: 8,
+                    borderRadius: 12,
+                }}>
+                    <Feather name="bell" size={24} color="#007AFF" />
+                </View>
             </View>
 
             {/*Search bar*/}
@@ -75,10 +93,7 @@ export default function Header() {
                 padding: 12,
                 borderRadius: 12,
                 shadowColor: '#000',
-                shadowOffset: {
-                    width: 0,
-                    height: 1,
-                },
+                shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.1,
                 shadowRadius: 2,
                 elevation: 2,
@@ -95,9 +110,7 @@ export default function Header() {
                     }}
                 />
             </View>
-            <View style={{ height: 10}}>
-
-            </View>
+            <View style={{ height: 10 }} />
         </View>
     )
 }
