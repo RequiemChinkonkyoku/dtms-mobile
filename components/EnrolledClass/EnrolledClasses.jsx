@@ -218,28 +218,28 @@ export default function EnrolledClasses({ dogId }) {
   const [slotsData, setSlotsData] = useState({});
 
   // Add this new handler
-  const handleSlotListExpand = async (classId) => {
-    try {
-      if (expandedSlots[classId]) {
-        setExpandedSlots((prev) => ({ ...prev, [classId]: false }));
-      } else {
-        setExpandedSlots((prev) => ({ ...prev, [classId]: true }));
-        if (!slotsData[classId]) {
-          const slots = await fetchDogClassSlots(dogId, classId);
-          if (slots) {
-            setSlotsData((prev) => ({ ...prev, [classId]: slots }));
-          }
-        }
-      }
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        "Failed to fetch slot information. Please try again later.",
-        [{ text: "OK" }]
-      );
-      setExpandedSlots((prev) => ({ ...prev, [classId]: false }));
-    }
-  };
+  // const handleSlotListExpand = async (classId) => {
+  //   try {
+  //     if (expandedSlots[classId]) {
+  //       setExpandedSlots((prev) => ({ ...prev, [classId]: false }));
+  //     } else {
+  //       setExpandedSlots((prev) => ({ ...prev, [classId]: true }));
+  //       if (!slotsData[classId]) {
+  //         const slots = await fetchDogClassSlots(dogId, classId);
+  //         if (slots) {
+  //           setSlotsData((prev) => ({ ...prev, [classId]: slots }));
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     Alert.alert(
+  //       "Error",
+  //       "Failed to fetch slot information. Please try again later.",
+  //       [{ text: "OK" }]
+  //     );
+  //     setExpandedSlots((prev) => ({ ...prev, [classId]: false }));
+  //   }
+  // };
 
   return (
     <>
@@ -314,7 +314,7 @@ export default function EnrolledClasses({ dogId }) {
               {expandedClass === classItem.id && (
                 <View style={{ marginTop: 16 }}>
                   {/* Add View Slot List button here */}
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={() => handleSlotListExpand(classItem.id)}
                     style={{
                       flexDirection: "row",
@@ -343,7 +343,7 @@ export default function EnrolledClasses({ dogId }) {
                     >
                       View Slot List
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
 
                   {/* Add Slot List content here */}
                   {expandedSlots[classItem.id] && slotsData[classItem.id] && (
