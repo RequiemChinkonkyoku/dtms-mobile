@@ -34,7 +34,7 @@ export default function EnrolledClasses({ dogId }) {
             setExpandedClass(classId);
             if (!classDetails[classId]) {
                 const details = await fetchClassById(classId);
-                const pretests = await fetchClassPretests(classId);
+                const pretests = await fetchClassPretests(classId, dogId);
                 setClassDetails(prev => ({ ...prev, [classId]: details }));
                 setClassPretests(prev => ({ ...prev, [classId]: pretests }));
             }
