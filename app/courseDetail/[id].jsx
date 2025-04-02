@@ -5,7 +5,8 @@ import { fetchCourseById } from '../../services/CourseService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchLessonById } from '../../services/LessonService';
-import { fetchDogBreedById } from '../../services/DogBreedService';
+import { fetchSkillById } from '../../services/SkillService';
+// import { fetchDogBreedById } from '../../services/DogBreedService';
 import { LinearGradient } from 'expo-linear-gradient';
 import EnrollmentModal from '../../components/CourseDetail/EnrollmentModal';
 import { fetchAccountById } from '../../services/AccountService';
@@ -18,6 +19,7 @@ export default function CourseDetail() {
     const [dogBreeds, setDogBreeds] = useState([]);
     const [trainerName, setTrainerName] = useState('Unknown');
     const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
+    const [lessonSkills, setLessonSkills] = useState({});
 
     useEffect(() => {
         loadCourseDetail();
@@ -43,9 +45,9 @@ export default function CourseDetail() {
             }
 
             // Fetch lessons
-            if (courseData.lessonIds && courseData.lessonIds.length > 0) {
-                const lessonPromises = courseData.lessonIds.map(lessonId =>
-                    fetchLessonById(lessonId)
+            if (courseData.courseLessons && courseData.courseLessons.length > 0) {
+                const lessonPromises = courseData.courseLessons.map(lessonId =>
+                    fetchLessonById(lessonId.id)
                 );
                 const lessonResults = await Promise.all(lessonPromises);
                 // Filter out null responses and map to the correct structure
@@ -53,15 +55,30 @@ export default function CourseDetail() {
                     .filter(result => result && result)
                     .map(result => result);
                 setLessons(validLessons);
+
+                // Fetch skills for each lesson
+                const skillsMap = {};
+                for (const lesson of validLessons) {
+                    if (lesson.skillId) {
+                        const skillData = await fetchSkillById(lesson.skillId);
+                        if (skillData) {
+                            skillsMap[lesson.id] = skillData;
+                        }
+                    }
+                }
+                setLessonSkills(skillsMap);
             }
 
             // Fetch dog breeds
-            if (courseData.dogBreedIds && courseData.dogBreedIds.length > 0) {
-                const breedPromises = courseData.dogBreedIds.map(breedId =>
-                    fetchDogBreedById(breedId)
-                );
-                const breedResults = await Promise.all(breedPromises);
-                setDogBreeds(breedResults.filter(breed => breed !== null));
+            // if (courseData.dogBreedIds && courseData.dogBreedIds.length > 0) {
+            //     const breedPromises = courseData.dogBreedIds.map(breedId =>
+            //         fetchDogBreedById(breedId)
+            //     );
+            //     const breedResults = await Promise.all(breedPromises);
+            //     setDogBreeds(breedResults.filter(breed => breed !== null));
+            // }
+            if (courseData.courseDogBreeds) {
+                setDogBreeds(courseData.courseDogBreeds);
             }
         }
     };
@@ -161,8 +178,16 @@ export default function CourseDetail() {
                                         {index + 1}. {lesson.lessonTitle}
                                     </Text>
                                     <Text style={courseDetailsStyles.lessonDescription}>
-                                        {lesson.description}
+                                        Description: {lesson.description}
                                     </Text>
+                                    {lessonSkills[lesson.id] && (
+                                        <View style={courseDetailsStyles.skillContainer}>
+                                            <MaterialIcons name="stars" size={16} color="#FFD700" />
+                                            <Text style={courseDetailsStyles.skillText}>
+                                                Skill: {lessonSkills[lesson.id].name}
+                                            </Text>
+                                        </View>
+                                    )}
                                     <View style={courseDetailsStyles.lessonDetails}>
                                         <Text style={courseDetailsStyles.lessonInfo}>
                                             <MaterialIcons name="schedule" size={16} color="#666" /> {lesson.duration} minutes

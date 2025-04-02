@@ -31,19 +31,19 @@ export default function EnrolledClasses({ dogId }) {
     setEnrolledClasses(sortedClasses);
   };
 
-  const handleClassExpand = async (classId) => {
-    if (expandedClass === classId) {
-      setExpandedClass(null);
-    } else {
-      setExpandedClass(classId);
-      if (!classDetails[classId]) {
-        const details = await fetchClassById(classId);
-        const pretests = await fetchClassPretests(classId);
-        setClassDetails((prev) => ({ ...prev, [classId]: details }));
-        setClassPretests((prev) => ({ ...prev, [classId]: pretests }));
-      }
-    }
-  };
+    const handleClassExpand = async (classId) => {
+        if (expandedClass === classId) {
+            setExpandedClass(null);
+        } else {
+            setExpandedClass(classId);
+            if (!classDetails[classId]) {
+                const details = await fetchClassById(classId);
+                const pretests = await fetchClassPretests(classId, dogId);
+                setClassDetails(prev => ({ ...prev, [classId]: details }));
+                setClassPretests(prev => ({ ...prev, [classId]: pretests }));
+            }
+        }
+    };
 
   const handleDayPress = (day) => {
     const selectedDate = day.dateString;

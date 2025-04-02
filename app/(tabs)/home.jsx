@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import Header from '../../components/Home/Header';
@@ -9,6 +9,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Home() {
   const router = useRouter();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Minimum refresh time
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
   const renderFeatureSection = () => (
     <View
@@ -92,8 +103,19 @@ export default function Home() {
   );
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={homeStyles.container}>
-      <Header />
+    <ScrollView 
+            showsVerticalScrollIndicator={false} 
+            style={homeStyles.container}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={['#007AFF']}
+                    tintColor="#007AFF"
+                />
+            }
+        >
+      <Header onRefresh={onRefresh} />
       <BlogList />
       {renderFeatureSection()}
       {renderHighlightSection()}
