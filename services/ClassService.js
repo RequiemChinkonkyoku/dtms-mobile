@@ -55,3 +55,13 @@ export const fetchDogEnrolledClasses = async (dogId) => {
         return [];
     }
 };
+
+export const fetchDogClassSlots = async (dogId, classId) => {
+    try {
+        const response = await ApiManager.get(`/slots/classes/${classId}/dogs/${dogId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching dog class slots:', error.response?.data || error.message);
+        throw error; // Propagate the error to handle it in the component
+    }
+};
