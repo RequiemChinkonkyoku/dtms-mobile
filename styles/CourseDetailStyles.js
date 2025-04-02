@@ -516,4 +516,20 @@ export const courseDetailsStyles = StyleSheet.create({
         color: '#666',
         marginBottom: 4,
     },
+    skillContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: -5,
+        marginBottom: 4,
+        backgroundColor: '#FFF8E1',
+        padding: 6,
+        borderRadius: 4,
+        alignSelf: 'flex-start',
+    },
+    skillText: {
+        marginLeft: 4,
+        color: '#B7950B',
+        fontSize: 14,
+        fontWeight: '500',
+    },
 });
