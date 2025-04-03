@@ -9,20 +9,20 @@ export default function ProfileDetailPage() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const profile = await fetchAccountById(id);
-        if (profile) {
-          setProfileData(profile);
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      } finally {
-        setLoading(false);
+  const loadProfile = async () => {
+    try {
+      const profile = await fetchAccountById(id);
+      if (profile) {
+        setProfileData(profile);
       }
-    };
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadProfile();
   }, [id]);
 
@@ -35,8 +35,11 @@ export default function ProfileDetailPage() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
-      {profileData && <ProfileDetailCard profileData={profileData} />}
-    </ScrollView>
+    <View style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
+      {profileData && <ProfileDetailCard
+        profileData={profileData}
+        onRefreshProfile={loadProfile}
+      />}
+    </View>
   );
 }

@@ -1,14 +1,15 @@
-import { View, Text, Image, Dimensions, ScrollView } from "react-native";
+import { View, Text, Image, Dimensions, ScrollView, RefreshControl } from "react-native";
 import React, { useEffect, useState } from "react";
 import { CustomerProfileStyles } from "../../styles/CustomerProfileStyles";
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { fetchAllMemberships } from '../../services/MembershipService';
 
-export default function ProfileDetailCard({ profileData }) {
+export default function ProfileDetailCard({ profileData, onRefreshProfile }) {
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
   const [memberships, setMemberships] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -18,6 +19,20 @@ export default function ProfileDetailCard({ profileData }) {
     loadMemberships();
   }, []);
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        loadMemberships(),
+        onRefreshProfile(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [onRefreshProfile]);
+
   const loadMemberships = async () => {
     const data = await fetchAllMemberships();
     setMemberships(data.sort((a, b) => a.requiredPoints - b.requiredPoints));
@@ -26,7 +41,7 @@ export default function ProfileDetailCard({ profileData }) {
   // Get tier-specific colors
   const getTierColor = (tierName) => {
     switch (tierName.toLowerCase()) {
-      case 'basic': return '#8E8E93';
+      case 'basic': return '#CD7F32'; // Bronze color
       case 'gold': return '#CFB53B';
       case 'platinum': return '#4682B4';
       default: return '#666';
@@ -37,7 +52,7 @@ export default function ProfileDetailCard({ profileData }) {
   const getTierBackgroundColor = (tierName, isCurrentTier) => {
     if (!isCurrentTier) return '#f5f5f5';
     switch (tierName.toLowerCase()) {
-      case 'basic': return '#F5F5F5';
+      case 'basic': return '#FFF1E6'; // Light bronze background
       case 'gold': return '#FFF8E7';
       case 'platinum': return '#F0F8FF';
       default: return '#f5f5f5';
@@ -45,7 +60,17 @@ export default function ProfileDetailCard({ profileData }) {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#f0f2f5" }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#007AFF"]}
+          tintColor="#007AFF"
+        />
+      }
+    >
       {/* Cover and Profile Section */}
       <View style={{
         height: 180,
@@ -286,7 +311,7 @@ export default function ProfileDetailCard({ profileData }) {
                       )}
                     </View>
                   </View>
-                  <Text style={{ 
+                  <Text style={{
                     color: tierColor,
                     fontWeight: 'bold'
                   }}>{tier.discountAmount}% OFF</Text>
@@ -304,10 +329,10 @@ export default function ProfileDetailCard({ profileData }) {
                   }} />
                 </View>
 
-                <View style={{ 
-                  flexDirection: 'row', 
+                <View style={{
+                  flexDirection: 'row',
                   justifyContent: 'space-between',
-                  marginTop: 8 
+                  marginTop: 8
                 }}>
                   <Text style={{ color: "#666", fontSize: 12 }}>
                     {tier.requiredPoints} points required
