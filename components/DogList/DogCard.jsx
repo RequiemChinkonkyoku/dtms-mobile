@@ -2,31 +2,11 @@ import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { deleteDog } from '../../services/DogService';
 import { dogCardStyles } from '../../styles/DogCardStyles';
 
 export default function DogCard({ dog, onRefresh }) {
     const router = useRouter();
 
-    const handleDelete = () => {
-        Alert.alert(
-            "Delete Dog",
-            "Are you sure you want to delete this dog?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Delete",
-                    onPress: async () => {
-                        const result = await deleteDog(dog.id);
-                        if (result) {
-                            onRefresh && onRefresh();
-                        }
-                    },
-                    style: "destructive"
-                }
-            ]
-        );
-    };
 
     return (
         <View style={dogCardStyles.container}>
@@ -67,13 +47,6 @@ export default function DogCard({ dog, onRefresh }) {
                     <Text style={{ color: '#1976d2', fontFamily: 'outfit-medium' }}>Edit</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={handleDelete}
-                    style={[dogCardStyles.actionButton, { backgroundColor: '#ffebee' }]}
-                >
-                    <MaterialIcons name="delete" size={20} color="#d32f2f" />
-                    <Text style={{ color: '#d32f2f', fontFamily: 'outfit-medium' }}>Delete</Text>
-                </TouchableOpacity>
             </View>
         </View>
     );

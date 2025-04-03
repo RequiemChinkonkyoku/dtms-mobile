@@ -34,7 +34,8 @@ export default function MyDogs() {
       // const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
       const data = await fetchUserDog(userInfo.unique_name);
       if (data) {
-        setDogs(data);
+        const activeDogs = data.filter(dog => dog.status === 1);
+        setDogs(activeDogs);
       }
     } catch (error) {
       console.error('Error fetching dogs:', error);
