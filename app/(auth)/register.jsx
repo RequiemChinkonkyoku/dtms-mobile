@@ -99,8 +99,8 @@ export default function Register() {
 
             {isLoading && (
                 <View style={RegisterStyles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#007AFF" />
-            </View>
+                    <ActivityIndicator size="large" color="#007AFF" />
+                </View>
             )}
 
             <ScrollView
@@ -171,14 +171,28 @@ export default function Register() {
                         style={RegisterStyles.input}
                     />
 
-                    <TouchableOpacity
-                        onPress={() => setShowDatePicker(true)}
-                        style={RegisterStyles.input}
-                    >
-                        <Text style={{ color: formData.dateOfBirth ? '#000' : RegisterStyles.dateText.color }}>
-                            {formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString() : 'Date of Birth'}
-                        </Text>
-                    </TouchableOpacity>
+                    <View style={RegisterStyles.rowContainer}>
+                        <TouchableOpacity
+                            onPress={() => setShowDatePicker(true)}
+                            style={RegisterStyles.halfInput}
+                        >
+                            <Text style={{ color: formData.dateOfBirth ? '#000' : RegisterStyles.dateText.color }}>
+                                {formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString() : 'Date of Birth'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <View style={RegisterStyles.pickerContainer}>
+                            <Picker
+                                selectedValue={formData.gender}
+                                onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+                                style={{ color: formData.gender === null ? RegisterStyles.pickerText.color : '#000' }}
+                            >
+                                <Picker.Item label="Select Gender" value={null} />
+                                <Picker.Item label="Male" value={0} />
+                                <Picker.Item label="Female" value={1} />
+                            </Picker>
+                        </View>
+                    </View>
 
                     {showDatePicker && (
                         <DateTimePicker
@@ -188,18 +202,6 @@ export default function Register() {
                             onChange={handleDateChange}
                         />
                     )}
-
-                    <View style={RegisterStyles.pickerContainer}>
-                        <Picker
-                            selectedValue={formData.gender}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
-                            style={{ color: formData.gender === null ? RegisterStyles.pickerText.color : '#000' }}
-                        >
-                            <Picker.Item label="Select Gender" value={null} />
-                            <Picker.Item label="Male" value={0} />
-                            <Picker.Item label="Female" value={1} />
-                        </Picker>
-                    </View>
 
                     {/* Register Button */}
                     <TouchableOpacity

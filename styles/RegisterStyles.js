@@ -10,15 +10,15 @@ export const RegisterStyles = {
     },
     headerContainer: {
         alignItems: 'center',
-        marginVertical: 20
+        marginVertical: 0
     },
     logo: {
-        width: 100,
-        height: 100,
-        marginBottom: 20
+        width: 75,
+        height: 75,
+        marginBottom: 10
     },
     title: {
-        fontSize: 28,
+        fontSize: 23,
         fontWeight: 'bold',
         color: '#333'
     },
@@ -33,10 +33,21 @@ export const RegisterStyles = {
         borderRadius: 10,
         fontSize: 16
     },
+    rowContainer: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    halfInput: {
+        flex: 0.9,
+        backgroundColor: '#f5f5f5',
+        padding: 15,
+        borderRadius: 10,
+        fontSize: 16
+    },
     pickerContainer: {
+        flex: 1.1,
         backgroundColor: '#f5f5f5',
         borderRadius: 10,
-        marginBottom: 10
     },
     pickerText: {
         color: '#666'
