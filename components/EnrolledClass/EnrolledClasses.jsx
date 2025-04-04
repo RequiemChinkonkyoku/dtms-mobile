@@ -10,7 +10,11 @@ import { fetchClassPretests } from "../../services/PretestService";
 import { fetchDogClassSlots } from "../../services/ClassService";
 import { fetchDogClassProgressReports } from "../../services/ProgressReportService";
 
+// Add this import at the top
+import { useRouter } from "expo-router";
+
 export default function EnrolledClasses({ dogId }) {
+  const router = useRouter();
   const [enrolledClasses, setEnrolledClasses] = useState([]);
   const [expandedClass, setExpandedClass] = useState(null);
   const [expandedReports, setExpandedReports] = useState({});
@@ -350,8 +354,11 @@ export default function EnrolledClasses({ dogId }) {
                     reportsData[classItem.id] && (
                       <View style={{ marginBottom: 12 }}>
                         {reportsData[classItem.id].map((report, index) => (
-                          <View
+                          <TouchableOpacity
                             key={index}
+                            onPress={() =>
+                              router.push(`/progress-report/${report.id}`)
+                            }
                             style={{
                               backgroundColor: "#f8f9fa",
                               borderRadius: 8,
@@ -411,7 +418,7 @@ export default function EnrolledClasses({ dogId }) {
                                 </Text>
                               </View>
                             )}
-                          </View>
+                          </TouchableOpacity>
                         ))}
                       </View>
                     )}
