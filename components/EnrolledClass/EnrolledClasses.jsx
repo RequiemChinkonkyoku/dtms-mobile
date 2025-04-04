@@ -333,8 +333,8 @@ export default function EnrolledClasses({ dogId }) {
                     <MaterialIcons
                       name={
                         expandedReports[classItem.id]
-                          ? "expand-less"
-                          : "expand-more"
+                          ? "description"
+                          : "description"
                       }
                       size={20}
                       color="#007AFF"
