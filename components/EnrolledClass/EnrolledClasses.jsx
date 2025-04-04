@@ -31,7 +31,7 @@ export default function EnrolledClasses({ dogId }) {
   const [classPretests, setClassPretests] = useState({});
 
   const { userInfo } = useAuth();
-  
+
 
   useEffect(() => {
     loadEnrolledClasses();
@@ -64,7 +64,7 @@ export default function EnrolledClasses({ dogId }) {
     if (
       selectedDateSlots.length > 0 &&
       new Date(selectedDateSlots[0].slotDate).toISOString().split("T")[0] ===
-        selectedDate
+      selectedDate
     ) {
       setSelectedDateSlots([]);
     } else {
@@ -306,7 +306,7 @@ export default function EnrolledClasses({ dogId }) {
       };
 
       const paymentResult = await createVNPayPayment(paymentData);
-      
+
       if (paymentResult.success && paymentResult.data) {
         onclose();
       } else {
@@ -424,73 +424,99 @@ export default function EnrolledClasses({ dogId }) {
                   {expandedReports[classItem.id] &&
                     reportsData[classItem.id] && (
                       <View style={{ marginBottom: 12 }}>
-                        {reportsData[classItem.id].map((report, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() =>
-                              router.push(`/progress-report/${report.id}`)
-                            }
-                            style={{
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 8,
-                              padding: 16,
-                              marginBottom: 8,
-                              borderLeftWidth: 4,
-                              borderLeftColor: "#007AFF",
-                            }}
-                          >
-                            <Text
+                        {reportsData[classItem.id]?.length > 0 ? (
+                          reportsData[classItem.id].map((report, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() =>
+                                router.push(`/progress-report/${report.id}`)
+                              }
                               style={{
-                                fontSize: 16,
-                                fontWeight: "bold",
-                                color: "#333",
+                                backgroundColor: "#f8f9fa",
+                                borderRadius: 8,
+                                padding: 16,
+                                marginBottom: 8,
+                                borderLeftWidth: 4,
+                                borderLeftColor: "#007AFF",
                               }}
                             >
-                              {new Date(report.date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  weekday: "long",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
-                            </Text>
-                            <Text style={{ color: "#666", marginTop: 4 }}>
-                              {formatTime(report.schedule.startTime)} -{" "}
-                              {formatTime(report.schedule.endTime)}
-                            </Text>
-                            <Text style={{ color: "#666", marginTop: 4 }}>
-                              Lesson: {report.lesson.name}
-                            </Text>
-                            {report.attendance && (
-                              <View
+                              <Text
                                 style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                  marginTop: 8,
-                                  backgroundColor: "#e8f5e9",
-                                  padding: 8,
-                                  borderRadius: 6,
+                                  fontSize: 16,
+                                  fontWeight: "bold",
+                                  color: "#333",
                                 }}
                               >
-                                <MaterialIcons
-                                  name="check-circle"
-                                  size={20}
-                                  color="#4caf50"
-                                />
-                                <Text
+                                {new Date(report.date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    weekday: "long",
+                                    month: "long",
+                                    day: "numeric",
+                                  }
+                                )}
+                              </Text>
+                              <Text style={{ color: "#666", marginTop: 4 }}>
+                                {formatTime(report.schedule.startTime)} -{" "}
+                                {formatTime(report.schedule.endTime)}
+                              </Text>
+                              <Text style={{ color: "#666", marginTop: 4 }}>
+                                Lesson: {report.lesson.name}
+                              </Text>
+                              {report.attendance && (
+                                <View
                                   style={{
-                                    marginLeft: 8,
-                                    color: "#4caf50",
-                                    fontWeight: "500",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    marginTop: 8,
+                                    backgroundColor: "#e8f5e9",
+                                    padding: 8,
+                                    borderRadius: 6,
                                   }}
                                 >
-                                  Attended
-                                </Text>
-                              </View>
-                            )}
-                          </TouchableOpacity>
-                        ))}
+                                  <MaterialIcons
+                                    name="check-circle"
+                                    size={20}
+                                    color="#4caf50"
+                                  />
+                                  <Text
+                                    style={{
+                                      marginLeft: 8,
+                                      color: "#4caf50",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    Attended
+                                  </Text>
+                                </View>
+                              )}
+                            </TouchableOpacity>
+                          ))
+                        ) : (
+                          <View
+                            style={{
+                              padding: 16,
+                              backgroundColor: "#f8f9fa",
+                              borderRadius: 8,
+                              alignItems: "center",
+                            }}
+                          >
+                            <MaterialIcons
+                              name="assignment-late"
+                              size={24}
+                              color="#666"
+                            />
+                            <Text
+                              style={{
+                                color: "#666",
+                                marginTop: 8,
+                                textAlign: "center",
+                              }}
+                            >
+                              No progress reports available for this class yet
+                            </Text>
+                          </View>
+                        )}
                       </View>
                     )}
                   {expandedSlots[classItem.id] && slotsData[classItem.id] && (
@@ -726,27 +752,27 @@ export default function EnrolledClasses({ dogId }) {
 
                   {/* Payment Button */}
                   {classPretests[classItem.id]?.some(pretest => pretest.status === 1) &&
-                   classDetails[classItem.id]?.classEnrollments?.some(enrollment => 
-                     enrollment.dogId === dogId && enrollment.status === 0
-                   ) && (
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: '#34C759',
-                        padding: 15,
-                        borderRadius: 10,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginTop: 16,
-                      }}
-                      onPress={() => handlePayment(classItem)}
-                    >
-                      <MaterialIcons name="payment" size={24} color="#fff" style={{ marginRight: 8 }} />
-                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '500' }}>
-                        Pay for Class
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                    classDetails[classItem.id]?.classEnrollments?.some(enrollment =>
+                      enrollment.dogId === dogId && enrollment.status === 0
+                    ) && (
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: '#34C759',
+                          padding: 15,
+                          borderRadius: 10,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginTop: 16,
+                        }}
+                        onPress={() => handlePayment(classItem)}
+                      >
+                        <MaterialIcons name="payment" size={24} color="#fff" style={{ marginRight: 8 }} />
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '500' }}>
+                          Pay for Class
+                        </Text>
+                      </TouchableOpacity>
+                    )}
 
                   {classDetails[classItem.id]?.assignedTrainers && (
                     <View
