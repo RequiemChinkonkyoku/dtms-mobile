@@ -8,6 +8,10 @@ import {
 } from "../../services/ClassService";
 import { fetchClassPretests } from "../../services/PretestService";
 import { fetchDogClassSlots } from "../../services/ClassService";
+import { createVNPayPayment } from "../../services/PaymentService";
+import { fetchCourseById } from "../../services/CourseService";
+import { useAuth } from "../../contexts/AuthContext";
+import * as ExpoLinking from 'expo-linking';
 
 export default function EnrolledClasses({ dogId }) {
   const [enrolledClasses, setEnrolledClasses] = useState([]);
@@ -18,6 +22,9 @@ export default function EnrolledClasses({ dogId }) {
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDateSlots, setSelectedDateSlots] = useState([]);
   const [classPretests, setClassPretests] = useState({});
+
+  const { userInfo } = useAuth();
+  
 
   useEffect(() => {
     loadEnrolledClasses();
@@ -241,6 +248,47 @@ export default function EnrolledClasses({ dogId }) {
   //   }
   // };
 
+  const handlePayment = async (classItem) => {
+    try {
+      const classDetail = classDetails[classItem.id];
+      if (!classDetail || !classDetail.classEnrollments || classDetail.classEnrollments.length === 0) {
+        Alert.alert('Error', 'Enrollment information not found');
+        return;
+      }
+
+      const enrollment = classDetail.classEnrollments.find(e => e.dogId === dogId);
+      if (!enrollment) {
+        Alert.alert('Error', 'Enrollment for this dog not found');
+        return;
+      }
+
+      // Fetch course details to get the price
+      const courseDetails = await fetchCourseById(classDetail.courseId);
+      if (!courseDetails) {
+        Alert.alert('Error', 'Could not fetch course price');
+        return;
+      }
+
+      const paymentData = {
+        orderType: "ClassEnrollment",
+        amount: courseDetails.price,
+        enrollmentId: enrollment.enrollmentId,
+        customerID: userInfo.unique_name
+      };
+
+      const paymentResult = await createVNPayPayment(paymentData);
+      
+      if (paymentResult.success && paymentResult.data) {
+        onclose();
+      } else {
+        Alert.alert('Payment Failed', 'Unable to initiate payment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment Error:', error);
+      Alert.alert('Error', 'Failed to process payment. Please try again.');
+    }
+  };
+
   return (
     <>
       <ScrollView style={{ flex: 1, padding: 16 }}>
@@ -344,6 +392,8 @@ export default function EnrolledClasses({ dogId }) {
                       View Slot List
                     </Text>
                   </TouchableOpacity> */}
+
+                  
 
                   {/* Add Slot List content here */}
                   {expandedSlots[classItem.id] && slotsData[classItem.id] && (
@@ -576,6 +626,30 @@ export default function EnrolledClasses({ dogId }) {
                       </View>
                     )}
                   </View>
+
+                  {/* Payment Button */}
+                  {classPretests[classItem.id]?.some(pretest => pretest.status === 1) &&
+                   classDetails[classItem.id]?.classEnrollments?.some(enrollment => 
+                     enrollment.dogId === dogId && enrollment.status === 0
+                   ) && (
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: '#34C759',
+                        padding: 15,
+                        borderRadius: 10,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginTop: 16,
+                      }}
+                      onPress={() => handlePayment(classItem)}
+                    >
+                      <MaterialIcons name="payment" size={24} color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: '500' }}>
+                        Pay for Class
+                      </Text>
+                    </TouchableOpacity>
+                  )}
 
                   {classDetails[classItem.id]?.assignedTrainers && (
                     <View
