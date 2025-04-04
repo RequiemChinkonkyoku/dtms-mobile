@@ -11,7 +11,7 @@ import { fetchDogClassSlots } from "../../services/ClassService";
 import { createVNPayPayment } from "../../services/PaymentService";
 import { fetchCourseById } from "../../services/CourseService";
 import { useAuth } from "../../contexts/AuthContext";
-import * as ExpoLinking from 'expo-linking';
+import * as ExpoLinking from "expo-linking";
 import { fetchDogClassProgressReports } from "../../services/ProgressReportService";
 
 // Add this import at the top
@@ -31,7 +31,6 @@ export default function EnrolledClasses({ dogId }) {
   const [classPretests, setClassPretests] = useState({});
 
   const { userInfo } = useAuth();
-
 
   useEffect(() => {
     loadEnrolledClasses();
@@ -64,7 +63,7 @@ export default function EnrolledClasses({ dogId }) {
     if (
       selectedDateSlots.length > 0 &&
       new Date(selectedDateSlots[0].slotDate).toISOString().split("T")[0] ===
-      selectedDate
+        selectedDate
     ) {
       setSelectedDateSlots([]);
     } else {
@@ -280,21 +279,27 @@ export default function EnrolledClasses({ dogId }) {
   const handlePayment = async (classItem) => {
     try {
       const classDetail = classDetails[classItem.id];
-      if (!classDetail || !classDetail.classEnrollments || classDetail.classEnrollments.length === 0) {
-        Alert.alert('Error', 'Enrollment information not found');
+      if (
+        !classDetail ||
+        !classDetail.classEnrollments ||
+        classDetail.classEnrollments.length === 0
+      ) {
+        Alert.alert("Error", "Enrollment information not found");
         return;
       }
 
-      const enrollment = classDetail.classEnrollments.find(e => e.dogId === dogId);
+      const enrollment = classDetail.classEnrollments.find(
+        (e) => e.dogId === dogId
+      );
       if (!enrollment) {
-        Alert.alert('Error', 'Enrollment for this dog not found');
+        Alert.alert("Error", "Enrollment for this dog not found");
         return;
       }
 
       // Fetch course details to get the price
       const courseDetails = await fetchCourseById(classDetail.courseId);
       if (!courseDetails) {
-        Alert.alert('Error', 'Could not fetch course price');
+        Alert.alert("Error", "Could not fetch course price");
         return;
       }
 
@@ -302,7 +307,7 @@ export default function EnrolledClasses({ dogId }) {
         orderType: "ClassEnrollment",
         amount: courseDetails.price,
         enrollmentId: enrollment.enrollmentId,
-        customerID: userInfo.unique_name
+        customerID: userInfo.unique_name,
       };
 
       const paymentResult = await createVNPayPayment(paymentData);
@@ -310,11 +315,14 @@ export default function EnrolledClasses({ dogId }) {
       if (paymentResult.success && paymentResult.data) {
         onclose();
       } else {
-        Alert.alert('Payment Failed', 'Unable to initiate payment. Please try again.');
+        Alert.alert(
+          "Payment Failed",
+          "Unable to initiate payment. Please try again."
+        );
       }
     } catch (error) {
-      console.error('Payment Error:', error);
-      Alert.alert('Error', 'Failed to process payment. Please try again.');
+      console.error("Payment Error:", error);
+      Alert.alert("Error", "Failed to process payment. Please try again.");
     }
   };
 
@@ -461,7 +469,8 @@ export default function EnrolledClasses({ dogId }) {
                                 {formatTime(report.schedule.endTime)}
                               </Text>
                               <Text style={{ color: "#666", marginTop: 4 }}>
-                                Lesson: {report.lesson.name}
+                                Lesson:{" "}
+                                {report.lesson ? report.lesson.name : "N/A"}
                               </Text>
                               {report.attendance && (
                                 <View
@@ -751,24 +760,38 @@ export default function EnrolledClasses({ dogId }) {
                   </View>
 
                   {/* Payment Button */}
-                  {classPretests[classItem.id]?.some(pretest => pretest.status === 1) &&
-                    classDetails[classItem.id]?.classEnrollments?.some(enrollment =>
-                      enrollment.dogId === dogId && enrollment.status === 0
+                  {classPretests[classItem.id]?.some(
+                    (pretest) => pretest.status === 1
+                  ) &&
+                    classDetails[classItem.id]?.classEnrollments?.some(
+                      (enrollment) =>
+                        enrollment.dogId === dogId && enrollment.status === 0
                     ) && (
                       <TouchableOpacity
                         style={{
-                          backgroundColor: '#34C759',
+                          backgroundColor: "#34C759",
                           padding: 15,
                           borderRadius: 10,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "center",
                           marginTop: 16,
                         }}
                         onPress={() => handlePayment(classItem)}
                       >
-                        <MaterialIcons name="payment" size={24} color="#fff" style={{ marginRight: 8 }} />
-                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '500' }}>
+                        <MaterialIcons
+                          name="payment"
+                          size={24}
+                          color="#fff"
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text
+                          style={{
+                            color: "#fff",
+                            fontSize: 16,
+                            fontWeight: "500",
+                          }}
+                        >
                           Pay for Class
                         </Text>
                       </TouchableOpacity>
