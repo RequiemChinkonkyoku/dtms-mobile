@@ -12,10 +12,17 @@ import { createVNPayPayment } from "../../services/PaymentService";
 import { fetchCourseById } from "../../services/CourseService";
 import { useAuth } from "../../contexts/AuthContext";
 import * as ExpoLinking from 'expo-linking';
+import { fetchDogClassProgressReports } from "../../services/ProgressReportService";
+
+// Add this import at the top
+import { useRouter } from "expo-router";
 
 export default function EnrolledClasses({ dogId }) {
+  const router = useRouter();
   const [enrolledClasses, setEnrolledClasses] = useState([]);
   const [expandedClass, setExpandedClass] = useState(null);
+  const [expandedReports, setExpandedReports] = useState({});
+  const [reportsData, setReportsData] = useState({});
   const [classDetails, setClassDetails] = useState({});
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -38,19 +45,19 @@ export default function EnrolledClasses({ dogId }) {
     setEnrolledClasses(sortedClasses);
   };
 
-    const handleClassExpand = async (classId) => {
-        if (expandedClass === classId) {
-            setExpandedClass(null);
-        } else {
-            setExpandedClass(classId);
-            if (!classDetails[classId]) {
-                const details = await fetchClassById(classId);
-                const pretests = await fetchClassPretests(classId, dogId);
-                setClassDetails(prev => ({ ...prev, [classId]: details }));
-                setClassPretests(prev => ({ ...prev, [classId]: pretests }));
-            }
-        }
-    };
+  const handleClassExpand = async (classId) => {
+    if (expandedClass === classId) {
+      setExpandedClass(null);
+    } else {
+      setExpandedClass(classId);
+      if (!classDetails[classId]) {
+        const details = await fetchClassById(classId);
+        const pretests = await fetchClassPretests(classId, dogId);
+        setClassDetails((prev) => ({ ...prev, [classId]: details }));
+        setClassPretests((prev) => ({ ...prev, [classId]: pretests }));
+      }
+    }
+  };
 
   const handleDayPress = (day) => {
     const selectedDate = day.dateString;
@@ -224,6 +231,28 @@ export default function EnrolledClasses({ dogId }) {
   const [expandedSlots, setExpandedSlots] = useState({});
   const [slotsData, setSlotsData] = useState({});
 
+  const handleProgressReportExpand = async (classId) => {
+    try {
+      if (expandedReports[classId]) {
+        setExpandedReports((prev) => ({ ...prev, [classId]: false }));
+      } else {
+        setExpandedReports((prev) => ({ ...prev, [classId]: true }));
+        if (!reportsData[classId]) {
+          const reports = await fetchDogClassProgressReports(classId, dogId);
+          if (reports) {
+            setReportsData((prev) => ({ ...prev, [classId]: reports }));
+          }
+        }
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Failed to fetch progress reports. Please try again later.",
+        [{ text: "OK" }]
+      );
+      setExpandedReports((prev) => ({ ...prev, [classId]: false }));
+    }
+  };
   // Add this new handler
   // const handleSlotListExpand = async (classId) => {
   //   try {
@@ -361,9 +390,8 @@ export default function EnrolledClasses({ dogId }) {
 
               {expandedClass === classItem.id && (
                 <View style={{ marginTop: 16 }}>
-                  {/* Add View Slot List button here */}
-                  {/* <TouchableOpacity
-                    onPress={() => handleSlotListExpand(classItem.id)}
+                  <TouchableOpacity
+                    onPress={() => handleProgressReportExpand(classItem.id)}
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
@@ -375,9 +403,9 @@ export default function EnrolledClasses({ dogId }) {
                   >
                     <MaterialIcons
                       name={
-                        expandedSlots[classItem.id]
-                          ? "expand-less"
-                          : "expand-more"
+                        expandedReports[classItem.id]
+                          ? "description"
+                          : "description"
                       }
                       size={20}
                       color="#007AFF"
@@ -389,13 +417,82 @@ export default function EnrolledClasses({ dogId }) {
                         fontWeight: "500",
                       }}
                     >
-                      View Slot List
+                      View Progress Reports
                     </Text>
-                  </TouchableOpacity> */}
+                  </TouchableOpacity>
 
-                  
-
-                  {/* Add Slot List content here */}
+                  {expandedReports[classItem.id] &&
+                    reportsData[classItem.id] && (
+                      <View style={{ marginBottom: 12 }}>
+                        {reportsData[classItem.id].map((report, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() =>
+                              router.push(`/progress-report/${report.id}`)
+                            }
+                            style={{
+                              backgroundColor: "#f8f9fa",
+                              borderRadius: 8,
+                              padding: 16,
+                              marginBottom: 8,
+                              borderLeftWidth: 4,
+                              borderLeftColor: "#007AFF",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: "bold",
+                                color: "#333",
+                              }}
+                            >
+                              {new Date(report.date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "long",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
+                            </Text>
+                            <Text style={{ color: "#666", marginTop: 4 }}>
+                              {formatTime(report.schedule.startTime)} -{" "}
+                              {formatTime(report.schedule.endTime)}
+                            </Text>
+                            <Text style={{ color: "#666", marginTop: 4 }}>
+                              Lesson: {report.lesson.name}
+                            </Text>
+                            {report.attendance && (
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  marginTop: 8,
+                                  backgroundColor: "#e8f5e9",
+                                  padding: 8,
+                                  borderRadius: 6,
+                                }}
+                              >
+                                <MaterialIcons
+                                  name="check-circle"
+                                  size={20}
+                                  color="#4caf50"
+                                />
+                                <Text
+                                  style={{
+                                    marginLeft: 8,
+                                    color: "#4caf50",
+                                    fontWeight: "500",
+                                  }}
+                                >
+                                  Attended
+                                </Text>
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
                   {expandedSlots[classItem.id] && slotsData[classItem.id] && (
                     <View style={{ marginBottom: 12 }}>
                       {slotsData[classItem.id].map((slot, index) => (

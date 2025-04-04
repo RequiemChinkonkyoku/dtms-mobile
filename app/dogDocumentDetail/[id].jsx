@@ -107,11 +107,6 @@ export default function DogDocumentDetail() {
             value={document.dogDocumentType.name}
           />
           <InfoItem
-            icon="business"
-            label="Issuing Authority"
-            value={document.issuingAuthority}
-          />
-          <InfoItem
             icon="event"
             label="Issue Date"
             value={new Date(document.issueDate).toLocaleDateString()}

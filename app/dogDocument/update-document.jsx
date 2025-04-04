@@ -31,7 +31,6 @@ export default function UpdateDocument() {
   const [image, setImage] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [issuingAuthority, setIssuingAuthority] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dogDocumentTypeId, setDogDocumentTypeId] = useState("");
@@ -56,7 +55,6 @@ export default function UpdateDocument() {
     if (document) {
       setName(document.name);
       setDescription(document.description || "");
-      setIssuingAuthority(document.issuingAuthority);
       setImage(document.imageUrl);
       setIssueDate(document.issueDate.split("T")[0]);
       setDogDocumentTypeId(document.dogDocumentTypeId);
@@ -90,7 +88,7 @@ export default function UpdateDocument() {
   const onUpdateDocument = async () => {
     setLoading(true);
     try {
-      if (!name || !issueDate || !dogDocumentTypeId || !issuingAuthority) {
+      if (!name || !issueDate || !dogDocumentTypeId ) {
         ToastAndroid.show("Required fields must be filled!", ToastAndroid.LONG);
         return;
       }
@@ -120,7 +118,6 @@ export default function UpdateDocument() {
       const updatedDocument = {
         name,
         description,
-        issuingAuthority,
         issueDate,
         imageUrl,
         dogDocumentTypeId,
@@ -181,16 +178,7 @@ export default function UpdateDocument() {
             numberOfLines={3}
             placeholderTextColor="#999"
           />
-
-          <Text style={styles.inputLabel}>Issuing Authority</Text>
-          <TextInput
-            placeholder="Enter issuing authority"
-            value={issuingAuthority}
-            onChangeText={setIssuingAuthority}
-            style={styles.input}
-            placeholderTextColor="#999"
-          />
-
+          
           <Text style={styles.inputLabel}>
             Issue Date <Text style={styles.requiredStar}>*</Text>
           </Text>
