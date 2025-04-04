@@ -1,49 +1,99 @@
-import { View, Text, Image, Dimensions, ScrollView } from "react-native";
-import React, { useEffect } from "react";
+import { View, Text, Image, Dimensions, ScrollView, RefreshControl } from "react-native";
+import React, { useEffect, useState } from "react";
 import { CustomerProfileStyles } from "../../styles/CustomerProfileStyles";
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
+import { fetchAllMemberships } from '../../services/MembershipService';
 
-export default function ProfileDetailCard({ profileData }) {
+export default function ProfileDetailCard({ profileData, onRefreshProfile }) {
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
+  const [memberships, setMemberships] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
       headerTitle: 'My Profile',
       headerShown: true
     });
+    loadMemberships();
   }, []);
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        loadMemberships(),
+        onRefreshProfile(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [onRefreshProfile]);
+
+  const loadMemberships = async () => {
+    const data = await fetchAllMemberships();
+    setMemberships(data.sort((a, b) => a.requiredPoints - b.requiredPoints));
+  };
+
+  // Get tier-specific colors
+  const getTierColor = (tierName) => {
+    switch (tierName.toLowerCase()) {
+      case 'basic': return '#CD7F32'; // Bronze color
+      case 'gold': return '#CFB53B';
+      case 'platinum': return '#4682B4';
+      default: return '#666';
+    }
+  };
+
+  // Get tier-specific background colors
+  const getTierBackgroundColor = (tierName, isCurrentTier) => {
+    if (!isCurrentTier) return '#f5f5f5';
+    switch (tierName.toLowerCase()) {
+      case 'basic': return '#FFF1E6'; // Light bronze background
+      case 'gold': return '#FFF8E7';
+      case 'platinum': return '#F0F8FF';
+      default: return '#f5f5f5';
+    }
+  };
+
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#f0f2f5" }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#007AFF"]}
+          tintColor="#007AFF"
+        />
+      }
+    >
       {/* Cover and Profile Section */}
-      <View
-        style={{
-          height: 180,
-          backgroundColor: "#007AFF",
-          position: "relative",
-          marginBottom: 60,
-          borderBottomLeftRadius: 30,
-          borderBottomRightRadius: 30,
-        }}
-      >
-        <View
-          style={{
-            position: "absolute",
-            bottom: -50,
-            left: windowWidth / 2 - 60,
-            borderWidth: 4,
-            borderColor: "#fff",
-            borderRadius: 100,
-            backgroundColor: "#fff",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.2,
-            shadowRadius: 5,
-            elevation: 8,
-          }}
-        >
+      <View style={{
+        height: 180,
+        backgroundColor: "#007AFF",
+        position: "relative",
+        marginBottom: 60,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+      }}>
+        <View style={{
+          position: "absolute",
+          bottom: -50,
+          left: windowWidth / 2 - 60,
+          borderWidth: 4,
+          borderColor: "#fff",
+          borderRadius: 100,
+          backgroundColor: "#fff",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 5,
+          elevation: 8,
+        }}>
           <Image
             source={
               profileData.imageUrl
@@ -151,7 +201,8 @@ export default function ProfileDetailCard({ profileData }) {
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric'
-                })}</Text>
+                })}
+              </Text>
             </View>
           </View>
 
@@ -180,24 +231,128 @@ export default function ProfileDetailCard({ profileData }) {
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
           <MaterialCommunityIcons name="star-circle-outline" size={24} color="#007AFF" />
           <Text style={{ fontSize: 20, fontWeight: "600", marginLeft: 10 }}>
-            Membership
+            Membership Status
           </Text>
         </View>
 
+        {/* Current Points */}
         <View style={{
           backgroundColor: "#f0f7ff",
           padding: 20,
           borderRadius: 15,
           alignItems: "center",
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: 10,
+          marginBottom: 20,
         }}>
-          <MaterialCommunityIcons name="star" size={32} color="#007AFF" />
-          <Text style={{ fontSize: 32, fontWeight: "bold", color: "#007AFF" }}>
-            {profileData.membershipPoints}
+          <Text style={{ fontSize: 16, color: "#666", marginBottom: 10 }}>Your Current Points</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <MaterialCommunityIcons name="star" size={32} color="#007AFF" />
+            <Text style={{ fontSize: 32, fontWeight: "bold", color: "#007AFF" }}>
+              {profileData.membershipPoints}
+            </Text>
+          </View>
+        </View>
+
+        {/* Membership Tiers */}
+        <View style={{ marginTop: 10 }}>
+          <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 15, color: "#333" }}>
+            Membership Tiers
           </Text>
-          <Text style={{ color: "#666", fontSize: 16, fontWeight: "500" }}>Points</Text>
+          {memberships.map((tier, index) => {
+            const isCurrentTier = profileData.membershipPoints >= tier.requiredPoints &&
+              (index === memberships.length - 1 || profileData.membershipPoints < memberships[index + 1].requiredPoints);
+
+            let progress = 0;
+            if (index < memberships.length - 1) {
+              if (profileData.membershipPoints > tier.requiredPoints) {
+                const pointsInCurrentTier = profileData.membershipPoints - tier.requiredPoints;
+                const pointsNeededForNextTier = memberships[index + 1].requiredPoints - tier.requiredPoints;
+                progress = Math.min(100, (pointsInCurrentTier / pointsNeededForNextTier) * 100);
+              }
+            } else if (profileData.membershipPoints >= tier.requiredPoints) {
+              progress = 100;
+            }
+
+            const tierColor = getTierColor(tier.name);
+            const backgroundColor = getTierBackgroundColor(tier.name, isCurrentTier);
+
+            return (
+              <View key={tier.id} style={{
+                backgroundColor: backgroundColor,
+                padding: 15,
+                borderRadius: 12,
+                marginBottom: 10,
+                borderWidth: isCurrentTier ? 1 : 0,
+                borderColor: tierColor,
+              }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <MaterialCommunityIcons
+                      name={isCurrentTier ? "crown" : "crown-outline"}
+                      size={24}
+                      color={tierColor}
+                    />
+                    <View>
+                      <Text style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        marginLeft: 8,
+                        color: tierColor
+                      }}>
+                        {tier.name}
+                      </Text>
+                      {isCurrentTier && (
+                        <Text style={{
+                          fontSize: 12,
+                          color: tierColor,
+                          marginLeft: 8,
+                        }}>
+                          Current Tier
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  <Text style={{
+                    color: tierColor,
+                    fontWeight: 'bold'
+                  }}>{tier.discountAmount}% OFF</Text>
+                </View>
+
+                <Text style={{ color: "#666", marginBottom: 8 }}>{tier.description}</Text>
+
+                {/* Progress Bar */}
+                <View style={{ height: 4, backgroundColor: "#E0E0E0", borderRadius: 2 }}>
+                  <View style={{
+                    height: '100%',
+                    width: `${progress}%`,
+                    backgroundColor: tierColor,
+                    borderRadius: 2,
+                  }} />
+                </View>
+
+                <View style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginTop: 8
+                }}>
+                  <Text style={{ color: "#666", fontSize: 12 }}>
+                    {tier.requiredPoints} points required
+                  </Text>
+                  {index < memberships.length - 1 && (
+                    <Text style={{ color: "#666", fontSize: 12 }}>
+                      Next: {memberships[index + 1].requiredPoints} points
+                    </Text>
+                  )}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Benefits Info */}
+        <View style={{ marginTop: 20, padding: 15, backgroundColor: "#FFF9C4", borderRadius: 12 }}>
+          <Text style={{ fontSize: 14, color: "#666", textAlign: 'center' }}>
+            Earn points with every purchase and unlock exclusive benefits!
+          </Text>
         </View>
       </View>
     </ScrollView>

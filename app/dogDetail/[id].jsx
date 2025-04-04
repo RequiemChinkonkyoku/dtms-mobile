@@ -1,9 +1,10 @@
-import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { fetchDogById } from "../../services/DogService";
 import { MaterialIcons } from "@expo/vector-icons";
 import { dogDetailsStyles } from "../../styles/DogDetailStyles";
+import { deleteDog } from "../../services/DogService";
 
 export default function DogDetail() {
   const navigation = useNavigation();
@@ -24,6 +25,26 @@ export default function DogDetail() {
       });
     }
   }, [dogName]);
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Dog",
+      "Are you sure you want to delete this dog?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          onPress: async () => {
+            const result = await deleteDog(id);
+            if (result) {
+              router.back();
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
 
   const loadDogDetail = async () => {
     const dogData = await fetchDogById(id);
@@ -96,6 +117,22 @@ export default function DogDetail() {
             View Documents
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={dogDetailsStyles.deleteButton}
+          onPress={handleDelete}
+        >
+          <MaterialIcons
+            name="delete-outline"
+            size={24}
+            color="#fff"
+            style={dogDetailsStyles.documentButtonIcon}
+          />
+          <Text style={dogDetailsStyles.documentButtonText}>
+            Delete Dog
+          </Text>
+        </TouchableOpacity>
+
       </View>
     </ScrollView>
   );
