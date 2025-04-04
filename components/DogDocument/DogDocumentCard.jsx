@@ -118,7 +118,6 @@ export default function DogDocumentCard({ document, onRefresh }) {
               ? new Date(document.issueDate).toLocaleDateString()
               : ""}
           </Text>
-          <Text style={styles.issuer}>By: {document?.issuingAuthority}</Text>
         </View>
       </TouchableOpacity>
 

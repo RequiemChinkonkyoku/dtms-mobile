@@ -30,7 +30,6 @@ export default function AddDogDocument() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [issuingAuthority, setIssuingAuthority] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [documentTypeId, setDocumentTypeId] = useState("");
 
@@ -76,13 +75,7 @@ export default function AddDogDocument() {
     setLoading(true);
 
     try {
-      if (
-        !name ||
-        !issueDate ||
-        !documentTypeId ||
-        !image ||
-        !issuingAuthority
-      ) {
+      if (!name || !issueDate || !documentTypeId || !image) {
         ToastAndroid.show("All fields are required!", ToastAndroid.LONG);
         setLoading(false);
         return;
@@ -99,7 +92,6 @@ export default function AddDogDocument() {
         name,
         imageUrl,
         description: description || "",
-        issuingAuthority,
         issueDate,
         dogId: id,
         dogDocumentTypeId: documentTypeId,
@@ -162,16 +154,6 @@ export default function AddDogDocument() {
             numberOfLines={3}
             placeholderTextColor="#999"
           />
-
-          <Text style={styles.inputLabel}>Issuing Authority</Text>
-          <TextInput
-            placeholder="Enter issuing authority"
-            value={issuingAuthority}
-            onChangeText={setIssuingAuthority}
-            style={styles.input}
-            placeholderTextColor="#999"
-          />
-
           <Text style={styles.inputLabel}>
             Issue Date <Text style={styles.requiredStar}>*</Text>
           </Text>
