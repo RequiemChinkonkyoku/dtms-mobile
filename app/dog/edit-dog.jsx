@@ -113,7 +113,8 @@ export default function EditDog() {
                 imageUrl,
                 dateOfBirth,
                 gender: parseInt(gender),
-                dogBreedId
+                dogBreedId,
+                status: 1
             };
 
             const result = await updateDog(id, updatedDog);
