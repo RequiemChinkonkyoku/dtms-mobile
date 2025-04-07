@@ -118,7 +118,10 @@ export const styles = StyleSheet.create({
         marginLeft: 8,
     },
     slotContent: {
-        gap: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flex: 1,
     },
     timeContainer: {
         flexDirection: 'row',
