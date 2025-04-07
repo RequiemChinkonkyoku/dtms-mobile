@@ -4,12 +4,16 @@ import { CustomerProfileStyles } from "../../styles/CustomerProfileStyles";
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { fetchAllMemberships } from '../../services/MembershipService';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfileDetailCard({ profileData, onRefreshProfile }) {
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
   const [memberships, setMemberships] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const { userInfo } = useAuth();
+  const isTrainer = userInfo?.role?.includes('Trainer');
 
   useEffect(() => {
     navigation.setOptions({
@@ -217,144 +221,146 @@ export default function ProfileDetailCard({ profileData, onRefreshProfile }) {
       </View>
 
       {/* Membership Section */}
-      <View style={{
-        backgroundColor: "#fff",
-        padding: 20,
-        margin: 15,
-        borderRadius: 15,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-          <MaterialCommunityIcons name="star-circle-outline" size={24} color="#007AFF" />
-          <Text style={{ fontSize: 20, fontWeight: "600", marginLeft: 10 }}>
-            Membership Status
-          </Text>
-        </View>
-
-        {/* Current Points */}
+      {!isTrainer && (
         <View style={{
-          backgroundColor: "#f0f7ff",
+          backgroundColor: "#fff",
           padding: 20,
+          margin: 15,
           borderRadius: 15,
-          alignItems: "center",
-          marginBottom: 20,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
         }}>
-          <Text style={{ fontSize: 16, color: "#666", marginBottom: 10 }}>Your Current Points</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <MaterialCommunityIcons name="star" size={32} color="#007AFF" />
-            <Text style={{ fontSize: 32, fontWeight: "bold", color: "#007AFF" }}>
-              {profileData.membershipPoints}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+            <MaterialCommunityIcons name="star-circle-outline" size={24} color="#007AFF" />
+            <Text style={{ fontSize: 20, fontWeight: "600", marginLeft: 10 }}>
+              Membership Status
+            </Text>
+          </View>
+
+          {/* Current Points */}
+          <View style={{
+            backgroundColor: "#f0f7ff",
+            padding: 20,
+            borderRadius: 15,
+            alignItems: "center",
+            marginBottom: 20,
+          }}>
+            <Text style={{ fontSize: 16, color: "#666", marginBottom: 10 }}>Your Current Points</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <MaterialCommunityIcons name="star" size={32} color="#007AFF" />
+              <Text style={{ fontSize: 32, fontWeight: "bold", color: "#007AFF" }}>
+                {profileData.membershipPoints}
+              </Text>
+            </View>
+          </View>
+
+          {/* Membership Tiers */}
+          <View style={{ marginTop: 10 }}>
+            <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 15, color: "#333" }}>
+              Membership Tiers
+            </Text>
+            {memberships.map((tier, index) => {
+              const isCurrentTier = profileData.membershipPoints >= tier.requiredPoints &&
+                (index === memberships.length - 1 || profileData.membershipPoints < memberships[index + 1].requiredPoints);
+
+              let progress = 0;
+              if (index < memberships.length - 1) {
+                if (profileData.membershipPoints > tier.requiredPoints) {
+                  const pointsInCurrentTier = profileData.membershipPoints - tier.requiredPoints;
+                  const pointsNeededForNextTier = memberships[index + 1].requiredPoints - tier.requiredPoints;
+                  progress = Math.min(100, (pointsInCurrentTier / pointsNeededForNextTier) * 100);
+                }
+              } else if (profileData.membershipPoints >= tier.requiredPoints) {
+                progress = 100;
+              }
+
+              const tierColor = getTierColor(tier.name);
+              const backgroundColor = getTierBackgroundColor(tier.name, isCurrentTier);
+
+              return (
+                <View key={tier.id} style={{
+                  backgroundColor: backgroundColor,
+                  padding: 15,
+                  borderRadius: 12,
+                  marginBottom: 10,
+                  borderWidth: isCurrentTier ? 1 : 0,
+                  borderColor: tierColor,
+                }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <MaterialCommunityIcons
+                        name={isCurrentTier ? "crown" : "crown-outline"}
+                        size={24}
+                        color={tierColor}
+                      />
+                      <View>
+                        <Text style={{
+                          fontSize: 18,
+                          fontWeight: "bold",
+                          marginLeft: 8,
+                          color: tierColor
+                        }}>
+                          {tier.name}
+                        </Text>
+                        {isCurrentTier && (
+                          <Text style={{
+                            fontSize: 12,
+                            color: tierColor,
+                            marginLeft: 8,
+                          }}>
+                            Current Tier
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    <Text style={{
+                      color: tierColor,
+                      fontWeight: 'bold'
+                    }}>{tier.discountAmount}% OFF</Text>
+                  </View>
+
+                  <Text style={{ color: "#666", marginBottom: 8 }}>{tier.description}</Text>
+
+                  {/* Progress Bar */}
+                  <View style={{ height: 4, backgroundColor: "#E0E0E0", borderRadius: 2 }}>
+                    <View style={{
+                      height: '100%',
+                      width: `${progress}%`,
+                      backgroundColor: tierColor,
+                      borderRadius: 2,
+                    }} />
+                  </View>
+
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginTop: 8
+                  }}>
+                    <Text style={{ color: "#666", fontSize: 12 }}>
+                      {tier.requiredPoints} points required
+                    </Text>
+                    {index < memberships.length - 1 && (
+                      <Text style={{ color: "#666", fontSize: 12 }}>
+                        Next: {memberships[index + 1].requiredPoints} points
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Benefits Info */}
+          <View style={{ marginTop: 20, padding: 15, backgroundColor: "#FFF9C4", borderRadius: 12 }}>
+            <Text style={{ fontSize: 14, color: "#666", textAlign: 'center' }}>
+              Earn points with every purchase and unlock exclusive benefits!
             </Text>
           </View>
         </View>
-
-        {/* Membership Tiers */}
-        <View style={{ marginTop: 10 }}>
-          <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 15, color: "#333" }}>
-            Membership Tiers
-          </Text>
-          {memberships.map((tier, index) => {
-            const isCurrentTier = profileData.membershipPoints >= tier.requiredPoints &&
-              (index === memberships.length - 1 || profileData.membershipPoints < memberships[index + 1].requiredPoints);
-
-            let progress = 0;
-            if (index < memberships.length - 1) {
-              if (profileData.membershipPoints > tier.requiredPoints) {
-                const pointsInCurrentTier = profileData.membershipPoints - tier.requiredPoints;
-                const pointsNeededForNextTier = memberships[index + 1].requiredPoints - tier.requiredPoints;
-                progress = Math.min(100, (pointsInCurrentTier / pointsNeededForNextTier) * 100);
-              }
-            } else if (profileData.membershipPoints >= tier.requiredPoints) {
-              progress = 100;
-            }
-
-            const tierColor = getTierColor(tier.name);
-            const backgroundColor = getTierBackgroundColor(tier.name, isCurrentTier);
-
-            return (
-              <View key={tier.id} style={{
-                backgroundColor: backgroundColor,
-                padding: 15,
-                borderRadius: 12,
-                marginBottom: 10,
-                borderWidth: isCurrentTier ? 1 : 0,
-                borderColor: tierColor,
-              }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <MaterialCommunityIcons
-                      name={isCurrentTier ? "crown" : "crown-outline"}
-                      size={24}
-                      color={tierColor}
-                    />
-                    <View>
-                      <Text style={{
-                        fontSize: 18,
-                        fontWeight: "bold",
-                        marginLeft: 8,
-                        color: tierColor
-                      }}>
-                        {tier.name}
-                      </Text>
-                      {isCurrentTier && (
-                        <Text style={{
-                          fontSize: 12,
-                          color: tierColor,
-                          marginLeft: 8,
-                        }}>
-                          Current Tier
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                  <Text style={{
-                    color: tierColor,
-                    fontWeight: 'bold'
-                  }}>{tier.discountAmount}% OFF</Text>
-                </View>
-
-                <Text style={{ color: "#666", marginBottom: 8 }}>{tier.description}</Text>
-
-                {/* Progress Bar */}
-                <View style={{ height: 4, backgroundColor: "#E0E0E0", borderRadius: 2 }}>
-                  <View style={{
-                    height: '100%',
-                    width: `${progress}%`,
-                    backgroundColor: tierColor,
-                    borderRadius: 2,
-                  }} />
-                </View>
-
-                <View style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginTop: 8
-                }}>
-                  <Text style={{ color: "#666", fontSize: 12 }}>
-                    {tier.requiredPoints} points required
-                  </Text>
-                  {index < memberships.length - 1 && (
-                    <Text style={{ color: "#666", fontSize: 12 }}>
-                      Next: {memberships[index + 1].requiredPoints} points
-                    </Text>
-                  )}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Benefits Info */}
-        <View style={{ marginTop: 20, padding: 15, backgroundColor: "#FFF9C4", borderRadius: 12 }}>
-          <Text style={{ fontSize: 14, color: "#666", textAlign: 'center' }}>
-            Earn points with every purchase and unlock exclusive benefits!
-          </Text>
-        </View>
-      </View>
+      )}
     </ScrollView>
   );
 }
