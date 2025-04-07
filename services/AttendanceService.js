@@ -1,0 +1,41 @@
+import ApiManager from './ApiManager';
+
+export const markAttendance = async (attendanceData) => {
+    try {
+        const response = await ApiManager.post('/attendances', attendanceData);
+        return response.data;
+    } catch (error) {
+        console.error('Error marking attendance:', error);
+        throw error;
+    }
+};
+
+export const getSlotAttendance = async (slotId) => {
+    try {
+        const response = await ApiManager.get('/attendances');
+        const slotAttendances = response.data.filter(
+            attendance => attendance.slotId === slotId
+        );
+        return {
+            success: true,
+            message: "Successfully retrieved slot attendance",
+            object: slotAttendances
+        };
+    } catch (error) {
+        console.error('Error fetching slot attendance:', error);
+        throw error;
+    }
+};
+
+export const getClassAttendance = async (classId) => {
+    try {
+        const response = await ApiManager.get('/attendances');
+        const classAttendances = response.data.filter(
+            attendance => attendance.classId === classId
+        );
+        return classAttendances;
+    } catch (error) {
+        console.error('Error fetching class attendance:', error);
+        throw error;
+    }
+};

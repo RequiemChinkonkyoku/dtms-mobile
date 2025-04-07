@@ -205,7 +205,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                         Classes on {formatDate(selectedDate)}
                     </Text>
                     {getSlotsByDate(selectedDate).map((slot) => (
-                        <View key={`${slot.slotDate}-${slot.startTime}`} style={{
+                        <View key={slot.id} style={{
                             flexDirection: 'row',
                             alignItems: 'center',
                             justifyContent: 'space-between',
