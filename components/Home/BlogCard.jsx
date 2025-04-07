@@ -10,6 +10,7 @@ export default function BlogCard({ blog }) {
             onPress={() => router.push(`/blogDetail/${blog.id}`)}
             style={{
                 marginLeft: 20,
+                marginRight: 10,
                 padding: 10,
                 backgroundColor: '#fff',
                 borderRadius: 15,

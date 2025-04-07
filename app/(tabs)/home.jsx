@@ -46,12 +46,12 @@ export default function Home() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[homeStyles.featureCard, { backgroundColor: '#e6fff2' }]}
+          style={[homeStyles.featureCard, { backgroundColor: '#e8eaff' }]}
           onPress={() => router.push('/dog/my-dog')}
         >
-          <MaterialIcons name="pets" size={32} color="#34C759" />
-          <Text style={[homeStyles.featureTitle, { color: '#34C759' }]}>Dog Management</Text>
-          <Text style={homeStyles.featureDescription}>Register and manage your dogs</Text>
+          <MaterialIcons name="trending-up" size={32} color="#6366f1" />
+          <Text style={[homeStyles.featureTitle, { color: '#6366f1' }]}>Progress Tracking</Text>
+          <Text style={homeStyles.featureDescription}>Monitor your dog's training progress</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
