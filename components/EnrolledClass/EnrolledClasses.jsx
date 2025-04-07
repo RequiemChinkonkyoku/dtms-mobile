@@ -313,7 +313,8 @@ export default function EnrolledClasses({ dogId }) {
       const paymentResult = await createVNPayPayment(paymentData);
 
       if (paymentResult.success && paymentResult.data) {
-        onclose();
+        // onclose();
+        console.log("Payment successful!");
       } else {
         Alert.alert(
           "Payment Failed",

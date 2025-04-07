@@ -36,10 +36,13 @@ export function AuthProvider({ children }) {
         const decodedToken = decodeToken(token);
         setUserInfo(decodedToken);
         setIsAuthenticated(true);
+
+        await SecureStore.setItemAsync('user_role', decodedToken.role);
     };
 
     const logout = async () => {
         await SecureStore.deleteItemAsync('user_token');
+        await SecureStore.deleteItemAsync('user_role');
         delete ApiManager.defaults.headers.common['Authorization'];
         setUserInfo(null);
         setIsAuthenticated(false);

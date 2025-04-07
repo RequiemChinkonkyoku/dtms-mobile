@@ -6,20 +6,100 @@ import Header from '../../components/Home/Header';
 import BlogList from '../../components/Home/Blog';
 import { homeStyles } from '../../styles/HomeStyles';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Home() {
   const router = useRouter();
+  const { userInfo } = useAuth();
+  const isTrainer = userInfo?.role?.includes('Trainer');
 
   const [refreshing, setRefreshing] = useState(false);
 
-    const onRefresh = async () => {
-        setRefreshing(true);
-        try {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Minimum refresh time
-        } finally {
-            setRefreshing(false);
-        }
-    };
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const renderTrainerFeatureSection = () => (
+    <View style={homeStyles.featureSection}>
+      <Text style={homeStyles.sectionTitle}>Quick Access</Text>
+      <View style={homeStyles.featureGrid}>
+        <TouchableOpacity
+          style={[homeStyles.featureCard, { backgroundColor: '#e6f3ff' }]}
+          onPress={() => router.push('/(tabs)/trainer-schedule')}
+        >
+          <MaterialIcons name="calendar-today" size={32} color="#007AFF" />
+          <Text style={[homeStyles.featureTitle, { color: '#007AFF' }]}>My Schedule</Text>
+          <Text style={homeStyles.featureDescription}>View and manage your training sessions</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[homeStyles.featureCard, { backgroundColor: '#fff5e6' }]}
+          onPress={() => router.push('/classes/my-classes')}
+        >
+          <MaterialIcons name="class" size={32} color="#FF9500" />
+          <Text style={[homeStyles.featureTitle, { color: '#FF9500' }]}>My Classes</Text>
+          <Text style={homeStyles.featureDescription}>Manage your training classes</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[homeStyles.featureCard, { backgroundColor: '#e8eaff' }]}
+          onPress={() => router.push('/progress/class-progress')}
+        >
+          <MaterialIcons name="trending-up" size={32} color="#6366f1" />
+          <Text style={[homeStyles.featureTitle, { color: '#6366f1' }]}>Class Progress</Text>
+          <Text style={homeStyles.featureDescription}>Track students' training progress</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[homeStyles.featureCard, { backgroundColor: '#ffe6e6' }]}
+          onPress={() => router.push('/reports')}
+        >
+          <MaterialIcons name="assessment" size={32} color="#FF3B30" />
+          <Text style={[homeStyles.featureTitle, { color: '#FF3B30' }]}>Reports</Text>
+          <Text style={homeStyles.featureDescription}>View training reports and analytics</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderTrainerHighlightSection = () => (
+    <View style={homeStyles.highlightSection}>
+      <Text style={homeStyles.sectionTitle}>Training Resources</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={homeStyles.highlightScroll}>
+        <LinearGradient
+          colors={['#e6f3ff', '#ffffff']}
+          style={homeStyles.highlightCard}
+        >
+          <MaterialIcons name="menu-book" size={40} color="#007AFF" />
+          <Text style={[homeStyles.highlightTitle, { color: '#007AFF' }]}>Training Materials</Text>
+          <Text style={homeStyles.highlightDescription}>Access lesson plans and guides</Text>
+        </LinearGradient>
+
+        <LinearGradient
+          colors={['#fff5e6', '#ffffff']}
+          style={homeStyles.highlightCard}
+        >
+          <MaterialIcons name="people" size={40} color="#FF9500" />
+          <Text style={[homeStyles.highlightTitle, { color: '#FF9500' }]}>Student Management</Text>
+          <Text style={homeStyles.highlightDescription}>Manage your training groups</Text>
+        </LinearGradient>
+
+        <LinearGradient
+          colors={['#e6fff2', '#ffffff']}
+          style={homeStyles.highlightCard}
+        >
+          <MaterialIcons name="insights" size={40} color="#34C759" />
+          <Text style={[homeStyles.highlightTitle, { color: '#34C759' }]}>Performance Metrics</Text>
+          <Text style={homeStyles.highlightDescription}>Track your teaching impact</Text>
+        </LinearGradient>
+      </ScrollView>
+    </View>
+  );
 
   const renderFeatureSection = () => (
     <View
@@ -46,12 +126,12 @@ export default function Home() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[homeStyles.featureCard, { backgroundColor: '#e6fff2' }]}
+          style={[homeStyles.featureCard, { backgroundColor: '#e8eaff' }]}
           onPress={() => router.push('/dog/my-dog')}
         >
-          <MaterialIcons name="pets" size={32} color="#34C759" />
-          <Text style={[homeStyles.featureTitle, { color: '#34C759' }]}>Dog Management</Text>
-          <Text style={homeStyles.featureDescription}>Register and manage your dogs</Text>
+          <MaterialIcons name="trending-up" size={32} color="#6366f1" />
+          <Text style={[homeStyles.featureTitle, { color: '#6366f1' }]}>Progress Tracking</Text>
+          <Text style={homeStyles.featureDescription}>Monitor your dog's training progress</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -104,21 +184,21 @@ export default function Home() {
 
   return (
     <ScrollView 
-            showsVerticalScrollIndicator={false} 
-            style={homeStyles.container}
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    colors={['#007AFF']}
-                    tintColor="#007AFF"
-                />
-            }
-        >
+      showsVerticalScrollIndicator={false} 
+      style={homeStyles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#007AFF']}
+          tintColor="#007AFF"
+        />
+      }
+    >
       <Header onRefresh={onRefresh} />
       <BlogList />
-      {renderFeatureSection()}
-      {renderHighlightSection()}
+      {isTrainer ? renderTrainerFeatureSection() : renderFeatureSection()}
+      {isTrainer ? renderTrainerHighlightSection() : renderHighlightSection()}
       <View style={homeStyles.footer}>
         <Text style={homeStyles.footerText}>© 2025 Dog Training Management System</Text>
       </View>
