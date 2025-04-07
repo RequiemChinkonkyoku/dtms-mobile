@@ -754,7 +754,7 @@ export default function EnrolledClasses({ dogId }) {
                   {/* Payment Button */}
                   {classPretests[classItem.id]?.some(pretest => pretest.status === 1) &&
                     classDetails[classItem.id]?.classEnrollments?.some(enrollment =>
-                      enrollment.dogId === dogId && enrollment.status === 0
+                      enrollment.dogId === dogId && enrollment.status === 2
                     ) && (
                       <TouchableOpacity
                         style={{

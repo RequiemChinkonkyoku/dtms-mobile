@@ -11,7 +11,9 @@ export default function ClassDetails({ classData }) {
     const [selectedDate, setSelectedDate] = useState(null);
 
     const getSlotsByDate = (date) => {
-        return classData.classSlots.filter(slot => slot.slotDate === date);
+        return classData.classSlots
+            .filter(slot => slot.slotDate === date)
+            .sort((a, b) => a.startTime.localeCompare(b.startTime));
     };
 
     const markedDates = useMemo(() => {
@@ -164,12 +166,12 @@ export default function ClassDetails({ classData }) {
                     }}>
                         Classes on {formatDate(selectedDate)}
                     </Text>
-                    {getSlotsByDate(selectedDate).map((slot, index, array) => (
-                        <View key={index} style={{
+                    {getSlotsByDate(selectedDate).map((slot) => (
+                        <View key={`${slot.slotDate}-${slot.startTime}`} style={{
                             flexDirection: 'row',
                             alignItems: 'center',
                             paddingVertical: 8,
-                            borderBottomWidth: index < array.length - 1 ? 1 : 0,
+                            borderBottomWidth: 1,
                             borderBottomColor: '#eee'
                         }}>
                             <MaterialIcons name="access-time" size={20} color="#666" />
