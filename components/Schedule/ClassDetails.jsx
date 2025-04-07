@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl } from 'react-native';
 import React, { useMemo, useState } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -6,9 +6,21 @@ import { useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 
 
-export default function ClassDetails({ classData }) {
+export default function ClassDetails({ classData, onClose, onRefresh }) {
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await onRefresh();
+        } catch (error) {
+            console.error('Error refreshing class details:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [onRefresh]);
 
     const getSlotsByDate = (date) => {
         return classData.classSlots
@@ -51,6 +63,32 @@ export default function ClassDetails({ classData }) {
             hour: '2-digit',
             minute: '2-digit',
         });
+    };
+
+    const getSlotStatusColor = (status) => {
+        switch (status) {
+            case 0:
+                return '#FF9500'; // NotYet - Orange
+            case 1:
+                return '#34C759'; // CheckedIn - Green
+            case 2:
+                return '#8E8E93'; // Concluded - Gray
+            default:
+                return '#8E8E93';
+        }
+    };
+
+    const getSlotStatusText = (status) => {
+        switch (status) {
+            case 0:
+                return 'Not Yet';
+            case 1:
+                return 'Checked In';
+            case 2:
+                return 'Concluded';
+            default:
+                return 'Unknown';
+        }
     };
 
     if (!classData) {
@@ -167,17 +205,34 @@ export default function ClassDetails({ classData }) {
                         Classes on {formatDate(selectedDate)}
                     </Text>
                     {getSlotsByDate(selectedDate).map((slot) => (
-                        <View key={`${slot.slotDate}-${slot.startTime}`} style={{
+                        <View key={slot.id} style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            paddingVertical: 8,
+                            justifyContent: 'space-between',
+                            paddingVertical: 12,
                             borderBottomWidth: 1,
                             borderBottomColor: '#eee'
                         }}>
-                            <MaterialIcons name="access-time" size={20} color="#666" />
-                            <Text style={{ marginLeft: 8, color: '#666' }}>
-                                {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <MaterialIcons name="access-time" size={20} color="#666" />
+                                <Text style={{ marginLeft: 8, color: '#666' }}>
+                                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                                </Text>
+                            </View>
+                            <View style={{
+                                backgroundColor: getSlotStatusColor(slot.status),
+                                paddingHorizontal: 12,
+                                paddingVertical: 6,
+                                borderRadius: 12,
+                            }}>
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 12,
+                                    fontWeight: '600'
+                                }}>
+                                    {getSlotStatusText(slot.status)}
+                                </Text>
+                            </View>
                         </View>
                     ))}
                     {getSlotsByDate(selectedDate).length === 0 && (
@@ -235,7 +290,17 @@ export default function ClassDetails({ classData }) {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-            <ScrollView style={{ flex: 1 }}>
+            <ScrollView
+                style={{ flex: 1 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        colors={['#007AFF']}
+                        tintColor="#007AFF"
+                    />
+                }
+            >
                 <LinearGradient
                     colors={['#007AFF', '#0056b3']}
                     style={{

@@ -57,6 +57,12 @@ export default function MenuList() {
                 name: 'Schedule',
                 icon: require('./../../assets/images/schedule.png'),
                 path: '/schedule/trainer-schedule'
+            },
+            {
+                id: 2,
+                name: 'Attendances',
+                icon: require('./../../assets/images/schedule.png'),
+                path: '/attendance/attendance'
             }
         ] : []),
         
