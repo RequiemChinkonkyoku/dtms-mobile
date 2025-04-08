@@ -8,15 +8,28 @@ const ApiManager = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  validateStatus: status => status >= 200 && status < 300
 });
+
+// Add request logging
+ApiManager.interceptors.request.use(
+  config => {
+    console.log('Request URL:', config.baseURL + config.url);
+    return config;
+  },
+  error => Promise.reject(error)
+);
 
 ApiManager.interceptors.response.use(
   (response) => response,
   async (error) => {
+      console.log('API Error:', {
+        url: error.config?.url,
+        message: error.message,
+        status: error.response?.status
+      });
+      
       if (error.response?.status === 401) {
-          // Handle token expiration
-          // You could implement token refresh here
-          // For now, redirect to login
           router.replace('/login');
       }
       return Promise.reject(error);
