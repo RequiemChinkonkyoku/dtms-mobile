@@ -8,6 +8,7 @@ import ProgressReportModal from '../ProgressReport/ProgressReportModal';
 import { submitProgressReport } from '../../services/ProgressReportService';
 import { useAuth } from '../../contexts/AuthContext';
 import { concludeSlot } from '../../services/SlotService';
+import SlotOverviewModal from './SlotOverviewModal';
 
 export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     const [attendanceData, setAttendanceData] = useState({});
@@ -20,6 +21,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     const [isProgressReportVisible, setIsProgressReportVisible] = useState(false);
     const [selectedProgressReport, setSelectedProgressReport] = useState(null);
     const [attendanceResponse, setAttendanceResponse] = useState(null);
+    const [isOverviewVisible, setIsOverviewVisible] = useState(false);
     const { userInfo } = useAuth();
 
     const isSlotConcluded = () => slot.status === 2;
@@ -240,6 +242,25 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                         <Text style={{ color: 'white', fontWeight: '600' }}>Conclude</Text>
                                     </TouchableOpacity>
                                 )}
+
+                                {slot.status === 2 && (
+                                    <TouchableOpacity
+                                        onPress={() => setIsOverviewVisible(true)}
+                                        style={{
+                                            backgroundColor: '#007AFF',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 6,
+                                            borderRadius: 8,
+                                            marginRight: 12,
+                                            flexDirection: 'row',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <MaterialIcons name="assessment" size={20} color="white" style={{ marginRight: 4 }} />
+                                        <Text style={{ color: 'white', fontWeight: '600' }}>Overview</Text>
+                                    </TouchableOpacity>
+                                )}
+
                                 <TouchableOpacity onPress={onClose}>
                                     <MaterialIcons name="close" size={24} color="#666" />
                                 </TouchableOpacity>
@@ -427,6 +448,15 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                 attendanceId={selectedDog ? attendanceRecords[selectedDog.dogId] : null}
                 trainerId={userInfo?.unique_name}
                 existingReport={selectedProgressReport}
+            />
+
+            <SlotOverviewModal
+                visible={isOverviewVisible}
+                onClose={() => setIsOverviewVisible(false)}
+                slotData={slot}
+                classData={classData}
+                attendanceData={attendanceData}
+                progressReports={attendanceResponse?.object?.flatMap(record => record.progressReports || [])}
             />
         </>
     );
