@@ -1,15 +1,46 @@
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl } from 'react-native';
-import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl, Alert } from 'react-native';
+import React, { useMemo, useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
+import { fetchPretestsByClass, updatePretestStatus } from '../../services/PretestService';
 
 
 export default function ClassDetails({ classData, onClose, onRefresh }) {
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [pretests, setPretests] = useState([]);
+    const [loadingPretests, setLoadingPretests] = useState(false);
+
+    useEffect(() => {
+        loadPretests();
+    }, [classData]);
+
+    const loadPretests = async () => {
+        if (!classData?.id) return;
+        setLoadingPretests(true);
+        try {
+            const data = await fetchPretestsByClass(classData.id);
+            setPretests(data.objectList || []);
+        } catch (error) {
+            console.error('Error loading pretests:', error);
+            setPretests([]);
+        } finally {
+            setLoadingPretests(false);
+        }
+    };
+
+    const handleStatusUpdate = async (pretestId, newStatus) => {
+        try {
+            await updatePretestStatus(pretestId, newStatus);
+            await loadPretests();
+            Alert.alert('Success', 'Pretest status updated successfully');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update pretest status');
+        }
+    };
 
     const handleRefresh = React.useCallback(async () => {
         setRefreshing(true);
@@ -288,6 +319,140 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
         </View>
     );
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case -1: return '#8E8E93'; // Cancelled
+            case 0: return '#FF9500';  // Pending
+            case 1: return '#34C759';  // Accepted
+            case 2: return '#FF3B30';  // Rejected
+            default: return '#8E8E93';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch (status) {
+            case -1: return 'Cancelled';
+            case 0: return 'Pending';
+            case 1: return 'Accepted';
+            case 2: return 'Rejected';
+            default: return 'Unknown';
+        }
+    };
+
+    const renderPretestCard = () => (
+        <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 16,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+        }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                <MaterialIcons name="assignment" size={24} color="#007AFF" />
+                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Pretest Exam</Text>
+            </View>
+
+            {loadingPretests ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ color: '#666' }}>Loading pretests...</Text>
+                </View>
+            ) : pretests.length === 0 ? (
+                <View style={{ alignItems: 'center', padding: 20 }}>
+                    <MaterialIcons name="assignment-late" size={48} color="#666" />
+                    <Text style={{ color: '#666', marginTop: 8, textAlign: 'center' }}>
+                        No pretests scheduled yet
+                    </Text>
+                </View>
+            ) : (
+                <View>
+                    {pretests[0]?.testDate && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                            <MaterialIcons name="event" size={20} color="#666" />
+                            <Text style={{ marginLeft: 8, color: '#333', fontWeight: '500' }}>
+                                {formatDate(pretests[0].testDate)}
+                            </Text>
+                        </View>
+                    )}
+                    {classData.classEnrollments.map((enrollment) => {
+                        const dogPretest = pretests.find(p => p.dogId === enrollment.dogId);
+                        return (
+                            <View key={enrollment.id} style={{
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: 8,
+                                padding: 12,
+                                marginBottom: 8,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                    <MaterialIcons name="pets" size={20} color="#666" />
+                                    <View style={{ marginLeft: 8, flex: 1 }}>
+                                        <Text style={{ color: '#333', fontWeight: '500' }}>
+                                            {enrollment.dogName}
+                                        </Text>
+                                        {dogPretest && (
+                                            <View style={{
+                                                backgroundColor: getStatusColor(dogPretest.status),
+                                                paddingHorizontal: 8,
+                                                paddingVertical: 2,
+                                                borderRadius: 12,
+                                                alignSelf: 'flex-start',
+                                                marginTop: 4
+                                            }}>
+                                                <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>
+                                                    {getStatusText(dogPretest.status)}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                </View>
+
+                                {dogPretest && dogPretest.status === 0 && (
+                                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                                        <TouchableOpacity
+                                            onPress={() => handleStatusUpdate(dogPretest.id, 1)}
+                                            style={{
+                                                backgroundColor: '#34C759',
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 6,
+                                                borderRadius: 8,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <MaterialIcons name="check" size={16} color="white" />
+                                            <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Accept</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            onPress={() => handleStatusUpdate(dogPretest.id, 2)}
+                                            style={{
+                                                backgroundColor: '#FF3B30',
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 6,
+                                                borderRadius: 8,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <MaterialIcons name="close" size={16} color="white" />
+                                            <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Reject</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                        );
+                    })}
+                </View>
+            )}
+        </View>
+    );
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
             <ScrollView
@@ -327,6 +492,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     {renderInfoCard()}
                     {renderScheduleCard()}
                     {renderEnrollmentsCard()}
+                    {renderPretestCard()}
                 </View>
             </ScrollView>
         </SafeAreaView>
