@@ -20,3 +20,13 @@ export const fetchProgressReportById = async (id) => {
     return null;
   }
 };
+
+export const submitProgressReport = async (reportData) => {
+  try {
+      const response = await ApiManager.post('/progressReports', reportData);
+      return response.data;
+  } catch (error) {
+      console.error('Error submitting progress report:', error);
+      throw error;
+  }
+};
