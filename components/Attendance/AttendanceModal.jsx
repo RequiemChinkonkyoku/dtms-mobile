@@ -8,6 +8,7 @@ import ProgressReportModal from '../ProgressReport/ProgressReportModal';
 import { submitProgressReport } from '../../services/ProgressReportService';
 import { useAuth } from '../../contexts/AuthContext';
 import { concludeSlot } from '../../services/SlotService';
+import SlotOverviewModal from './SlotOverviewModal';
 
 export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     const [attendanceData, setAttendanceData] = useState({});
@@ -18,6 +19,9 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     const [attendanceRecords, setAttendanceRecords] = useState({});
     const [selectedDog, setSelectedDog] = useState(null);
     const [isProgressReportVisible, setIsProgressReportVisible] = useState(false);
+    const [selectedProgressReport, setSelectedProgressReport] = useState(null);
+    const [attendanceResponse, setAttendanceResponse] = useState(null);
+    const [isOverviewVisible, setIsOverviewVisible] = useState(false);
     const { userInfo } = useAuth();
 
     const isSlotConcluded = () => slot.status === 2;
@@ -39,15 +43,16 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             const classResponse = await fetchClassById(slot.classId);
             setClassData(classResponse);
 
-            const attendanceResponse = await getSlotAttendance(slot.slotId);
-            console.log('Full Attendance Response:', JSON.stringify(attendanceResponse, null, 2));
+            const response = await getSlotAttendance(slot.slotId);
+            setAttendanceResponse(response); // Store the response
+            console.log('Full Attendance Response:', JSON.stringify(response, null, 2));
 
             const attendanceMap = {};
             const attendanceRecords = {};
             const statusMap = {};
 
-            if (attendanceResponse?.success && Array.isArray(attendanceResponse.object)) {
-                attendanceResponse.object.forEach(record => {
+            if (response?.success && Array.isArray(response.object)) {
+                response.object.forEach(record => {
                     if (record.slotId === slot.slotId) {
                         attendanceMap[record.dogId] = true;
                         attendanceRecords[record.dogId] = record.id;
@@ -237,6 +242,25 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                         <Text style={{ color: 'white', fontWeight: '600' }}>Conclude</Text>
                                     </TouchableOpacity>
                                 )}
+
+                                {slot.status === 2 && (
+                                    <TouchableOpacity
+                                        onPress={() => setIsOverviewVisible(true)}
+                                        style={{
+                                            backgroundColor: '#007AFF',
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 6,
+                                            borderRadius: 8,
+                                            marginRight: 12,
+                                            flexDirection: 'row',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <MaterialIcons name="assessment" size={20} color="white" style={{ marginRight: 4 }} />
+                                        <Text style={{ color: 'white', fontWeight: '600' }}>Overview</Text>
+                                    </TouchableOpacity>
+                                )}
+
                                 <TouchableOpacity onPress={onClose}>
                                     <MaterialIcons name="close" size={24} color="#666" />
                                 </TouchableOpacity>
@@ -329,11 +353,15 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                         <MaterialIcons name="logout" size={20} color="#fff" />
                                                     </TouchableOpacity>
                                                 )}
-                                                
+
                                                 <TouchableOpacity
                                                     onPress={() => {
                                                         setSelectedDog(enrollment);
+                                                        const existingReport = attendanceResponse?.object
+                                                            ?.find(record => record.dogId === enrollment.dogId)
+                                                            ?.progressReports?.[0];
                                                         setIsProgressReportVisible(true);
+                                                        setSelectedProgressReport(existingReport);
                                                     }}
                                                     style={{
                                                         marginLeft: 8,
@@ -342,7 +370,13 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                         borderRadius: 8,
                                                     }}
                                                 >
-                                                    <MaterialIcons name="rate-review" size={20} color="#fff" />
+                                                    <MaterialIcons
+                                                        name={attendanceResponse?.object
+                                                            ?.find(record => record.dogId === enrollment.dogId)
+                                                            ?.progressReports?.length > 0 ? "visibility" : "rate-review"}
+                                                        size={20}
+                                                        color="#fff"
+                                                    />
                                                 </TouchableOpacity>
                                             </>
                                         )}
@@ -404,12 +438,25 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
 
             <ProgressReportModal
                 visible={isProgressReportVisible}
-                onClose={() => setIsProgressReportVisible(false)}
+                onClose={() => {
+                    setIsProgressReportVisible(false);
+                    setSelectedProgressReport(null);
+                }}
                 onSubmit={handleProgressReport}
                 dogName={selectedDog?.dogName}
                 loading={loading}
                 attendanceId={selectedDog ? attendanceRecords[selectedDog.dogId] : null}
                 trainerId={userInfo?.unique_name}
+                existingReport={selectedProgressReport}
+            />
+
+            <SlotOverviewModal
+                visible={isOverviewVisible}
+                onClose={() => setIsOverviewVisible(false)}
+                slotData={slot}
+                classData={classData}
+                attendanceData={attendanceData}
+                progressReports={attendanceResponse?.object?.flatMap(record => record.progressReports || [])}
             />
         </>
     );

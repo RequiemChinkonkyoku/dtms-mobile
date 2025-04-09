@@ -10,6 +10,30 @@ import ApiManager from './ApiManager';
 //     }
 // };
 
+export const fetchPretestsByClass = async (classId) => {
+    try {
+        const response = await ApiManager.get('/pretest');
+        const pretests = response.data.objectList || [];
+        const classPretests = pretests.filter(
+            pretest => pretest.classId === classId
+        );
+        return {
+            success: true,
+            message: "Successfully retrieved class pretests",
+            object: null,
+            objectList: classPretests
+        };
+    } catch (error) {
+        console.error('Error fetching class pretests:', error);
+        return {
+            success: false,
+            message: "Error fetching class pretests",
+            object: null,
+            objectList: []
+        };
+    }
+};
+
 export const fetchClassPretests = async (classId, dogId) => {
     try {
         const response = await ApiManager.post('/pretest/get-class-pretests', {
@@ -20,5 +44,15 @@ export const fetchClassPretests = async (classId, dogId) => {
     } catch (error) {
         console.error('Error fetching pretests:', error);
         return [];
+    }
+};
+
+export const updatePretestStatus = async (pretestId, status) => {
+    try {
+        const response = await ApiManager.put(`/pretest/update-pretest-status/${pretestId}?pretestStatus=${status}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating pretest status:', error);
+        throw error;
     }
 };
