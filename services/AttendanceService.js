@@ -39,3 +39,13 @@ export const getClassAttendance = async (classId) => {
         throw error;
     }
 };
+
+export const checkoutAttendance = async (attendanceId) => {
+    try {
+        const response = await ApiManager.put(`/attendances/checkout/${attendanceId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error checking out attendance:', error);
+        throw error;
+    }
+};

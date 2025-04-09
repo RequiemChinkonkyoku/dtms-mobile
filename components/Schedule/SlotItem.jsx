@@ -45,30 +45,45 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
 
     const handleSlotPress = async (slot) => {
         if (slot.status === 0) {
-            try {
-                const response = await checkinSlot(slot.slotId);
-                if (response.success) {
-                    Alert.alert(
-                        'Success',
-                        'Slot checked in successfully!',
-                        [
-                            {
-                                text: 'OK',
-                                onPress: () => {
-                                    onRefresh?.();
-                                    setSelectedSlot({...slot, status: 1});
-                                    setIsAttendanceModalVisible(true);
+            Alert.alert(
+                'Open Slot',
+                'Do you want to open this slot?',
+                [
+                    {
+                        text: 'Cancel',
+                        style: 'cancel'
+                    },
+                    {
+                        text: 'Open',
+                        onPress: async () => {
+                            try {
+                                const response = await checkinSlot(slot.slotId);
+                                if (response.success) {
+                                    Alert.alert(
+                                        'Success',
+                                        'Slot checked in successfully!',
+                                        [
+                                            {
+                                                text: 'OK',
+                                                onPress: () => {
+                                                    onRefresh?.();
+                                                    setSelectedSlot({...slot, status: 1});
+                                                    setIsAttendanceModalVisible(true);
+                                                }
+                                            }
+                                        ]
+                                    );
+                                } else {
+                                    Alert.alert('Error', 'Failed to check in slot');
                                 }
+                            } catch (error) {
+                                console.error('Error checking in slot:', error);
+                                Alert.alert('Error', 'Failed to check in slot');
                             }
-                        ]
-                    );
-                } else {
-                    Alert.alert('Error', 'Failed to check in slot');
-                }
-            } catch (error) {
-                console.error('Error checking in slot:', error);
-                Alert.alert('Error', 'Failed to check in slot');
-            }
+                        }
+                    }
+                ]
+            );
         } else {
             setSelectedSlot(slot);
             setIsAttendanceModalVisible(true);
@@ -126,6 +141,7 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
                 visible={isAttendanceModalVisible}
                 onClose={() => setIsAttendanceModalVisible(false)}
                 slot={selectedSlot}
+                onRefresh={onRefresh}
             />
         </View>
     );

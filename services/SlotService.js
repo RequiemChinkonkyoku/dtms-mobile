@@ -19,3 +19,13 @@ export const checkinSlot = async (slotId) => {
         throw error;
     }
 };
+
+export const concludeSlot = async (slotId) => {
+    try {
+        const response = await ApiManager.put(`/slots/conclude-slot/${slotId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error concluding slot:', error);
+        throw error;
+    }
+};
