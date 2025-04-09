@@ -59,26 +59,6 @@ export default function EnrollmentSteps({ visible, onClose, selectedClass, cours
             console.log('Enrollment Data:', result); // For debugging
 
             if (result && result.success) {
-                // const paymentData = {
-                //     orderType: "ClassEnrollment",
-                //     amount: coursePrice,
-                //     enrollmentId: result.data.object.enrollments[0].id,
-                //     customerID: userInfo.unique_name
-                // };
-
-                // console.log('Payment Data:', paymentData); // For debugging
-
-                // // Initiate VNPay payment
-                // const paymentResult = await createVNPayPayment(paymentData);
-                
-                // if (paymentResult.success && paymentResult.data) {
-                //     // Open VNPay URL in browser
-                //     // await ExpoLinking.openURL(paymentResult.data);
-                //     onClose();
-                // } else {
-                //     Alert.alert('Payment Failed', 'Unable to initiate payment. Please try again.');
-                // }
-
                 Alert.alert(
                     'Enrollment Successful',
                     'You have successfully enrolled in the class. Please complete the pretest to proceed with payment.',
