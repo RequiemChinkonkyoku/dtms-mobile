@@ -1,11 +1,13 @@
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { styles } from '../../styles/TrainerScheduleStyles';
 import { format } from 'date-fns';
 import AttendanceModal from '../Attendance/AttendanceModal';
 import { useState } from 'react';
+import { checkinSlot } from '../../services/SlotService';
 
-export const SlotItem = ({ date, slots, formatTime }) => {
+
+export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isAttendanceModalVisible, setIsAttendanceModalVisible] = useState(false);
 
@@ -41,10 +43,38 @@ export const SlotItem = ({ date, slots, formatTime }) => {
         }
     };
 
-    const handleSlotPress = (slot) => {
-        setSelectedSlot(slot);
-        setIsAttendanceModalVisible(true);
+    const handleSlotPress = async (slot) => {
+        if (slot.status === 0) {
+            try {
+                const response = await checkinSlot(slot.slotId);
+                if (response.success) {
+                    Alert.alert(
+                        'Success',
+                        'Slot checked in successfully!',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    onRefresh?.();
+                                    setSelectedSlot({...slot, status: 1});
+                                    setIsAttendanceModalVisible(true);
+                                }
+                            }
+                        ]
+                    );
+                } else {
+                    Alert.alert('Error', 'Failed to check in slot');
+                }
+            } catch (error) {
+                console.error('Error checking in slot:', error);
+                Alert.alert('Error', 'Failed to check in slot');
+            }
+        } else {
+            setSelectedSlot(slot);
+            setIsAttendanceModalVisible(true);
+        }
     };
+
 
     return (
         <View style={styles.slotContainer}>

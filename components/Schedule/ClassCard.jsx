@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from '../../styles/TrainerScheduleStyles';
 import { SlotItem } from './SlotItem';
 
-export const ClassCard = ({ classId, classSlots, isExpanded, onToggle, onSlotPress, formatTime }) => {
+export const ClassCard = ({ classId, classSlots, isExpanded, onToggle, onSlotPress, formatTime, onRefresh }) => {
     const groupedSlots = classSlots.reduce((acc, slot) => {
         if (!acc[slot.slotDate]) {
             acc[slot.slotDate] = [];
@@ -62,6 +62,7 @@ export const ClassCard = ({ classId, classSlots, isExpanded, onToggle, onSlotPre
                     date={date}
                     slots={groupedSlots[date]}
                     formatTime={formatTime}
+                    onRefresh={onRefresh}
                 />
             ))}
         </LinearGradient>

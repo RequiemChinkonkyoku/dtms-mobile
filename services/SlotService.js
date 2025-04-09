@@ -9,3 +9,13 @@ export const fetchTrainerSlots = async (trainerId) => {
         return [];
     }
 };
+
+export const checkinSlot = async (slotId) => {
+    try {
+        const response = await ApiManager.put(`/slots/checkin-slot/${slotId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error checking in slot:', error);
+        throw error;
+    }
+};

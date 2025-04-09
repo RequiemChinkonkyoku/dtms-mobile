@@ -103,6 +103,7 @@ export default function TrainerSchedule() {
                                 onToggle={toggleClass}
                                 onSlotPress={handleClassPress}
                                 formatTime={formatTime}
+                                onRefresh={onRefresh}
                             />
                         ))
                     }
