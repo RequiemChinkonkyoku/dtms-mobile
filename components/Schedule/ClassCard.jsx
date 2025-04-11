@@ -85,32 +85,37 @@ export const ClassCard = ({ classId, classSlots, classDetails, isExpanded, onTog
                     ))}
 
                     {allSlotsConcluded && enrollments.length > 0 && (
-                        <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: '#eee' }}>
-                            <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 10 }}>
-                                Training Reports
-                            </Text>
+                        <View style={styles.reportsSection}>
+                            <View style={styles.reportsSectionHeader}>
+                                <MaterialIcons name="assignment" size={24} color="#007AFF" />
+                                <Text style={styles.reportsSectionTitle}>
+                                    Training Reports
+                                </Text>
+                            </View>
                             {enrollments.map(enrollment => (
                                 <TouchableOpacity
                                     key={enrollment.enrollmentId}
-                                    style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        padding: 12,
-                                        backgroundColor: '#f8f9fa',
-                                        borderRadius: 8,
-                                        marginBottom: 8
-                                    }}
+                                    style={styles.reportCard}
                                     onPress={() => {
                                         setSelectedEnrollment(enrollment);
                                         setIsReportModalVisible(true);
                                     }}
                                 >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <MaterialIcons name="pets" size={20} color="#666" />
-                                        <Text style={{ marginLeft: 8, fontSize: 16 }}>{enrollment.dogName}</Text>
-                                    </View>
-                                    <MaterialIcons name="assignment" size={24} color="#007AFF" />
+                                    <LinearGradient
+                                        colors={['#ffffff', '#f8f9fa']}
+                                        style={styles.reportCardGradient}
+                                    >
+                                        <View style={styles.reportCardLeft}>
+                                            <View style={styles.dogIconContainer}>
+                                                <MaterialIcons name="pets" size={20} color="#fff" />
+                                            </View>
+                                            <View style={styles.dogInfo}>
+                                                <Text style={styles.dogName}>{enrollment.dogName}</Text>
+                                                <Text style={styles.viewReportText}>View Training Report</Text>
+                                            </View>
+                                        </View>
+                                        <MaterialIcons name="chevron-right" size={24} color="#007AFF" />
+                                    </LinearGradient>
                                 </TouchableOpacity>
                             ))}
                         </View>

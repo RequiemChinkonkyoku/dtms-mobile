@@ -161,4 +161,61 @@ export const styles = StyleSheet.create({
         top: '50%',
         transform: [{ translateY: -12 }],
     },
+    reportsSection: {
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+    },
+    reportsSectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    reportsSectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginLeft: 8,
+        color: '#007AFF',
+    },
+    reportCard: {
+        marginBottom: 12,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    reportCardGradient: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 12,
+    },
+    reportCardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    dogIconContainer: {
+        backgroundColor: '#007AFF',
+        padding: 8,
+        borderRadius: 10,
+    },
+    dogInfo: {
+        marginLeft: 12,
+    },
+    dogName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 4,
+    },
+    viewReportText: {
+        fontSize: 12,
+        color: '#666',
+    },
 });
