@@ -17,6 +17,8 @@ export default function TrainerSchedule() {
     const { userInfo } = useAuth();
     const [expandedClasses, setExpandedClasses] = useState(new Set());
 
+    const [classDetails, setClassDetails] = useState({});
+
     const loadSlots = async () => {
         if (userInfo?.unique_name) {
             const trainerSlots = await fetchTrainerSlots(userInfo.unique_name);
@@ -27,6 +29,24 @@ export default function TrainerSchedule() {
                 acc[slot.classId].push(slot);
                 return acc;
             }, {});
+
+            // Fetch and set class details first
+            const classDetailsPromises = Object.keys(groupedSlots).map(async (classId) => {
+                const classDetail = await fetchClassById(classId);
+                return { classId, detail: classDetail };
+            });
+
+            const classDetailsResults = await Promise.all(classDetailsPromises);
+            const newClassDetails = {};
+            classDetailsResults.forEach(({ classId, detail }) => {
+                if (detail) {
+                    newClassDetails[classId] = detail;
+                }
+            });
+
+            setClassDetails(newClassDetails);
+            console.log("Loaded class detailss:", newClassDetails);
+
             setSlots(groupedSlots);
         }
     };
@@ -99,6 +119,7 @@ export default function TrainerSchedule() {
                                 key={classId}
                                 classId={classId}
                                 classSlots={classSlots}
+                                classDetails={classDetails[classId]}
                                 isExpanded={expandedClasses.has(classId)}
                                 onToggle={toggleClass}
                                 onSlotPress={handleClassPress}
