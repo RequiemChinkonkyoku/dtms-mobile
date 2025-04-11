@@ -13,9 +13,8 @@ import { fetchCourseById } from "../../services/CourseService";
 import { useAuth } from "../../contexts/AuthContext";
 import * as ExpoLinking from "expo-linking";
 import { fetchDogClassProgressReports } from "../../services/ProgressReportService";
-
-// Add this import at the top
 import { useRouter } from "expo-router";
+import { fetchTrainingReportsByEnrollmentId } from "../../services/TrainingReportService";
 
 export default function EnrolledClasses({ dogId }) {
   const router = useRouter();
@@ -29,6 +28,8 @@ export default function EnrolledClasses({ dogId }) {
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDateSlots, setSelectedDateSlots] = useState([]);
   const [classPretests, setClassPretests] = useState({});
+  const [trainingReports, setTrainingReports] = useState({});
+  const [expandedTrainingReports, setExpandedTrainingReports] = useState({});
 
   const { userInfo } = useAuth();
 
@@ -58,12 +59,39 @@ export default function EnrolledClasses({ dogId }) {
     }
   };
 
+  const handleTrainingReportExpand = async (classItem) => {
+    try {
+      if (expandedTrainingReports[classItem.id]) {
+        setExpandedTrainingReports(prev => ({ ...prev, [classItem.id]: false }));
+      } else {
+        setExpandedTrainingReports(prev => ({ ...prev, [classItem.id]: true }));
+        const enrollment = classDetails[classItem.id]?.classEnrollments.find(
+          (e) => e.dogId === dogId
+        );
+
+        if (!enrollment) {
+          Alert.alert("Error", "Enrollment information not found");
+          return;
+        }
+
+        const reports = await fetchTrainingReportsByEnrollmentId(enrollment.enrollmentId);
+        if (reports.success) {
+          setTrainingReports(prev => ({ ...prev, [classItem.id]: reports.objectList }));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching training reports:", error);
+      Alert.alert("Error", "Failed to fetch training reports");
+      setExpandedTrainingReports(prev => ({ ...prev, [classItem.id]: false }));
+    }
+  };
+
   const handleDayPress = (day) => {
     const selectedDate = day.dateString;
     if (
       selectedDateSlots.length > 0 &&
       new Date(selectedDateSlots[0].slotDate).toISOString().split("T")[0] ===
-        selectedDate
+      selectedDate
     ) {
       setSelectedDateSlots([]);
     } else {
@@ -327,6 +355,32 @@ export default function EnrolledClasses({ dogId }) {
     }
   };
 
+  const getSlotStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return '#FF9500'; // NotYet - Orange
+      case 1:
+        return '#34C759'; // CheckedIn - Green
+      case 2:
+        return '#8E8E93'; // Concluded - Gray
+      default:
+        return '#8E8E93';
+    }
+  };
+
+  const getSlotStatusText = (status) => {
+    switch (status) {
+      case 0:
+        return 'Not Yet';
+      case 1:
+        return 'Checked In';
+      case 2:
+        return 'Concluded';
+      default:
+        return 'Unknown';
+    }
+  };
+
   return (
     <>
       <ScrollView style={{ flex: 1, padding: 16 }}>
@@ -363,7 +417,7 @@ export default function EnrolledClasses({ dogId }) {
                   </Text>
                   <Text style={{ color: "#666", marginTop: 4 }}>
                     Starting:{" "}
-                    {new Date(classItem.startingDate).toLocaleDateString()}
+                    {new Date(classItem.startingDate).toLocaleDateString("vi-VN")}
                   </Text>
                   <View
                     style={{
@@ -399,36 +453,86 @@ export default function EnrolledClasses({ dogId }) {
 
               {expandedClass === classItem.id && (
                 <View style={{ marginTop: 16 }}>
-                  <TouchableOpacity
-                    onPress={() => handleProgressReportExpand(classItem.id)}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: "#e6f3ff",
-                      padding: 12,
-                      borderRadius: 8,
-                      marginBottom: 12,
-                    }}
-                  >
-                    <MaterialIcons
-                      name={
-                        expandedReports[classItem.id]
-                          ? "description"
-                          : "description"
-                      }
-                      size={20}
-                      color="#007AFF"
-                    />
-                    <Text
+                  <View style={{
+                    flexDirection: 'row',
+                    gap: 12,
+                    marginBottom: 16
+                  }}>
+                    <TouchableOpacity
+                      onPress={() => handleProgressReportExpand(classItem.id)}
                       style={{
-                        marginLeft: 8,
-                        color: "#007AFF",
-                        fontWeight: "500",
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        backgroundColor: "#e6f3ff",
+                        padding: 12,
+                        borderRadius: 8,
+                        justifyContent: 'center',
                       }}
                     >
-                      View Progress Reports
-                    </Text>
-                  </TouchableOpacity>
+                      <MaterialIcons
+                        name="description"
+                        size={20}
+                        color="#007AFF"
+                      />
+                      <Text
+                        style={{
+                          marginLeft: 8,
+                          color: "#007AFF",
+                          fontWeight: "500",
+                        }}
+                      >
+                        Progress Reports
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleShowCalendar(classItem)}
+                      style={{
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        backgroundColor: "#e6f3ff",
+                        padding: 12,
+                        borderRadius: 8,
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <MaterialIcons
+                        name="calendar-today"
+                        size={20}
+                        color="#007AFF"
+                      />
+                      <Text
+                        style={{
+                          marginLeft: 8,
+                          color: "#007AFF",
+                          fontWeight: "500",
+                        }}
+                      >
+                        Schedule Calendar
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleTrainingReportExpand(classItem)}
+                      style={{
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        backgroundColor: "#e6f3ff",
+                        padding: 12,
+                        borderRadius: 8,
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <MaterialIcons name="assignment" size={20} color="#007AFF" />
+                      <Text style={{ marginLeft: 8, color: "#007AFF", fontWeight: "500" }}>
+                        Training Reports
+                      </Text>
+                    </TouchableOpacity>
+
+                  </View>
 
                   {expandedReports[classItem.id] &&
                     reportsData[classItem.id] && (
@@ -595,32 +699,67 @@ export default function EnrolledClasses({ dogId }) {
                     </View>
                   )}
 
-                  <TouchableOpacity
-                    onPress={() => handleShowCalendar(classItem)}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: "#e6f3ff",
-                      padding: 12,
-                      borderRadius: 8,
-                      marginBottom: 12,
-                    }}
-                  >
-                    <MaterialIcons
-                      name="calendar-today"
-                      size={20}
-                      color="#007AFF"
-                    />
-                    <Text
-                      style={{
-                        marginLeft: 8,
-                        color: "#007AFF",
-                        fontWeight: "500",
-                      }}
-                    >
-                      View Schedule Calendar
-                    </Text>
-                  </TouchableOpacity>
+                  {expandedTrainingReports[classItem.id] && (
+                    trainingReports[classItem.id]?.length > 0 ? (
+                      <View style={{ marginBottom: 16 }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 12, color: '#1a1a1a' }}>
+                          Training Reports
+                        </Text>
+                        {trainingReports[classItem.id].map((report, index) => (
+                          <View
+                            key={index}
+                            style={{
+                              backgroundColor: "#f8f9fa",
+                              borderRadius: 8,
+                              padding: 16,
+                              marginBottom: 8,
+                              borderLeftWidth: 4,
+                              borderLeftColor: "#007AFF",
+                            }}
+                          >
+                            <Text style={{ fontSize: 15, fontWeight: "600", color: "#333", marginBottom: 4 }}>
+                              {new Date(report.createdTime).toLocaleDateString("en-US", {
+                                weekday: "long",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </Text>
+                            <Text style={{ color: "#666", marginBottom: 4 }}>
+                              Behavior Type: {report.behaviorType}
+                            </Text>
+                            <Text style={{ color: "#666", marginBottom: 4 }}>
+                              Intensity: {report.intensity}/10
+                            </Text>
+                            <Text style={{ color: "#666", marginBottom: 4 }}>
+                              Reaction to Commands: {report.reactionToCommands}/10
+                            </Text>
+                            <Text style={{ color: "#666", marginBottom: 4 }}>
+                              Socialization: {report.socialization}/10
+                            </Text>
+                            <Text style={{ color: "#666", marginBottom: 4 }}>
+                              Stress Level: {report.stressLevel}/10
+                            </Text>
+                            <Text style={{ color: "#666" }}>
+                              Notes: {report.notes || "No notes"}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <View style={{
+                        padding: 16,
+                        backgroundColor: "#f8f9fa",
+                        borderRadius: 8,
+                        alignItems: "center",
+                        marginBottom: 16,
+                      }}>
+                        <MaterialIcons name="assignment-late" size={24} color="#666" />
+                        <Text style={{ color: "#666", marginTop: 8, textAlign: "center" }}>
+                          No training reports available yet
+                        </Text>
+                      </View>
+                    )
+                  )}
 
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     {classDetails[classItem.id]?.classSlots.map(
@@ -634,6 +773,8 @@ export default function EnrolledClasses({ dogId }) {
                             marginRight: 12,
                             alignItems: "center",
                             minWidth: 100,
+                            borderLeftWidth: 3,
+                            borderLeftColor: getSlotStatusColor(slot.status),
                           }}
                         >
                           <MaterialIcons
@@ -655,6 +796,19 @@ export default function EnrolledClasses({ dogId }) {
                             {formatTime(slot.startTime)} -{" "}
                             {formatTime(slot.endTime)}
                           </Text>
+                          <View
+                            style={{
+                              backgroundColor: getSlotStatusColor(slot.status),
+                              paddingHorizontal: 8,
+                              paddingVertical: 2,
+                              borderRadius: 12,
+                              marginTop: 4,
+                            }}
+                          >
+                            <Text style={{ color: "white", fontSize: 12, fontWeight: "500" }}>
+                              {getSlotStatusText(slot.status)}
+                            </Text>
+                          </View>
                         </View>
                       )
                     )}
@@ -948,16 +1102,33 @@ export default function EnrolledClasses({ dogId }) {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
+                    justifyContent: "space-between",
                     backgroundColor: "white",
                     padding: 12,
                     borderRadius: 8,
                     marginBottom: 8,
+                    borderLeftWidth: 3,
+                    borderLeftColor: getSlotStatusColor(slot.status),
                   }}
                 >
-                  <MaterialIcons name="access-time" size={20} color="#007AFF" />
-                  <Text style={{ marginLeft: 8, color: "#333", fontSize: 16 }}>
-                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <MaterialIcons name="access-time" size={20} color="#007AFF" />
+                    <Text style={{ marginLeft: 8, color: "#333", fontSize: 16 }}>
+                      {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: getSlotStatusColor(slot.status),
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 12,
+                    }}
+                  >
+                    <Text style={{ color: "white", fontSize: 12, fontWeight: "500" }}>
+                      {getSlotStatusText(slot.status)}
+                    </Text>
+                  </View>
                 </View>
               ))}
 
