@@ -5,6 +5,9 @@ export const fetchClassesByCourseId = async (courseId) => {
         const response = await ApiManager.get(`/class/get-classes-by-course-id/${courseId}`);
         return response.data.objectList;
     } catch (error) {
+        if (error.response?.status === 400) {
+            return [];
+        }
         console.error('Error fetching classes:', error);
         return [];
     }
@@ -51,6 +54,9 @@ export const fetchDogEnrolledClasses = async (dogId) => {
         const response = await ApiManager.get(`/class/get-dog-enrolled-classes/${dogId}`);
         return response.data.objectList;
     } catch (error) {
+        if (error.response?.status === 400) {
+            return [];
+        }
         console.error('Error fetching enrolled classes:', error);
         return [];
     }
@@ -62,6 +68,6 @@ export const fetchDogClassSlots = async (dogId, classId) => {
         return response.data;
     } catch (error) {
         console.error('Error fetching dog class slots:', error.response?.data || error.message);
-        throw error; // Propagate the error to handle it in the component
+        return [];
     }
 };

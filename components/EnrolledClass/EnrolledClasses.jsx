@@ -742,6 +742,27 @@ export default function EnrolledClasses({ dogId }) {
                             <Text style={{ color: "#666" }}>
                               Notes: {report.notes || "No notes"}
                             </Text>
+                            <View style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              backgroundColor: report.isPassed ? '#e8f5e9' : '#ffebee',
+                              padding: 8,
+                              borderRadius: 6,
+                              marginTop: 8
+                            }}>
+                              <MaterialIcons
+                                name={report.isPassed ? "check-circle" : "cancel"}
+                                size={20}
+                                color={report.isPassed ? "#4caf50" : "#f44336"}
+                              />
+                              <Text style={{
+                                marginLeft: 8,
+                                color: report.isPassed ? "#4caf50" : "#f44336",
+                                fontWeight: "500"
+                              }}>
+                                {report.isPassed ? "Passed" : "Not Passed"}
+                              </Text>
+                            </View>
                           </View>
                         ))}
                       </View>
