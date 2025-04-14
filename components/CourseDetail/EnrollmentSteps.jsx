@@ -56,7 +56,7 @@ export default function EnrollmentSteps({ visible, onClose, selectedClass, cours
 
             const result = await enrollInClass(enrollmentData);
             
-            console.log('Enrollment Data:', result); // For debugging
+            console.log('Enrollment Data:', enrollmentData); // For debugging
 
             if (result && result.success) {
                 Alert.alert(
