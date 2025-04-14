@@ -1,12 +1,11 @@
 import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { fetchCourseById } from '../../services/CourseService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchLessonById } from '../../services/LessonService';
 import { fetchSkillById } from '../../services/SkillService';
-// import { fetchDogBreedById } from '../../services/DogBreedService';
 import { LinearGradient } from 'expo-linear-gradient';
 import EnrollmentModal from '../../components/CourseDetail/EnrollmentModal';
 import { fetchAccountById } from '../../services/AccountService';
@@ -20,6 +19,7 @@ export default function CourseDetail() {
     const [trainerName, setTrainerName] = useState('Unknown');
     const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
     const [lessonSkills, setLessonSkills] = useState({});
+    const router = useRouter();
 
     useEffect(() => {
         loadCourseDetail();
@@ -69,14 +69,6 @@ export default function CourseDetail() {
                 setLessonSkills(skillsMap);
             }
 
-            // Fetch dog breeds
-            // if (courseData.dogBreedIds && courseData.dogBreedIds.length > 0) {
-            //     const breedPromises = courseData.dogBreedIds.map(breedId =>
-            //         fetchDogBreedById(breedId)
-            //     );
-            //     const breedResults = await Promise.all(breedPromises);
-            //     setDogBreeds(breedResults.filter(breed => breed !== null));
-            // }
             if (courseData.courseDogBreeds) {
                 setDogBreeds(courseData.courseDogBreeds);
             }
@@ -90,6 +82,10 @@ export default function CourseDetail() {
             </View>
         );
     }
+
+    const handlePrerequisitePress = (prerequisiteId) => {
+        router.push(`/courseDetail/${prerequisiteId}`);
+    };
 
     return (
         <>
@@ -127,6 +123,32 @@ export default function CourseDetail() {
                         value={`${course.minDogs}-${course.maxDogs} dogs`}
                     />
                 </View>
+
+                {/* Prerequisites Section */}
+                {course.coursePrerequisites && course.coursePrerequisites.length > 0 && (
+                    <View style={courseDetailsStyles.prerequisitesContainer}>
+                        <View style={courseDetailsStyles.prerequisitesHeader}>
+                            <MaterialIcons name="school" size={24} color="#007AFF" />
+                            <Text style={courseDetailsStyles.prerequisitesTitle}>Prerequisites</Text>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                            {course.coursePrerequisites.map(prerequisite => (
+                                <TouchableOpacity
+                                    key={prerequisite.id}
+                                    style={courseDetailsStyles.prerequisiteCard}
+                                    onPress={() => handlePrerequisitePress(prerequisite.id)}
+                                    activeOpacity={0.7}
+                                >
+                                    <MaterialIcons name="stars" size={20} color="#007AFF" />
+                                    <Text style={courseDetailsStyles.prerequisiteName}>
+                                        {prerequisite.name}
+                                    </Text>
+                                    <MaterialIcons name="chevron-right" size={20} color="#007AFF" style={{ marginLeft: 8 }} />
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
 
                 {/* Eligible Dog Breeds */}
                 <View style={courseDetailsStyles.breedContainer}>
