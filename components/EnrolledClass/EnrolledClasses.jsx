@@ -7,14 +7,13 @@ import {
   fetchClassById,
 } from "../../services/ClassService";
 import { fetchClassPretests } from "../../services/PretestService";
-import { fetchDogClassSlots } from "../../services/ClassService";
 import { createVNPayPayment } from "../../services/PaymentService";
 import { fetchCourseById } from "../../services/CourseService";
 import { useAuth } from "../../contexts/AuthContext";
-import * as ExpoLinking from "expo-linking";
 import { fetchDogClassProgressReports } from "../../services/ProgressReportService";
 import { useRouter } from "expo-router";
 import { fetchTrainingReportsByEnrollmentId } from "../../services/TrainingReportService";
+import { fetchCageById } from "../../services/CageService";
 
 export default function EnrolledClasses({ dogId }) {
   const router = useRouter();
@@ -30,6 +29,7 @@ export default function EnrolledClasses({ dogId }) {
   const [classPretests, setClassPretests] = useState({});
   const [trainingReports, setTrainingReports] = useState({});
   const [expandedTrainingReports, setExpandedTrainingReports] = useState({});
+  const [cagesData, setCagesData] = useState({});
 
   const { userInfo } = useAuth();
 
@@ -47,6 +47,18 @@ export default function EnrolledClasses({ dogId }) {
     for (const classItem of sortedClasses) {
       const details = await fetchClassById(classItem.id);
       const pretests = await fetchClassPretests(classItem.id, dogId);
+
+      // Fetch cage information if available
+      if (details.classEnrollments) {
+        const enrollment = details.classEnrollments.find(e => e.dogId === dogId);
+        if (enrollment && enrollment.cageId) {
+          const cageDetails = await fetchCageById(enrollment.cageId);
+          if (cageDetails) {
+            setCagesData(prev => ({ ...prev, [classItem.id]: cageDetails }));
+          }
+        }
+      }
+
       setClassDetails(prev => ({ ...prev, [classItem.id]: details }));
       setClassPretests(prev => ({ ...prev, [classItem.id]: pretests }));
     }
@@ -424,6 +436,9 @@ export default function EnrolledClasses({ dogId }) {
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 18, fontWeight: "bold" }}>
                     {classItem.name}
+                  </Text>
+                  <Text style={{ color: "#007AFF", fontSize: 14, marginTop: 4 }}>
+                    {classDetails[classItem.id]?.courseName || 'Loading course...'}
                   </Text>
                   <Text style={{ color: "#666", marginTop: 4 }}>
                     Starting:{" "}
@@ -983,6 +998,61 @@ export default function EnrolledClasses({ dogId }) {
                         </Text>
                       </TouchableOpacity>
                     )}
+
+                                    {/* Add Cage Information Section */}
+                                    {cagesData[classItem.id] && (
+                    <View style={{
+                      marginTop: 16,
+                      padding: 12,
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: 8,
+                    }}>
+                      <Text style={{
+                        fontSize: 16,
+                        fontWeight: "bold",
+                        color: "#333",
+                        marginBottom: 8,
+                      }}>
+                        Assigned Cage
+                      </Text>
+                      <View style={{
+                        backgroundColor: "white",
+                        padding: 12,
+                        borderRadius: 8,
+                      }}>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                          <MaterialIcons name="home" size={24} color="#007AFF" />
+                          <View style={{ marginLeft: 12, flex: 1 }}>
+                            <Text style={{ fontSize: 15, color: "#333" }}>
+                              Cage #{cagesData[classItem.id].number}
+                            </Text>
+                            <Text style={{ color: "#666", marginTop: 4 }}>
+                              Location: {cagesData[classItem.id].location}
+                            </Text>
+                            <View style={{ 
+                              flexDirection: 'row', 
+                              alignItems: 'center', 
+                              marginTop: 8,
+                              backgroundColor: '#f5f5f5',
+                              padding: 8,
+                              borderRadius: 6
+                            }}>
+                              <MaterialIcons 
+                                name={classDetails[classItem.id]?.classEnrollments.find(
+                                  e => e.dogId === dogId)?.requiredNightStay ? "hotel" : "brightness-2"} 
+                                size={20} 
+                                color="#666"
+                              />
+                              <Text style={{ color: "#666", marginLeft: 8 }}>
+                                Night Stay: {classDetails[classItem.id]?.classEnrollments.find(
+                                  e => e.dogId === dogId)?.requiredNightStay ? "Required" : "Not Required"}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  )}
 
                   {classDetails[classItem.id]?.assignedTrainers && (
                     <View
