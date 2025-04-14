@@ -71,3 +71,22 @@ export const fetchDogClassSlots = async (dogId, classId) => {
         return [];
     }
 };
+
+export const updateClassStatus = async (classId, status) => {
+    try {
+        const response = await ApiManager.put('/class/update-class-status', {
+            classId,
+            status
+        });
+        return {
+            success: true,
+            data: response.data
+        };
+    } catch (error) {
+        console.error('Error updating class status:', error);
+        return {
+            success: false,
+            error: error.response?.data?.message || 'Failed to update class status'
+        };
+    }
+};
