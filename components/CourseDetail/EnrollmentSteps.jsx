@@ -66,7 +66,7 @@ export default function EnrollmentSteps({ visible, onClose, selectedClass, cours
                 );
 
             } else {
-                const errorMessage = result?.error || 'Failed to enroll in class. Please try again.';
+                const errorMessage = result?.message || 'Failed to enroll in class. Please try again.';
                 Alert.alert('Enrollment Failed', errorMessage);
             }
         } catch (error) {
