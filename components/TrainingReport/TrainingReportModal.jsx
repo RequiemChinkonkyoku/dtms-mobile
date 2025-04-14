@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Switch } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createTrainingReport, fetchTrainingReportsByEnrollmentId } from '../../services/TrainingReportService';
 import { styles } from '../../styles/TrainingReportModalStyles';
@@ -12,6 +12,7 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
         socialization: 5,
         stressLevel: 5,
         notes: '',
+        isPassed: false,
         enrollmentId: enrollment?.enrollmentId,
         trainerProfileId: trainerProfileId
     });
@@ -25,7 +26,7 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
         if (visible && enrollment?.enrollmentId) {
             loadExistingReports();
         }
-        
+
     }, [visible, enrollment]);
 
     const loadExistingReports = async () => {
@@ -123,6 +124,15 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
                                         <Text style={styles.fieldValue}>{report.stressLevel}/10</Text>
                                     </View>
                                     <View style={styles.reportField}>
+                                        <Text style={styles.fieldLabel}>Training Result:</Text>
+                                        <Text style={[
+                                            styles.fieldValue,
+                                            { color: report.isPassed ? '#34C759' : '#FF3B30' }
+                                        ]}>
+                                            {report.isPassed ? 'Passed' : 'Not Passed'}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.reportField}>
                                         <Text style={styles.fieldLabel}>Notes:</Text>
                                         <Text style={styles.fieldValue}>{report.notes}</Text>
                                     </View>
@@ -167,6 +177,25 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
                                     </View>
                                 </View>
                             ))}
+
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Training Result</Text>
+                                <View style={styles.passedContainer}>
+                                    <Text style={[
+                                        styles.passedText,
+                                        { color: report.isPassed ? '#34C759' : '#666' }
+                                    ]}>
+                                        {report.isPassed ? 'Passed' : 'Not Passed'}
+                                    </Text>
+                                    <Switch
+                                        value={report.isPassed}
+                                        onValueChange={(value) => setReport(prev => ({ ...prev, isPassed: value }))}
+                                        trackColor={{ false: '#767577', true: '#34C759' }}
+                                        thumbColor={report.isPassed ? '#fff' : '#f4f3f4'}
+                                        ios_backgroundColor="#767577"
+                                    />
+                                </View>
+                            </View>
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Notes</Text>

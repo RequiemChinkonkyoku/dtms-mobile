@@ -5,6 +5,10 @@ export const fetchTrainerSlots = async (trainerId) => {
         const response = await ApiManager.get(`/slots/get-trainer-slots/${trainerId}`);
         return response.data.objectList;
     } catch (error) {
+        if (error.response?.status === 400) {
+            return [];
+        }
+
         console.error('Error fetching trainer slots:', error);
         return [];
     }

@@ -59,6 +59,13 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
     },
+    classNameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginLeft: 8,
+        gap: 8,
+    },
     headerRight: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -68,8 +75,16 @@ export const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#007AFF',
-        marginLeft: 8,
-        flex: 1
+    },
+    statusBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 12,
+    },
+    statusText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '500',
     },
     slotCount: {
         fontSize: 14,

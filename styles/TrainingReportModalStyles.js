@@ -113,5 +113,18 @@ export const styles = StyleSheet.create({
         fontSize: 14,
         flex: 1,
         color: '#333'
-    }
+    },
+    passedContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#f8f9fa',
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 8,
+    },
+    passedText: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
 });

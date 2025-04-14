@@ -43,6 +43,13 @@ export default function EnrolledClasses({ dogId }) {
       (a, b) => new Date(a.startingDate) - new Date(b.startingDate)
     );
     setEnrolledClasses(sortedClasses);
+
+    for (const classItem of sortedClasses) {
+      const details = await fetchClassById(classItem.id);
+      const pretests = await fetchClassPretests(classItem.id, dogId);
+      setClassDetails(prev => ({ ...prev, [classItem.id]: details }));
+      setClassPretests(prev => ({ ...prev, [classItem.id]: pretests }));
+    }
   };
 
   const handleClassExpand = async (classId) => {
@@ -184,36 +191,62 @@ export default function EnrolledClasses({ dogId }) {
   };
 
   const getStatusColor = (status) => {
+    // switch (status) {
+    //   case 0:
+    //     return "#8E8E93"; // Inactive
+    //   case 1:
+    //     return "#34C759"; // Active
+    //   case 2:
+    //     return "#007AFF"; // Ongoing
+    //   case 3:
+    //     return "#FF9500"; // Closed
+    //   case 4:
+    //     return "#FF3B30"; // Completed
+    //   default:
+    //     return "#8E8E93";
+    // }
+
     switch (status) {
       case 0:
-        return "#8E8E93"; // Inactive
+        return '#8E8E93'; // Inactive
       case 1:
-        return "#34C759"; // Active
+        return '#34C759'; // Active
       case 2:
-        return "#007AFF"; // Ongoing
+        return '#FF9500'; // Pending
       case 3:
-        return "#FF9500"; // Closed
-      case 4:
-        return "#FF3B30"; // Completed
+        return '#007AFF'; // Concluded
       default:
-        return "#8E8E93";
+        return '#8E8E93';
     }
   };
 
   const getStatusText = (status) => {
+    // switch (status) {
+    //   case 0:
+    //     return "Inactive";
+    //   case 1:
+    //     return "Active";
+    //   case 2:
+    //     return "Ongoing";
+    //   case 3:
+    //     return "Closed";
+    //   case 4:
+    //     return "Completed";
+    //   default:
+    //     return "Unknown";
+    // }
+
     switch (status) {
       case 0:
-        return "Inactive";
+        return 'Inactive';
       case 1:
-        return "Active";
+        return 'Active';
       case 2:
-        return "Ongoing";
+        return 'Pending';
       case 3:
-        return "Closed";
-      case 4:
-        return "Completed";
+        return 'Concluded';
       default:
-        return "Unknown";
+        return 'Unknown';
     }
   };
 
@@ -280,29 +313,6 @@ export default function EnrolledClasses({ dogId }) {
       setExpandedReports((prev) => ({ ...prev, [classId]: false }));
     }
   };
-  // Add this new handler
-  // const handleSlotListExpand = async (classId) => {
-  //   try {
-  //     if (expandedSlots[classId]) {
-  //       setExpandedSlots((prev) => ({ ...prev, [classId]: false }));
-  //     } else {
-  //       setExpandedSlots((prev) => ({ ...prev, [classId]: true }));
-  //       if (!slotsData[classId]) {
-  //         const slots = await fetchDogClassSlots(dogId, classId);
-  //         if (slots) {
-  //           setSlotsData((prev) => ({ ...prev, [classId]: slots }));
-  //         }
-  //       }
-  //     }
-  //   } catch (error) {
-  //     Alert.alert(
-  //       "Error",
-  //       "Failed to fetch slot information. Please try again later.",
-  //       [{ text: "OK" }]
-  //     );
-  //     setExpandedSlots((prev) => ({ ...prev, [classId]: false }));
-  //   }
-  // };
 
   const handlePayment = async (classItem) => {
     try {
@@ -428,14 +438,18 @@ export default function EnrolledClasses({ dogId }) {
                   >
                     <View
                       style={{
-                        backgroundColor: getStatusColor(classItem.status),
+                        backgroundColor: getStatusColor(
+                          classDetails[classItem.id]?.classEnrollments.find(
+                            e => e.dogId === dogId)?.status ?? 0),
                         paddingHorizontal: 8,
                         paddingVertical: 4,
                         borderRadius: 12,
                       }}
                     >
                       <Text style={{ color: "white", fontWeight: "500" }}>
-                        {getStatusText(classItem.status)}
+                        {getStatusText(
+                          classDetails[classItem.id]?.classEnrollments.find(
+                            e => e.dogId === dogId)?.status ?? 0)}
                       </Text>
                     </View>
                   </View>
@@ -742,6 +756,27 @@ export default function EnrolledClasses({ dogId }) {
                             <Text style={{ color: "#666" }}>
                               Notes: {report.notes || "No notes"}
                             </Text>
+                            <View style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              backgroundColor: report.isPassed ? '#e8f5e9' : '#ffebee',
+                              padding: 8,
+                              borderRadius: 6,
+                              marginTop: 8
+                            }}>
+                              <MaterialIcons
+                                name={report.isPassed ? "check-circle" : "cancel"}
+                                size={20}
+                                color={report.isPassed ? "#4caf50" : "#f44336"}
+                              />
+                              <Text style={{
+                                marginLeft: 8,
+                                color: report.isPassed ? "#4caf50" : "#f44336",
+                                fontWeight: "500"
+                              }}>
+                                {report.isPassed ? "Passed" : "Not Passed"}
+                              </Text>
+                            </View>
                           </View>
                         ))}
                       </View>
