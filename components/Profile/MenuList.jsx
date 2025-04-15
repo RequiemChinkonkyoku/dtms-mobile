@@ -79,18 +79,24 @@ export default function MenuList() {
                 name: 'My Dogs',
                 icon: require('./../../assets/images/dog.png'),
                 path: '/dog/my-dog'
+            },
+            {
+                id: 4,
+                name: 'Transactions',
+                icon: require('./../../assets/images/transaction.png'),
+                path: '/transaction/transaction-history'
             }
         ] : []),
 
         // Common menu items for all roles
         {
-            id: 4,
+            id: 6,
             name: 'Share App',
             icon: require('./../../assets/images/share_1.png'),
             path: 'share'
         },
         {
-            id: 5,
+            id: 7,
             name: 'Logout',
             icon: require('./../../assets/images/logout.png'),
             path: 'logout'
