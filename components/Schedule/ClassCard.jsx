@@ -187,7 +187,7 @@ export const ClassCard = ({ classId, classSlots, classDetails, isExpanded, onTog
             {isExpanded && (
                 <>
                     {renderStatusButton()}
-                    {sortedDates.map(date => (
+                    {classDetails?.status === 2 && sortedDates.map(date => (
                         <SlotItem
                             key={date}
                             date={date}
