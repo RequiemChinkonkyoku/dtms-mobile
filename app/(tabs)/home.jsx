@@ -26,43 +26,39 @@ export default function Home() {
 
   const renderTrainerFeatureSection = () => (
     <View style={homeStyles.featureSection}>
-      <Text style={homeStyles.sectionTitle}>Quick Access</Text>
+      <Text style={homeStyles.sectionTitle}>Management Center</Text>
       <View style={homeStyles.featureGrid}>
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#e6f3ff' }]}
-          onPress={() => router.push('/(tabs)/trainer-schedule')}
         >
           <MaterialIcons name="calendar-today" size={32} color="#007AFF" />
           <Text style={[homeStyles.featureTitle, { color: '#007AFF' }]}>My Schedule</Text>
           <Text style={homeStyles.featureDescription}>View and manage your training sessions</Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#fff5e6' }]}
-          onPress={() => router.push('/classes/my-classes')}
         >
           <MaterialIcons name="class" size={32} color="#FF9500" />
           <Text style={[homeStyles.featureTitle, { color: '#FF9500' }]}>My Classes</Text>
           <Text style={homeStyles.featureDescription}>Manage your training classes</Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#e8eaff' }]}
-          onPress={() => router.push('/progress/class-progress')}
         >
           <MaterialIcons name="trending-up" size={32} color="#6366f1" />
           <Text style={[homeStyles.featureTitle, { color: '#6366f1' }]}>Class Progress</Text>
           <Text style={homeStyles.featureDescription}>Track students' training progress</Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#ffe6e6' }]}
-          onPress={() => router.push('/reports')}
         >
           <MaterialIcons name="assessment" size={32} color="#FF3B30" />
           <Text style={[homeStyles.featureTitle, { color: '#FF3B30' }]}>Reports</Text>
           <Text style={homeStyles.featureDescription}>View training reports and analytics</Text>
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -107,41 +103,37 @@ export default function Home() {
     >
       <Text style={homeStyles.sectionTitle}>Our Services</Text>
       <View style={homeStyles.featureGrid}>
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#e6f3ff' }]}
-          onPress={() => router.push('/(tabs)/explore')}
         >
           <MaterialIcons name="school" size={32} color="#007AFF" />
           <Text style={[homeStyles.featureTitle, { color: '#007AFF' }]}>Training Courses</Text>
           <Text style={homeStyles.featureDescription}>Professional dog training programs</Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#fff5e6' }]}
-          onPress={() => router.push('/boarding')}
         >
           <MaterialIcons name="home" size={32} color="#FF9500" />
           <Text style={[homeStyles.featureTitle, { color: '#FF9500' }]}>Boarding</Text>
           <Text style={homeStyles.featureDescription}>Safe and comfortable stay for your pets</Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#e8eaff' }]}
-          onPress={() => router.push('/dog/my-dog')}
         >
           <MaterialIcons name="trending-up" size={32} color="#6366f1" />
           <Text style={[homeStyles.featureTitle, { color: '#6366f1' }]}>Progress Tracking</Text>
           <Text style={homeStyles.featureDescription}>Monitor your dog's training progress</Text>
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
+        <View
           style={[homeStyles.featureCard, { backgroundColor: '#ffe6e6' }]}
-          onPress={() => router.push('/consultation')}
         >
           <MaterialIcons name="medical-services" size={32} color="#FF3B30" />
           <Text style={[homeStyles.featureTitle, { color: '#FF3B30' }]}>Consultation</Text>
           <Text style={homeStyles.featureDescription}>Expert advice for your pet's needs</Text>
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -183,8 +175,8 @@ export default function Home() {
   );
 
   return (
-    <ScrollView 
-      showsVerticalScrollIndicator={false} 
+    <ScrollView
+      showsVerticalScrollIndicator={false}
       style={homeStyles.container}
       refreshControl={
         <RefreshControl
