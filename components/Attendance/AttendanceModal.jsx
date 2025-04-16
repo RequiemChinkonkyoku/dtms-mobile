@@ -10,6 +10,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { concludeSlot } from '../../services/SlotService';
 import SlotOverviewModal from './SlotOverviewModal';
 
+import { useNotification } from '../../contexts/NotificationContext';
+import { fetchDogById } from '../../services/DogService';
+
 export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     const [attendanceData, setAttendanceData] = useState({});
     const [tempAttendanceData, setTempAttendanceData] = useState({});
@@ -25,6 +28,9 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     const { userInfo } = useAuth();
 
     const isSlotConcluded = () => slot.status === 2;
+
+    const { addNotification } = useNotification();
+
 
     useEffect(() => {
         if (visible && slot) {
@@ -111,6 +117,9 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             if (!attendanceId) {
                 throw new Error('Attendance record not found');
             }
+
+            const dogDetails = await fetchDogById(selectedDog.dogId);
+
             await submitProgressReport({
                 ...reportData,
                 attendanceId: attendanceId,
@@ -118,6 +127,23 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             });
             await loadData();
             setIsProgressReportVisible(false);
+
+
+            if (dogDetails && dogDetails.customerProfileId) {
+                addNotification({
+                    title: 'New Progress Report',
+                    message: `A new progress report has been created for ${selectedDog.dogName}`,
+                    userId: userInfo.unique_name, // sender (trainer)
+                    recipientId: dogDetails.customerProfileId, // recipient (dog owner)
+                    link: {
+                        screen: 'enrolledClasses/[id]',
+                        params: {
+                            enrollmentId: selectedDog.dogId
+                        }
+                    }
+                });
+            }
+
         } catch (error) {
             console.error('Error submitting progress report:', error);
             throw error;

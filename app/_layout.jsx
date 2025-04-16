@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import * as SecureStore from 'expo-secure-store';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 function ProtectedRoute() {
   const segments = useSegments();
@@ -39,8 +40,10 @@ function ProtectedRoute() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ProtectedRoute />
-      <Stack screenOptions={{ headerShown: false }} />
+      <NotificationProvider>
+        <ProtectedRoute />
+        <Stack screenOptions={{ headerShown: false }} />
+      </NotificationProvider>
     </AuthProvider>
   );
 }
