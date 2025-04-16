@@ -5,10 +5,16 @@ import { useAuth } from '../../contexts/AuthContext';
 import { fetchAccountById } from "../../services/AccountService";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import { useRouter } from 'expo-router';
+import { useNotification } from '../../contexts/NotificationContext';
+
 export default function Header({ onRefresh }) {
 
     const [userName, setUserName] = useState('');
     const { userInfo } = useAuth();
+
+    const router = useRouter();
+    const { unreadCount } = useNotification();
 
     const handleRefresh = async () => {
         if (onRefresh) {
@@ -23,9 +29,9 @@ export default function Header({ onRefresh }) {
                 if (!userInfo) return;
 
                 const userId = userInfo.unique_name;
-                
+
                 const profile = await fetchAccountById(userId);
-                
+
                 if (profile) {
                     setUserName(profile.fullName);
                 }
@@ -76,13 +82,36 @@ export default function Header({ onRefresh }) {
                         color: '#007AFF',
                     }}>{userName || 'User'}</Text>
                 </View>
-                <View style={{
-                    backgroundColor: '#E8F1FF',
-                    padding: 8,
-                    borderRadius: 12,
-                }}>
+
+                <TouchableOpacity
+                    onPress={() => router.push('/notification/notification')}
+                    style={{
+                        backgroundColor: '#E8F1FF',
+                        padding: 8,
+                        borderRadius: 12,
+                        position: 'relative'
+                    }}
+                >
                     <Feather name="bell" size={24} color="#007AFF" />
-                </View>
+                    {unreadCount > 0 && (
+                        <View style={{
+                            position: 'absolute',
+                            right: -6,
+                            top: -6,
+                            backgroundColor: '#FF3B30',
+                            borderRadius: 10,
+                            minWidth: 20,
+                            height: 20,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}>
+                            <Text style={{ color: 'white', fontSize: 12 }}>
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
+
             </View>
 
             {/*Search bar*/}
@@ -99,7 +128,7 @@ export default function Header({ onRefresh }) {
                 elevation: 2,
             }}>
                 <Feather name="search" size={24} color="#007AFF" />
-                <TextInput 
+                <TextInput
                     placeholder='Search for courses, trainers...'
                     placeholderTextColor="#999"
                     style={{
