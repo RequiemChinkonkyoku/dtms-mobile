@@ -9,7 +9,7 @@ import { submitProgressReport } from '../../services/ProgressReportService';
 import { useAuth } from '../../contexts/AuthContext';
 import { concludeSlot } from '../../services/SlotService';
 import SlotOverviewModal from './SlotOverviewModal';
-
+import { styles } from '../../styles/AttendanceModalStyles';
 import { useNotification } from '../../contexts/NotificationContext';
 import { fetchDogById } from '../../services/DogService';
 
@@ -197,20 +197,8 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                 transparent={true}
                 onRequestClose={onClose}
             >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    justifyContent: 'flex-end'
-                }}>
-                    <View style={{
-                        backgroundColor: 'white',
-                        borderTopLeftRadius: 20,
-                        borderTopRightRadius: 20,
-                        padding: 16,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: 200
-                    }}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.loadingContainer}>
                         <Text>Loading attendance data...</Text>
                     </View>
                 </View>
@@ -226,64 +214,38 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                 transparent={true}
                 onRequestClose={onClose}
             >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    justifyContent: 'flex-end'
-                }}>
-                    <View style={{
-                        backgroundColor: 'white',
-                        borderTopLeftRadius: 20,
-                        borderTopRightRadius: 20,
-                        padding: 16,
-                        maxHeight: '80%'
-                    }}>
-                        <View style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: 16
-                        }}>
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.header}>
                             <View>
-                                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-                                    {classData.name}
-                                </Text>
-                                <Text style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+                                <Text style={styles.headerTitle}>{classData.name}</Text>
+                                <Text style={styles.headerDate}>
                                     {format(new Date(slot.slotDate), 'EEEE, MMMM d, yyyy')}
                                 </Text>
                             </View>
 
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={styles.headerActions}>
                                 {slot.status === 1 && (
                                     <TouchableOpacity
                                         onPress={handleConcludeSlot}
-                                        style={{
-                                            backgroundColor: '#FF3B30',
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 6,
-                                            borderRadius: 8,
-                                            marginRight: 12
-                                        }}
+                                        style={styles.concludeButton}
                                     >
-                                        <Text style={{ color: 'white', fontWeight: '600' }}>Conclude</Text>
+                                        <Text style={styles.buttonText}>Conclude</Text>
                                     </TouchableOpacity>
                                 )}
 
                                 {slot.status === 2 && (
                                     <TouchableOpacity
                                         onPress={() => setIsOverviewVisible(true)}
-                                        style={{
-                                            backgroundColor: '#007AFF',
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 6,
-                                            borderRadius: 8,
-                                            marginRight: 12,
-                                            flexDirection: 'row',
-                                            alignItems: 'center'
-                                        }}
+                                        style={styles.overviewButton}
                                     >
-                                        <MaterialIcons name="assessment" size={20} color="white" style={{ marginRight: 4 }} />
-                                        <Text style={{ color: 'white', fontWeight: '600' }}>Overview</Text>
+                                        <MaterialIcons 
+                                            name="assessment" 
+                                            size={20} 
+                                            color="white" 
+                                            style={styles.overviewIcon} 
+                                        />
+                                        <Text style={styles.buttonText}>Overview</Text>
                                     </TouchableOpacity>
                                 )}
 
@@ -293,55 +255,43 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                             </View>
                         </View>
 
-                        <ScrollView style={{ marginBottom: 80 }}>
+                        <ScrollView style={styles.scrollContent}>
                             {classData.classEnrollments?.map((enrollment, index) => (
-                                <View key={`enrollment-${enrollment.id || index}`} style={{
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    paddingVertical: 12,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#eee',
-                                    backgroundColor: attendanceData[enrollment.dogId] ? '#f0fff4' : 'white'
-                                }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                <View 
+                                    key={`enrollment-${enrollment.id || index}`} 
+                                    style={[
+                                        styles.enrollmentRow,
+                                        attendanceData[enrollment.dogId] && styles.presentBackground
+                                    ]}
+                                >
+                                    <View style={styles.dogInfo}>
                                         <MaterialIcons
                                             name={attendanceData[enrollment.dogId] ? "check-circle" : "pets"}
                                             size={20}
                                             color={attendanceData[enrollment.dogId] ? "#34C759" : "#666"}
                                         />
-                                        <Text style={{
-                                            marginLeft: 8,
-                                            fontSize: 16,
-                                            color: attendanceData[enrollment.dogId] ? '#34C759' : '#000'
-                                        }}>
+                                        <Text style={[
+                                            styles.dogName,
+                                            attendanceData[enrollment.dogId] ? styles.dogNamePresent : styles.dogNameAbsent
+                                        ]}>
                                             {enrollment.dogName}
                                         </Text>
                                         {isSlotConcluded() ? (
-                                            <View style={{
-                                                backgroundColor: attendanceData[enrollment.dogId] ? '#34C759' : '#FF3B30',
-                                                paddingHorizontal: 8,
-                                                paddingVertical: 2,
-                                                borderRadius: 12,
-                                                marginLeft: 8
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 12 }}>
+                                            <View style={[
+                                                styles.statusBadge,
+                                                attendanceData[enrollment.dogId] ? styles.presentBadge : styles.absentBadge
+                                            ]}>
+                                                <Text style={styles.statusText}>
                                                     {attendanceData[enrollment.dogId] ? 'Present' : 'Absent'}
                                                 </Text>
                                             </View>
                                         ) : attendanceData[enrollment.dogId] && (
-                                            <View style={{
-                                                backgroundColor: '#34C759',
-                                                paddingHorizontal: 8,
-                                                paddingVertical: 2,
-                                                borderRadius: 12,
-                                                marginLeft: 8
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 12 }}>Present</Text>
+                                            <View style={[styles.statusBadge, styles.presentBadge]}>
+                                                <Text style={styles.statusText}>Present</Text>
                                             </View>
                                         )}
                                     </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={styles.actionButtons}>
                                         <Switch
                                             value={!!tempAttendanceData[enrollment.dogId]}
                                             onValueChange={() => handleAttendanceToggle(enrollment.dogId)}
@@ -358,23 +308,18 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                                 'Checkout Dog',
                                                                 `Are you sure you want to check out ${enrollment.dogName}?`,
                                                                 [
-                                                                    {
-                                                                        text: 'Cancel',
-                                                                        style: 'cancel'
-                                                                    },
+                                                                    { text: 'Cancel', style: 'cancel' },
                                                                     {
                                                                         text: 'Checkout',
-                                                                        onPress: () => handleCheckout(enrollment.dogId, attendanceRecords[enrollment.dogId])
+                                                                        onPress: () => handleCheckout(
+                                                                            enrollment.dogId, 
+                                                                            attendanceRecords[enrollment.dogId]
+                                                                        )
                                                                     }
                                                                 ]
                                                             );
                                                         }}
-                                                        style={{
-                                                            marginLeft: 8,
-                                                            backgroundColor: '#FF9500',
-                                                            padding: 8,
-                                                            borderRadius: 8,
-                                                        }}
+                                                        style={styles.checkoutButton}
                                                     >
                                                         <MaterialIcons name="logout" size={20} color="#fff" />
                                                     </TouchableOpacity>
@@ -389,12 +334,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                         setIsProgressReportVisible(true);
                                                         setSelectedProgressReport(existingReport);
                                                     }}
-                                                    style={{
-                                                        marginLeft: 8,
-                                                        backgroundColor: '#007AFF',
-                                                        padding: 8,
-                                                        borderRadius: 8,
-                                                    }}
+                                                    style={styles.reportButton}
                                                 >
                                                     <MaterialIcons
                                                         name={attendanceResponse?.object
@@ -411,30 +351,15 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                             ))}
                         </ScrollView>
 
-                        <View style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            padding: 16,
-                            backgroundColor: 'white',
-                            borderTopWidth: 1,
-                            borderTopColor: '#eee',
-                            flexDirection: 'row',
-                            justifyContent: 'space-between'
-                        }}>
+                        <View style={styles.bottomActions}>
                             <TouchableOpacity
                                 onPress={onClose}
-                                style={{
-                                    padding: 12,
-                                    borderRadius: 8,
-                                    backgroundColor: '#f5f5f5',
-                                    flex: 1,
-                                    marginRight: isSlotConcluded() ? 0 : 8,
-                                    alignItems: 'center'
-                                }}
+                                style={[
+                                    styles.cancelButton,
+                                    { marginRight: isSlotConcluded() ? 0 : 8 }
+                                ]}
                             >
-                                <Text style={{ color: '#666' }}>
+                                <Text style={styles.buttonTextGray}>
                                     {isSlotConcluded() ? 'Close' : 'Cancel'}
                                 </Text>
                             </TouchableOpacity>
@@ -443,16 +368,12 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                 <TouchableOpacity
                                     onPress={handleConfirmAttendance}
                                     disabled={loading}
-                                    style={{
-                                        padding: 12,
-                                        borderRadius: 8,
-                                        backgroundColor: loading ? '#ccc' : '#007AFF',
-                                        flex: 1,
-                                        marginLeft: 8,
-                                        alignItems: 'center'
-                                    }}
+                                    style={[
+                                        styles.confirmButton,
+                                        loading && styles.disabledButton
+                                    ]}
                                 >
-                                    <Text style={{ color: 'white' }}>
+                                    <Text style={styles.buttonTextWhite}>
                                         {loading ? 'Saving...' : 'Confirm'}
                                     </Text>
                                 </TouchableOpacity>
