@@ -132,15 +132,9 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             if (dogDetails && dogDetails.customerProfileId) {
                 addNotification({
                     title: 'New Progress Report',
-                    message: `A new progress report has been created for ${selectedDog.dogName}`,
+                    message: `A new progress report has been created for ${selectedDog.dogName} in class ${classData.name} on ${format(new Date(slot.slotDate), 'EEEE, MMMM d, yyyy')} at slot ${slot.startTime} - ${slot.endTime}`,
                     userId: userInfo.unique_name, // sender (trainer)
                     recipientId: dogDetails.customerProfileId, // recipient (dog owner)
-                    link: {
-                        screen: 'enrolledClasses/[id]',
-                        params: {
-                            enrollmentId: selectedDog.dogId
-                        }
-                    }
                 });
             }
 

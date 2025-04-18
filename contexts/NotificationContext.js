@@ -76,7 +76,9 @@ export function NotificationProvider({ children }) {
     };
 
     const clearAll = () => {
-        setNotifications([]);
+        setNotifications(prev => 
+            prev.filter(n => n.recipientId !== userInfo?.unique_name)
+        );
     };
 
     return (
