@@ -29,6 +29,15 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
 
     }, [visible, enrollment]);
 
+    useEffect(() => {
+        if (enrollment?.enrollmentId) {
+            setReport(prev => ({
+                ...prev,
+                enrollmentId: enrollment.enrollmentId
+            }));
+        }
+    }, [enrollment]);
+
     const loadExistingReports = async () => {
         setIsLoading(true);
         try {
@@ -62,8 +71,11 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
 
     const handleSubmit = async () => {
         if (isSubmitting) return;
+
         setIsSubmitting(true);
         try {
+            console.log('Submitting report data:', JSON.stringify(report, null, 2));
+            console.log('Enrollment ID:', enrollment?.enrollmentId);
             const response = await createTrainingReport(report);
             if (response.success) {
                 Alert.alert('Success', 'Training report submitted successfully');
@@ -73,6 +85,7 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
                 Alert.alert('Error', response.error || 'Failed to submit training report');
             }
         } catch (error) {
+            console.error('Submission error details:', error.response?.data || error.message);
             Alert.alert('Error', 'Failed to submit training report');
         } finally {
             setIsSubmitting(false);

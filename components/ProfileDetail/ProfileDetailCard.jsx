@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { fetchAllMemberships } from '../../services/MembershipService';
 import { useAuth } from '../../contexts/AuthContext';
-import { styles } from './ProfileDetailStyles';
+import { styles } from '../../styles/ProfileDetailStyles';
 
 export default function ProfileDetailCard({ profileData, onRefreshProfile }) {
   const windowWidth = Dimensions.get("window").width;
