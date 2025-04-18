@@ -17,12 +17,14 @@ export default function NotificationsScreen() {
             headerTitle: 'Notifications',
             headerShown: true,
             headerRight: () => (
-                <TouchableOpacity onPress={clearAll} style={{ marginRight: 16 }}>
-                    <MaterialIcons name="delete-sweep" size={24} color="#FF3B30" />
-                </TouchableOpacity>
+                userNotifications.length > 0 && (
+                    <TouchableOpacity onPress={clearAll} style={{ marginRight: 16 }}>
+                        <MaterialIcons name="delete-sweep" size={24} color="#FF3B30" />
+                    </TouchableOpacity>
+                )
             ),
         });
-    }, []);
+    }, [userNotifications]);
 
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
@@ -59,9 +61,6 @@ export default function NotificationsScreen() {
         <TouchableOpacity
             onPress={() => {
                 markAsRead(item.id);
-                if (item.link) {
-                    navigation.navigate(item.link.screen, item.link.params);
-                }
             }}
             style={{
                 padding: 16,

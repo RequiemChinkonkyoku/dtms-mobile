@@ -4,7 +4,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { createTrainingReport, fetchTrainingReportsByEnrollmentId } from '../../services/TrainingReportService';
 import { styles } from '../../styles/TrainingReportModalStyles';
 
+import { useNotification } from '../../contexts/NotificationContext';
+import { fetchDogById } from '../../services/DogService';
+
 const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId }) => {
+    
+    const { addNotification } = useNotification();
+    
     const [report, setReport] = useState({
         behaviorType: '',
         intensity: 5,
@@ -28,6 +34,15 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
         }
 
     }, [visible, enrollment]);
+
+    useEffect(() => {
+        if (enrollment?.enrollmentId) {
+            setReport(prev => ({
+                ...prev,
+                enrollmentId: enrollment.enrollmentId
+            }));
+        }
+    }, [enrollment]);
 
     const loadExistingReports = async () => {
         setIsLoading(true);
@@ -62,10 +77,22 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
 
     const handleSubmit = async () => {
         if (isSubmitting) return;
+
         setIsSubmitting(true);
         try {
             const response = await createTrainingReport(report);
             if (response.success) {
+                const dogDetails = await fetchDogById(enrollment.dogId);
+                
+                if (dogDetails && dogDetails.customerProfileId) {
+                    addNotification({
+                        title: 'New Training Report',
+                        message: `A new training report has been created for ${enrollment.dogName} in your dog's training program.`,
+                        userId: trainerProfileId, // sender (trainer)
+                        recipientId: dogDetails.customerProfileId // recipient (dog owner)
+                    });
+                }
+
                 Alert.alert('Success', 'Training report submitted successfully');
                 resetForm();
                 onClose();
@@ -73,6 +100,7 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
                 Alert.alert('Error', response.error || 'Failed to submit training report');
             }
         } catch (error) {
+            console.error('Submission error details:', error.response?.data || error.message);
             Alert.alert('Error', 'Failed to submit training report');
         } finally {
             setIsSubmitting(false);
