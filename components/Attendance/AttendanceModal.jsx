@@ -147,22 +147,35 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
     };
 
     const handleConcludeSlot = async () => {
-        try {
-            setLoading(true);
-            const response = await concludeSlot(slot.slotId);
-            if (response.success) {
-                Alert.alert('Success', 'Slot concluded successfully!');
-                onRefresh?.();
-                onClose();
-            } else {
-                Alert.alert('Error', 'Failed to conclude slot');
-            }
-        } catch (error) {
-            console.error('Error concluding slot:', error);
-            Alert.alert('Error', 'Failed to conclude slot');
-        } finally {
-            setLoading(false);
-        }
+        Alert.alert(
+            'Conclude Slot',
+            'Are you sure you want to conclude this slot? This action cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Conclude',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setLoading(true);
+                            const response = await concludeSlot(slot.slotId);
+                            if (response.success) {
+                                Alert.alert('Success', 'Slot concluded successfully!');
+                                onRefresh?.();
+                                onClose();
+                            } else {
+                                Alert.alert('Error', 'Failed to conclude slot');
+                            }
+                        } catch (error) {
+                            console.error('Error concluding slot:', error);
+                            Alert.alert('Error', 'Failed to conclude slot');
+                        } finally {
+                            setLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const handleCheckout = async (dogId, attendanceId) => {
@@ -233,11 +246,11 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                         onPress={() => setIsOverviewVisible(true)}
                                         style={styles.overviewButton}
                                     >
-                                        <MaterialIcons 
-                                            name="assessment" 
-                                            size={20} 
-                                            color="white" 
-                                            style={styles.overviewIcon} 
+                                        <MaterialIcons
+                                            name="assessment"
+                                            size={20}
+                                            color="white"
+                                            style={styles.overviewIcon}
                                         />
                                         <Text style={styles.buttonText}>Overview</Text>
                                     </TouchableOpacity>
@@ -251,8 +264,8 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
 
                         <ScrollView style={styles.scrollContent}>
                             {classData.classEnrollments?.map((enrollment, index) => (
-                                <View 
-                                    key={`enrollment-${enrollment.id || index}`} 
+                                <View
+                                    key={`enrollment-${enrollment.id || index}`}
                                     style={[
                                         styles.enrollmentRow,
                                         attendanceData[enrollment.dogId] && styles.presentBackground
@@ -306,7 +319,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                                     {
                                                                         text: 'Checkout',
                                                                         onPress: () => handleCheckout(
-                                                                            enrollment.dogId, 
+                                                                            enrollment.dogId,
                                                                             attendanceRecords[enrollment.dogId]
                                                                         )
                                                                     }
