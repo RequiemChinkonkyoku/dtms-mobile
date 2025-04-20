@@ -41,7 +41,8 @@ export default function AddDog() {
     try {
       const breeds = await fetchDogBreeds();
       if (breeds) {
-        setDogBreeds(breeds);
+        const sortedBreeds = breeds.sort((a, b) => a.name.localeCompare(b.name));
+        setDogBreeds(sortedBreeds);
       }
     } catch (error) {
       console.error("Error loading dog breeds:", error);
