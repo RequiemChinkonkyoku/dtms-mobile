@@ -263,99 +263,101 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                         </View>
 
                         <ScrollView style={styles.scrollContent}>
-                            {classData.classEnrollments?.map((enrollment, index) => (
-                                <View
-                                    key={`enrollment-${enrollment.id || index}`}
-                                    style={[
-                                        styles.enrollmentRow,
-                                        attendanceData[enrollment.dogId] && styles.presentBackground
-                                    ]}
-                                >
-                                    <View style={styles.dogInfo}>
-                                        <MaterialIcons
-                                            name={attendanceData[enrollment.dogId] ? "check-circle" : "pets"}
-                                            size={20}
-                                            color={attendanceData[enrollment.dogId] ? "#34C759" : "#666"}
-                                        />
-                                        <Text style={[
-                                            styles.dogName,
-                                            attendanceData[enrollment.dogId] ? styles.dogNamePresent : styles.dogNameAbsent
-                                        ]}>
-                                            {enrollment.dogName}
-                                        </Text>
-                                        {isSlotConcluded() ? (
-                                            <View style={[
-                                                styles.statusBadge,
-                                                attendanceData[enrollment.dogId] ? styles.presentBadge : styles.absentBadge
+                            {classData.classEnrollments
+                                ?.filter(enrollment => enrollment.status !== 0)
+                                .map((enrollment, index) => (
+                                    <View
+                                        key={`enrollment-${enrollment.id || index}`}
+                                        style={[
+                                            styles.enrollmentRow,
+                                            attendanceData[enrollment.dogId] && styles.presentBackground
+                                        ]}
+                                    >
+                                        <View style={styles.dogInfo}>
+                                            <MaterialIcons
+                                                name={attendanceData[enrollment.dogId] ? "check-circle" : "pets"}
+                                                size={20}
+                                                color={attendanceData[enrollment.dogId] ? "#34C759" : "#666"}
+                                            />
+                                            <Text style={[
+                                                styles.dogName,
+                                                attendanceData[enrollment.dogId] ? styles.dogNamePresent : styles.dogNameAbsent
                                             ]}>
-                                                <Text style={styles.statusText}>
-                                                    {attendanceData[enrollment.dogId] ? 'Present' : 'Absent'}
-                                                </Text>
-                                            </View>
-                                        ) : attendanceData[enrollment.dogId] && (
-                                            <View style={[styles.statusBadge, styles.presentBadge]}>
-                                                <Text style={styles.statusText}>Present</Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                    <View style={styles.actionButtons}>
-                                        <Switch
-                                            value={!!tempAttendanceData[enrollment.dogId]}
-                                            onValueChange={() => handleAttendanceToggle(enrollment.dogId)}
-                                            disabled={loading || attendanceData[enrollment.dogId] || isSlotConcluded()}
-                                            thumbColor={attendanceData[enrollment.dogId] ? "#34C759" : "#fff"}
-                                            trackColor={{ false: "#767577", true: "#34C759" }}
-                                        />
-                                        {attendanceData[enrollment.dogId] && (
-                                            <>
-                                                {attendanceStatus[enrollment.dogId] === 1 && (
+                                                {enrollment.dogName}
+                                            </Text>
+                                            {isSlotConcluded() ? (
+                                                <View style={[
+                                                    styles.statusBadge,
+                                                    attendanceData[enrollment.dogId] ? styles.presentBadge : styles.absentBadge
+                                                ]}>
+                                                    <Text style={styles.statusText}>
+                                                        {attendanceData[enrollment.dogId] ? 'Present' : 'Absent'}
+                                                    </Text>
+                                                </View>
+                                            ) : attendanceData[enrollment.dogId] && (
+                                                <View style={[styles.statusBadge, styles.presentBadge]}>
+                                                    <Text style={styles.statusText}>Present</Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View style={styles.actionButtons}>
+                                            <Switch
+                                                value={!!tempAttendanceData[enrollment.dogId]}
+                                                onValueChange={() => handleAttendanceToggle(enrollment.dogId)}
+                                                disabled={loading || attendanceData[enrollment.dogId] || isSlotConcluded()}
+                                                thumbColor={attendanceData[enrollment.dogId] ? "#34C759" : "#fff"}
+                                                trackColor={{ false: "#767577", true: "#34C759" }}
+                                            />
+                                            {attendanceData[enrollment.dogId] && (
+                                                <>
+                                                    {attendanceStatus[enrollment.dogId] === 1 && (
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+                                                                Alert.alert(
+                                                                    'Checkout Dog',
+                                                                    `Are you sure you want to check out ${enrollment.dogName}?`,
+                                                                    [
+                                                                        { text: 'Cancel', style: 'cancel' },
+                                                                        {
+                                                                            text: 'Checkout',
+                                                                            onPress: () => handleCheckout(
+                                                                                enrollment.dogId,
+                                                                                attendanceRecords[enrollment.dogId]
+                                                                            )
+                                                                        }
+                                                                    ]
+                                                                );
+                                                            }}
+                                                            style={styles.checkoutButton}
+                                                        >
+                                                            <MaterialIcons name="logout" size={20} color="#fff" />
+                                                        </TouchableOpacity>
+                                                    )}
+
                                                     <TouchableOpacity
                                                         onPress={() => {
-                                                            Alert.alert(
-                                                                'Checkout Dog',
-                                                                `Are you sure you want to check out ${enrollment.dogName}?`,
-                                                                [
-                                                                    { text: 'Cancel', style: 'cancel' },
-                                                                    {
-                                                                        text: 'Checkout',
-                                                                        onPress: () => handleCheckout(
-                                                                            enrollment.dogId,
-                                                                            attendanceRecords[enrollment.dogId]
-                                                                        )
-                                                                    }
-                                                                ]
-                                                            );
+                                                            setSelectedDog(enrollment);
+                                                            const existingReport = attendanceResponse?.object
+                                                                ?.find(record => record.dogId === enrollment.dogId)
+                                                                ?.progressReports?.[0];
+                                                            setIsProgressReportVisible(true);
+                                                            setSelectedProgressReport(existingReport);
                                                         }}
-                                                        style={styles.checkoutButton}
+                                                        style={styles.reportButton}
                                                     >
-                                                        <MaterialIcons name="logout" size={20} color="#fff" />
+                                                        <MaterialIcons
+                                                            name={attendanceResponse?.object
+                                                                ?.find(record => record.dogId === enrollment.dogId)
+                                                                ?.progressReports?.length > 0 ? "visibility" : "rate-review"}
+                                                            size={20}
+                                                            color="#fff"
+                                                        />
                                                     </TouchableOpacity>
-                                                )}
-
-                                                <TouchableOpacity
-                                                    onPress={() => {
-                                                        setSelectedDog(enrollment);
-                                                        const existingReport = attendanceResponse?.object
-                                                            ?.find(record => record.dogId === enrollment.dogId)
-                                                            ?.progressReports?.[0];
-                                                        setIsProgressReportVisible(true);
-                                                        setSelectedProgressReport(existingReport);
-                                                    }}
-                                                    style={styles.reportButton}
-                                                >
-                                                    <MaterialIcons
-                                                        name={attendanceResponse?.object
-                                                            ?.find(record => record.dogId === enrollment.dogId)
-                                                            ?.progressReports?.length > 0 ? "visibility" : "rate-review"}
-                                                        size={20}
-                                                        color="#fff"
-                                                    />
-                                                </TouchableOpacity>
-                                            </>
-                                        )}
+                                                </>
+                                            )}
+                                        </View>
                                     </View>
-                                </View>
-                            ))}
+                                ))}
                         </ScrollView>
 
                         <View style={styles.bottomActions}>
