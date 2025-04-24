@@ -7,8 +7,12 @@ import { format } from 'date-fns';
 import { styles } from '../../styles/SlotOverviewStyle';
 
 const SlotOverviewModal = ({ visible, onClose, slotData, classData, attendanceData, progressReports }) => {
-    const presentDogs = classData?.classEnrollments?.filter(dog => attendanceData[dog.dogId]) || [];
-    const absentDogs = classData?.classEnrollments?.filter(dog => !attendanceData[dog.dogId]) || [];
+    const presentDogs = classData?.classEnrollments?.filter(dog => 
+        attendanceData[dog.dogId] && dog.status !== 0
+    ) || [];
+    const absentDogs = classData?.classEnrollments?.filter(dog => 
+        !attendanceData[dog.dogId] && dog.status !== 0
+    ) || [];
 
     return (
         <Modal

@@ -5,9 +5,7 @@ import { courseDetailsStyles } from '../../styles/CourseDetailStyles';
 import { fetchUserDog } from '../../services/DogService';
 import { useAuth } from '../../contexts/AuthContext';
 import { enrollInClass } from '../../services/ClassService';
-import { createVNPayPayment, checkPaymentStatus } from '../../services/PaymentService';
-import { router } from 'expo-router';
-import * as ExpoLinking from 'expo-linking';
+
 
 export default function EnrollmentSteps({ visible, onClose, selectedClass, courseId, coursePrice }) {
     const [step, setStep] = useState(1);
@@ -66,7 +64,8 @@ export default function EnrollmentSteps({ visible, onClose, selectedClass, cours
                 );
 
             } else {
-                const errorMessage = result?.data?.message || 'Failed to enroll in class. Please try again.';
+                console.error('Enrollment Failed:', result.error);
+                const errorMessage = result?.error || 'Failed to enroll in class. Please try again.';
                 Alert.alert('Enrollment Failed', errorMessage);
             }
         } catch (error) {

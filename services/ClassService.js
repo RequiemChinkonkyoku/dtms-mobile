@@ -44,7 +44,7 @@ export const enrollInClass = async (enrollmentData) => {
         console.error('Error enrolling in class:', error);
         return {
             success: false,
-            error: error.response?.data?.message || 'Failed to enroll in class'
+            error: error.response?.data?.message || error.response?.data
         };
     }
 };

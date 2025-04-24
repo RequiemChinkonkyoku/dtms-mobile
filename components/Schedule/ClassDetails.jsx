@@ -293,7 +293,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                 <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Enrolled Dogs</Text>
             </View>
 
-            {classData.classEnrollments.length === 0 ? (
+            {classData.classEnrollments.filter(enrollment => enrollment.status !== 0).length === 0 ? (
                 <View style={{ alignItems: 'center', padding: 20 }}>
                     <MaterialIcons name="sentiment-dissatisfied" size={48} color="#666" />
                     <Text style={{ color: '#666', marginTop: 8, textAlign: 'center' }}>
