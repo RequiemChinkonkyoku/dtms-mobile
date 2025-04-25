@@ -61,8 +61,8 @@ export default function MenuList() {
             {
                 id: 2,
                 name: 'Attendances',
-                icon: require('./../../assets/images/schedule.png'),
-                path: '/attendance/attendance'
+                icon: require('./../../assets/images/attendance.png'),
+                path: '/schedule/trainer-schedule'
             }
         ] : []),
         
@@ -117,25 +117,30 @@ export default function MenuList() {
                 display:'flex',
                 flexDirection:'row',
                 alignItems:'center',
-                gap:10,
+                gap:8,
                 flex:1,
-                padding:10,
+                padding:12,
                 borderRadius:15,
                 borderWidth:1,
-                margin:10,
+                margin:8,
                 backgroundColor:'#fff',
+                minHeight: 80,
             }}>
                 <Image source={item.icon} 
                     style={{
-                        width:50,
-                        height:50
+                        width: 40,
+                        height: 40,
+                        marginRight: 4
                     }}
                 />
 
                 <Text style={{
-                    fontSize:20,
-                    flex:1
+                    fontSize:15,
+                    flex:1,
+                    flexWrap: 'wrap',
+                    textAlign: 'left',
                 }}>{item.name}</Text>
+
             </TouchableOpacity>
         )}
       />

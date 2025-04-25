@@ -83,6 +83,20 @@ export default function Register() {
     const handleDateChange = (event, selectedDate) => {
         setShowDatePicker(false);
         if (selectedDate) {
+            const today = new Date();
+            const minDate = new Date();
+            minDate.setFullYear(today.getFullYear() - 100);
+
+            if (selectedDate >= today) {
+                Alert.alert('Invalid Date', 'Date of birth cannot be in the future or today');
+                return;
+            }
+
+            if (selectedDate < minDate) {
+                Alert.alert('Invalid Date', 'Date of birth cannot be more than 150 years ago');
+                return;
+            }
+
             setFormData(prev => ({
                 ...prev,
                 dateOfBirth: selectedDate.toISOString().split('T')[0]
@@ -200,6 +214,8 @@ export default function Register() {
                             mode="date"
                             display="default"
                             onChange={handleDateChange}
+                            maximumDate={new Date(new Date().setDate(new Date().getDate() - 1))}
+                            minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
                         />
                     )}
 

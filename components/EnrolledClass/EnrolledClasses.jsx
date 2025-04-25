@@ -902,49 +902,87 @@ export default function EnrolledClasses({ dogId }) {
                             padding: 12,
                             borderRadius: 8,
                             marginBottom: 8,
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "space-between",
                           }}
                         >
                           <View
                             style={{
                               flexDirection: "row",
                               alignItems: "center",
+                              justifyContent: "space-between",
+                              marginBottom: 8,
                             }}
                           >
-                            <MaterialIcons
-                              name="assignment"
-                              size={24}
-                              color="#ffA500"
-                            />
-                            <View style={{ marginLeft: 12 }}>
-                              <Text style={{ fontSize: 15, color: "#333" }}>
-                                {new Date(pretest.testDate).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    weekday: "long",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )}
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                              }}
+                            >
+                              <MaterialIcons
+                                name="assignment"
+                                size={24}
+                                color="#ffA500"
+                              />
+                              <View style={{ marginLeft: 12 }}>
+                                <Text style={{ fontSize: 15, color: "#333" }}>
+                                  {new Date(pretest.testDate).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      weekday: "long",
+                                      month: "long",
+                                      day: "numeric",
+                                    }
+                                  )}
+                                </Text>
+                              </View>
+                            </View>
+                            <View
+                              style={{
+                                backgroundColor: getPretestStatusColor(
+                                  pretest.status
+                                ),
+                                paddingHorizontal: 8,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                              }}
+                            >
+                              <Text style={{ color: "white", fontWeight: "500" }}>
+                                {getPretestStatusText(pretest.status)}
                               </Text>
                             </View>
                           </View>
-                          <View
-                            style={{
-                              backgroundColor: getPretestStatusColor(
-                                pretest.status
-                              ),
-                              paddingHorizontal: 8,
-                              paddingVertical: 4,
-                              borderRadius: 12,
-                            }}
-                          >
-                            <Text style={{ color: "white", fontWeight: "500" }}>
-                              {getPretestStatusText(pretest.status)}
-                            </Text>
-                          </View>
+
+                          {pretest.note && (
+                            <View
+                              style={{
+                                backgroundColor: "#f5f5f5",
+                                padding: 10,
+                                borderRadius: 6,
+                                marginTop: 8,
+                                borderLeftWidth: 3,
+                                borderLeftColor: getPretestStatusColor(pretest.status),
+                              }}
+                            >
+                              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                                <MaterialIcons name="notes" size={16} color="#666" />
+                                <Text style={{
+                                  marginLeft: 6,
+                                  fontSize: 13,
+                                  color: "#666",
+                                  fontWeight: "500"
+                                }}>
+                                  Notes
+                                </Text>
+                              </View>
+                              <Text style={{
+                                color: "#333",
+                                fontSize: 14,
+                                lineHeight: 20
+                              }}>
+                                {pretest.note}
+                              </Text>
+                            </View>
+                          )}
                         </View>
                       ))
                     ) : (

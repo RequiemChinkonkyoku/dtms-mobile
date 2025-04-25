@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { loginAccount } from '../../services/AccountService';
 import { useAuth } from '../../contexts/AuthContext';
+import { decodeToken } from "../../utils/TokenUtils";
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -20,8 +21,18 @@ export default function Login() {
         try {
             const result = await loginAccount({ email, password });
             if (result.success) {
-                await login(result.token);
-                router.replace('/(tabs)/home');
+                const decodedToken = decodeToken(result.token);
+                const userRole = decodedToken.role;
+                // Check if user has allowed role
+                if (userRole.includes('Customer') || userRole.includes('Trainer')) {
+                    await login(result.token);
+                    router.replace('/(tabs)/home');
+                } else {
+                    Alert.alert(
+                        'Access Denied', 
+                        'Only customers and trainers can access the mobile application.'
+                    );
+                }
             } else {
                 Alert.alert('Login Failed', result?.error || 'Invalid credentials');
             }

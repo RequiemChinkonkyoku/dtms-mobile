@@ -159,7 +159,8 @@ export default function EditDog() {
                         mode="date"
                         display="default"
                         onChange={handleDateChange}
-                        maximumDate={new Date()} // Add maximum date
+                        maximumDate={new Date(new Date().setDate(new Date().getDate() - 1))}
+                        minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
                     />
                 )}
 
