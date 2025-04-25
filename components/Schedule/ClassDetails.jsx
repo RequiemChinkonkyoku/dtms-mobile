@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl, Alert, Modal, TextInput } from 'react-native';
 import React, { useMemo, useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,6 +13,10 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     const [refreshing, setRefreshing] = useState(false);
     const [pretests, setPretests] = useState([]);
     const [loadingPretests, setLoadingPretests] = useState(false);
+    const [noteModalVisible, setNoteModalVisible] = useState(false);
+    const [selectedPretest, setSelectedPretest] = useState(null);
+    const [note, setNote] = useState('');
+    const [targetStatus, setTargetStatus] = useState(null);
 
     useEffect(() => {
         loadPretests();
@@ -29,16 +33,6 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
             setPretests([]);
         } finally {
             setLoadingPretests(false);
-        }
-    };
-
-    const handleStatusUpdate = async (pretestId, newStatus) => {
-        try {
-            await updatePretestStatus(pretestId, newStatus);
-            await loadPretests();
-            Alert.alert('Success', 'Pretest status updated successfully');
-        } catch (error) {
-            Alert.alert('Error', 'Failed to update pretest status');
         }
     };
 
@@ -119,6 +113,24 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                 return 'Concluded';
             default:
                 return 'Unknown';
+        }
+    };
+
+    const handleStatusUpdateWithNote = async () => {
+        if (targetStatus === 2 && !note.trim()) {
+            Alert.alert('Note Required', 'Please provide a reason for rejection');
+            return;
+        }
+
+        try {
+            await updatePretestStatus(selectedPretest.id, targetStatus, note);
+            await loadPretests();
+            setNoteModalVisible(false);
+            setNote('');
+            setSelectedPretest(null);
+            Alert.alert('Success', 'Pretest status updated successfully');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update pretest status');
         }
     };
 
@@ -301,7 +313,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     </Text>
                 </View>
             ) : (
-                classData.classEnrollments.map((enrollment) => (
+                classData.classEnrollments.filter(enrollment => enrollment.status !== 0).map((enrollment) => (
                     <View key={enrollment.id} style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -385,64 +397,96 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                                 borderRadius: 8,
                                 padding: 12,
                                 marginBottom: 8,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
                             }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                    <MaterialIcons name="pets" size={20} color="#666" />
-                                    <View style={{ marginLeft: 8, flex: 1 }}>
-                                        <Text style={{ color: '#333', fontWeight: '500' }}>
-                                            {enrollment.dogName}
-                                        </Text>
-                                        {dogPretest && (
-                                            <View style={{
-                                                backgroundColor: getStatusColor(dogPretest.status),
-                                                paddingHorizontal: 8,
-                                                paddingVertical: 2,
-                                                borderRadius: 12,
-                                                alignSelf: 'flex-start',
-                                                marginTop: 4
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>
-                                                    {getStatusText(dogPretest.status)}
-                                                </Text>
-                                            </View>
-                                        )}
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                        <MaterialIcons name="pets" size={20} color="#666" />
+                                        <View style={{ marginLeft: 8, flex: 1 }}>
+                                            <Text style={{ color: '#333', fontWeight: '500' }}>
+                                                {enrollment.dogName}
+                                            </Text>
+                                            {dogPretest && (
+                                                <View style={{
+                                                    backgroundColor: getStatusColor(dogPretest.status),
+                                                    paddingHorizontal: 8,
+                                                    paddingVertical: 2,
+                                                    borderRadius: 12,
+                                                    alignSelf: 'flex-start',
+                                                    marginTop: 4
+                                                }}>
+                                                    <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>
+                                                        {getStatusText(dogPretest.status)}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
                                     </View>
+
+                                    {dogPretest && dogPretest.status === 0 && (
+                                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setSelectedPretest(dogPretest);
+                                                    setTargetStatus(1);
+                                                    setNoteModalVisible(true);
+                                                }}
+                                                style={{
+                                                    backgroundColor: '#34C759',
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 6,
+                                                    borderRadius: 8,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <MaterialIcons name="check" size={16} color="white" />
+                                                <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Accept</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setSelectedPretest(dogPretest);
+                                                    setTargetStatus(2);
+                                                    setNoteModalVisible(true);
+                                                }}
+                                                style={{
+                                                    backgroundColor: '#FF3B30',
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 6,
+                                                    borderRadius: 8,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <MaterialIcons name="close" size={16} color="white" />
+                                                <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Reject</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </View>
 
-                                {dogPretest && dogPretest.status === 0 && (
-                                    <View style={{ flexDirection: 'row', gap: 8 }}>
-                                        <TouchableOpacity
-                                            onPress={() => handleStatusUpdate(dogPretest.id, 1)}
-                                            style={{
-                                                backgroundColor: '#34C759',
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 8,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                            }}
-                                        >
-                                            <MaterialIcons name="check" size={16} color="white" />
-                                            <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Accept</Text>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            onPress={() => handleStatusUpdate(dogPretest.id, 2)}
-                                            style={{
-                                                backgroundColor: '#FF3B30',
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 8,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                            }}
-                                        >
-                                            <MaterialIcons name="close" size={16} color="white" />
-                                            <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Reject</Text>
-                                        </TouchableOpacity>
+                                {dogPretest && dogPretest.note && dogPretest.status !== 0 && (
+                                    <View style={{
+                                        backgroundColor: '#f0f0f0',
+                                        padding: 10,
+                                        borderRadius: 6,
+                                        marginTop: 8,
+                                        borderLeftWidth: 3,
+                                        borderLeftColor: getStatusColor(dogPretest.status)
+                                    }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                            <MaterialIcons name="notes" size={16} color="#666" />
+                                            <Text style={{ marginLeft: 6, fontSize: 13, color: '#666', fontWeight: '500' }}>
+                                                Trainer's Note
+                                            </Text>
+                                        </View>
+                                        <Text style={{ color: '#333', fontSize: 14, lineHeight: 20 }}>
+                                            {dogPretest.note}
+                                        </Text>
                                     </View>
                                 )}
                             </View>
@@ -450,6 +494,88 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     })}
                 </View>
             )}
+
+            {/* Note Modal */}
+            <Modal
+                visible={noteModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setNoteModalVisible(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    padding: 20,
+                }}>
+                    <View style={{
+                        backgroundColor: 'white',
+                        borderRadius: 12,
+                        padding: 20,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
+                        elevation: 5,
+                    }}>
+                        <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>
+                            {targetStatus === 1 ? 'Accept Pretest' : 'Reject Pretest'}
+                        </Text>
+
+                        <Text style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
+                            {targetStatus === 1 ? 'Add a note (optional)' : 'Please provide a reason for rejection'}
+                        </Text>
+
+                        <TextInput
+                            multiline
+                            numberOfLines={4}
+                            value={note}
+                            onChangeText={setNote}
+                            placeholder={targetStatus === 1 ? "Add your notes here..." : "Reason for rejection..."}
+                            style={{
+                                borderWidth: 1,
+                                borderColor: '#ddd',
+                                borderRadius: 8,
+                                padding: 12,
+                                marginBottom: 16,
+                                textAlignVertical: 'top',
+                                minHeight: 100,
+                            }}
+                        />
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12 }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setNoteModalVisible(false);
+                                    setNote('');
+                                }}
+                                style={{
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderRadius: 8,
+                                    backgroundColor: '#f1f1f1',
+                                }}
+                            >
+                                <Text style={{ color: '#666' }}>Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={handleStatusUpdateWithNote}
+                                style={{
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderRadius: 8,
+                                    backgroundColor: targetStatus === 1 ? '#34C759' : '#FF3B30',
+                                }}
+                            >
+                                <Text style={{ color: 'white', fontWeight: '500' }}>
+                                    {targetStatus === 1 ? 'Accept' : 'Reject'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 
