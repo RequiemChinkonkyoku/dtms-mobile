@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { markAttendance, getSlotAttendance, checkoutAttendance } from '../../services/AttendanceService';
 import { fetchClassById } from '../../services/ClassService';
 import ProgressReportModal from '../ProgressReport/ProgressReportModal';
-import { submitProgressReport } from '../../services/ProgressReportService';
+import { submitProgressReport, updateProgressReport } from '../../services/ProgressReportService';
 import { useAuth } from '../../contexts/AuthContext';
 import { concludeSlot } from '../../services/SlotService';
 import SlotOverviewModal from './SlotOverviewModal';
@@ -110,7 +110,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
         }
     };
 
-    const handleProgressReport = async (reportData) => {
+    const handleProgressReport = async (reportData, existingReportId) => {
         try {
             setLoading(true);
             const attendanceId = attendanceRecords[selectedDog.dogId];
@@ -120,11 +120,27 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
 
             const dogDetails = await fetchDogById(selectedDog.dogId);
 
-            await submitProgressReport({
-                ...reportData,
-                attendanceId: attendanceId,
-                trainerId: userInfo.unique_name
-            });
+            if (existingReportId) {
+                    const response = await updateProgressReport(existingReportId, {
+                        ...reportData,
+                        attendanceId: attendanceId,
+                        trainerId: userInfo.unique_name
+                    });
+                    if (!response.success) {
+                        Alert.alert(
+                            'Error',
+                            response.message || 'Failed to update progress report. Please try again.'
+                        );
+                        return;
+                    }
+            } else {
+                await submitProgressReport({
+                    ...reportData,
+                    attendanceId: attendanceId,
+                    trainerId: userInfo.unique_name
+                });
+            }
+
             await loadData();
             setIsProgressReportVisible(false);
 

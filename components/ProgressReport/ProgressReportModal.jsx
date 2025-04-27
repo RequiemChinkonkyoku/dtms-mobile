@@ -6,24 +6,13 @@ import {
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import { styles } from '../../styles/ProgressReportModalStyles';
 
-// Memoized InputSection for edit mode
 const InputSection = React.memo(({ title, value, onChangeText, placeholder }) => (
-    <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 }}>
-            {title}
-        </Text>
+    <View style={styles.inputSection}>
+        <Text style={styles.sectionTitle}>{title}</Text>
         <TextInput
-            style={{
-                borderWidth: 1,
-                borderColor: '#ddd',
-                borderRadius: 8,
-                padding: 12,
-                fontSize: 16,
-                backgroundColor: '#fff',
-                minHeight: 100,
-                textAlignVertical: 'top'
-            }}
+            style={styles.input}
             multiline
             value={value}
             onChangeText={onChangeText}
@@ -35,23 +24,11 @@ const InputSection = React.memo(({ title, value, onChangeText, placeholder }) =>
     </View>
 ));
 
-// Memoized ViewSection for read-only mode
 const ViewSection = React.memo(({ title, content }) => (
-    <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 }}>
-            {title}
-        </Text>
-        <View style={{
-            borderWidth: 1,
-            borderColor: '#ddd',
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: '#f8f9fa',
-            minHeight: 60
-        }}>
-            <Text style={{ fontSize: 16, color: '#444', lineHeight: 24 }}>
-                {content}
-            </Text>
+    <View style={styles.inputSection}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={styles.viewSection}>
+            <Text style={styles.viewSectionText}>{content}</Text>
         </View>
     </View>
 ));
@@ -67,6 +44,7 @@ export default function ProgressReportModal({ visible, onClose, onSubmit, dogNam
         trainerId: trainerId
     });
 
+    const [isEditing, setIsEditing] = useState(false);
     const feedbackRef = useRef(null);
 
     useEffect(() => {
@@ -80,22 +58,28 @@ export default function ProgressReportModal({ visible, onClose, onSubmit, dogNam
                 attendanceId: attendanceId,
                 trainerId: trainerId
             });
+            setIsEditing(false);
         } else if (existingReport) {
             setReport(existingReport);
+            setIsEditing(false);
         } else {
             feedbackRef.current?.focus();
+            setIsEditing(true);
         }
     }, [visible, attendanceId, trainerId, existingReport]);
 
     const handleFeedbackChange = useCallback((text) => {
         setReport(prev => ({ ...prev, feedback: text }));
     }, []);
+
     const handleHealthChange = useCallback((text) => {
         setReport(prev => ({ ...prev, healthObservation: text }));
     }, []);
+
     const handleBehaviorChange = useCallback((text) => {
         setReport(prev => ({ ...prev, behaviorObservation: text }));
     }, []);
+
     const handlePerformanceChange = useCallback((text) => {
         setReport(prev => ({ ...prev, performanceObservation: text }));
     }, []);
@@ -107,14 +91,26 @@ export default function ProgressReportModal({ visible, onClose, onSubmit, dogNam
             return;
         }
         try {
-            await onSubmit(report);
-            Alert.alert(
-                'Success',
-                'Progress report submitted successfully!',
-                [{ text: 'OK', onPress: onClose }]
-            );
+            await onSubmit(report, existingReport?.id);
+            // Alert.alert(
+            //     'Success',
+            //     `Progress report ${existingReport ? 'updated' : 'submitted'} successfully!`,
+            //     [{ text: 'OK', onPress: () => {
+            //         setIsEditing(false);
+            //         onClose();
+            //     }}]
+            // );
         } catch (error) {
-            Alert.alert('Error', 'Failed to submit progress report. Please try again.');
+            Alert.alert('Error', `Failed to ${existingReport ? 'update' : 'submit'} progress report. Please try again.`);
+        }
+    };
+
+    const handleCancel = () => {
+        if (isEditing && existingReport) {
+            setReport(existingReport);
+            setIsEditing(false);
+        } else {
+            onClose();
         }
     };
 
@@ -123,68 +119,47 @@ export default function ProgressReportModal({ visible, onClose, onSubmit, dogNam
             visible={visible}
             animationType="slide"
             transparent={true}
-            onRequestClose={onClose}
+            onRequestClose={handleCancel}
         >
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-                style={{ flex: 1 }}
+                style={styles.container}
                 keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
             >
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                    <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                        <View style={{
-                            backgroundColor: 'white',
-                            borderTopLeftRadius: 20,
-                            borderTopRightRadius: 20,
-                            padding: 16,
-                            marginTop: 'auto',
-                            maxHeight: '90%'
-                        }}>
-                            <View style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                marginBottom: 16
-                            }}>
+                    <View style={styles.overlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.header}>
                                 <View>
-                                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1a1a' }}>
-                                        Progress Report
-                                    </Text>
-                                    <Text style={{ fontSize: 14, color: '#666', marginTop: 4 }}>
+                                    <Text style={styles.title}>Progress Report</Text>
+                                    <Text style={styles.subtitle}>
                                         {dogName} - {existingReport && format(new Date(existingReport.attendanceDate), 'MMMM d, yyyy')}
                                     </Text>
                                 </View>
                                 <TouchableOpacity
-                                    onPress={onClose}
+                                    onPress={handleCancel}
                                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                    style={{ padding: 5 }}
+                                    style={styles.closeButton}
                                 >
                                     <MaterialIcons name="close" size={24} color="#666" />
                                 </TouchableOpacity>
                             </View>
 
                             {existingReport && (
-                                <View style={{
-                                    backgroundColor: '#e8f4fd',
-                                    padding: 12,
-                                    borderRadius: 8,
-                                    marginBottom: 16,
-                                    flexDirection: 'row',
-                                    alignItems: 'center'
-                                }}>
+                                <View style={styles.trainerInfo}>
                                     <MaterialIcons name="person" size={20} color="#007AFF" />
-                                    <Text style={{ marginLeft: 8, color: '#007AFF', fontSize: 14 }}>
+                                    <Text style={styles.trainerText}>
                                         Trainer: {existingReport.trainerName}
                                     </Text>
                                 </View>
                             )}
 
                             <ScrollView
-                                style={{ marginBottom: existingReport ? 16 : 80 }}
+                                style={existingReport ? styles.scrollView : styles.scrollViewWithActions}
                                 showsVerticalScrollIndicator={false}
                                 contentContainerStyle={{ paddingBottom: 20 }}
                             >
-                                {existingReport ? (
+                                {existingReport && !isEditing ? (
                                     <>
                                         <ViewSection title="Overall Feedback" content={report.feedback} />
                                         <ViewSection title="Health Observation" content={report.healthObservation} />
@@ -221,66 +196,39 @@ export default function ProgressReportModal({ visible, onClose, onSubmit, dogNam
                                 )}
                             </ScrollView>
 
-                            {!existingReport && (
-                                <View style={{
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    padding: 16,
-                                    backgroundColor: 'white',
-                                    borderTopWidth: 1,
-                                    borderTopColor: '#eee',
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between'
-                                }}>
-                                    <TouchableOpacity
-                                        onPress={onClose}
-                                        style={{
-                                            padding: 12,
-                                            borderRadius: 8,
-                                            backgroundColor: '#f5f5f5',
-                                            flex: 1,
-                                            marginRight: 8,
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        <Text style={{ color: '#666' }}>Cancel</Text>
-                                    </TouchableOpacity>
+                            <View style={styles.actionBar}>
+                                <TouchableOpacity
+                                    onPress={handleCancel}
+                                    style={[styles.button, styles.cancelButton]}
+                                >
+                                    <Text style={styles.cancelButtonText}>
+                                        {isEditing ? 'Cancel' : 'Close'}
+                                    </Text>
+                                </TouchableOpacity>
+                                {(isEditing || !existingReport) ? (
                                     <TouchableOpacity
                                         onPress={handleSubmit}
                                         disabled={loading}
-                                        style={{
-                                            padding: 12,
-                                            borderRadius: 8,
-                                            backgroundColor: loading ? '#ccc' : '#007AFF',
-                                            flex: 1,
-                                            marginLeft: 8,
-                                            alignItems: 'center'
-                                        }}
+                                        style={[
+                                            styles.button,
+                                            styles.submitButton,
+                                            loading && styles.disabledButton
+                                        ]}
                                     >
-                                        <Text style={{ color: 'white' }}>
-                                            {loading ? 'Submitting...' : 'Submit Report'}
+                                        <Text style={styles.buttonText}>
+                                            {loading ? (existingReport ? 'Updating...' : 'Submitting...') 
+                                                    : (existingReport ? 'Update Report' : 'Submit Report')}
                                         </Text>
                                     </TouchableOpacity>
-                                </View>
-                            )}
-
-                            {existingReport && (
-                                <TouchableOpacity
-                                    onPress={onClose}
-                                    style={{
-                                        padding: 15,
-                                        borderRadius: 8,
-                                        backgroundColor: '#007AFF',
-                                        alignItems: 'center'
-                                    }}
-                                >
-                                    <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-                                        Close
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => setIsEditing(true)}
+                                        style={[styles.button, styles.submitButton]}
+                                    >
+                                        <Text style={styles.buttonText}>Edit Report</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
