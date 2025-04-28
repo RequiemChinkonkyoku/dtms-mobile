@@ -76,11 +76,11 @@ export const ClassCard = ({ classId, classSlots, classDetails, isExpanded, onTog
                 Alert.alert('Success', 'Class status updated successfully');
                 onRefresh();
             } else {
-                Alert.alert('Error', 'Failed to update class status');
+                Alert.alert('Error', result.error || 'Failed to update class status');
             }
         } catch (error) {
             console.error('Error updating class status:', error);
-            Alert.alert('Error', 'Failed to update class status');
+            Alert.alert('Error', error || 'Failed to update class status');
         }
     };
 

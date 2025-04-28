@@ -10,6 +10,16 @@ export const createTrainingReport = async (reportData) => {
     }
 };
 
+export const updateTrainingReport = async (reportId, reportData) => {
+    try {
+        const response = await ApiManager.put(`/trainingReport/update-training-report/${reportId}`, reportData);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating training report:', error);
+        throw error;
+    }
+};
+
 export const fetchAllTrainingReports = async () => {
     try {
         const response = await ApiManager.get('/trainingReport/get-all-training-reports');
