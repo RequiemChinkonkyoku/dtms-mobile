@@ -74,11 +74,11 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
                                         ]
                                     );
                                 } else {
-                                    Alert.alert('Error', 'Failed to check in slot');
+                                    Alert.alert('Error', response.message || 'Failed to check in slot');
                                 }
                             } catch (error) {
                                 console.error('Error checking in slot:', error);
-                                Alert.alert('Error', 'Failed to check in slot');
+                                Alert.alert('Error', error.message || 'Failed to check in slot');
                             }
                         }
                     }
