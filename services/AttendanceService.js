@@ -6,7 +6,10 @@ export const markAttendance = async (attendanceData) => {
         return response.data;
     } catch (error) {
         console.error('Error marking attendance:', error);
-        throw error;
+        return {
+            success: false,
+            message: error.response?.data?.message || error.message || 'Failed to mark attendance'
+        };
     }
 };
 

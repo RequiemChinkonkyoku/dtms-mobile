@@ -90,7 +90,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             setLoading(true);
             for (const enrollment of classData.classEnrollments) {
                 try {
-                    if (tempAttendanceData[enrollment.dogId]) {
+                    if (tempAttendanceData[enrollment.dogId] && !attendanceData[enrollment.dogId]) {
                         await markAttendance({
                             date: format(new Date(slot.slotDate), 'yyyy-MM-dd'),
                             slotId: slot.slotId,
