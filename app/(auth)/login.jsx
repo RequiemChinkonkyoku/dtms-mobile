@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { loginAccount } from '../../services/AccountService';
 import { useAuth } from '../../contexts/AuthContext';
 import { decodeToken } from "../../utils/TokenUtils";
+import { styles } from '../../styles/LoginStyles';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -47,65 +48,25 @@ export default function Login() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{
-                flex: 1,
-                backgroundColor: '#fff',
-            }}
+            style={styles.container}
         >
-
             {isLoading && (
-                <View style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    zIndex: 1000,
-                }}>
+                <View style={styles.loadingOverlay}>
                     <ActivityIndicator size="large" color="#007AFF" />
                 </View>
             )}
 
-            <View style={{
-                flex: 1,
-                padding: 20,
-                justifyContent: 'center',
-            }}>
-                {/* Logo Section */}
-                <View style={{
-                    alignItems: 'center',
-                    marginBottom: 40,
-                }}>
+            <View style={styles.contentContainer}>
+                <View style={styles.logoSection}>
                     <Image
                         source={require('../../assets/images/dog.png')}
-                        style={{
-                            width: 120,
-                            height: 120,
-                            marginBottom: 20,
-                        }}
+                        style={styles.logo}
                     />
-                    <Text style={{
-                        fontSize: 28,
-                        fontWeight: 'bold',
-                        color: '#333',
-                        marginBottom: 10,
-                    }}>
-                        Welcome Back
-                    </Text>
-                    <Text style={{
-                        fontSize: 16,
-                        color: '#666',
-                        textAlign: 'center',
-                    }}>
-                        Sign in to continue to DTMS
-                    </Text>
+                    <Text style={styles.title}>Welcome Back</Text>
+                    <Text style={styles.subtitle}>Sign in to continue to DTMS</Text>
                 </View>
 
-                {/* Form Section */}
-                <View style={{ gap: 15 }}>
+                <View style={styles.formSection}>
                     <View>
                         <TextInput
                             placeholder="Email"
@@ -113,12 +74,7 @@ export default function Login() {
                             onChangeText={setEmail}
                             keyboardType="email-address"
                             autoCapitalize="none"
-                            style={{
-                                backgroundColor: '#f5f5f5',
-                                padding: 15,
-                                borderRadius: 10,
-                                fontSize: 16,
-                            }}
+                            style={styles.input}
                         />
                     </View>
 
@@ -128,65 +84,27 @@ export default function Login() {
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry
-                            style={{
-                                backgroundColor: '#f5f5f5',
-                                padding: 15,
-                                borderRadius: 10,
-                                fontSize: 16,
-                            }}
+                            style={styles.input}
                         />
                     </View>
 
                     <TouchableOpacity
                         onPress={handleLogin}
-                        style={{
-                            backgroundColor: '#007AFF',
-                            padding: 15,
-                            borderRadius: 10,
-                            marginTop: 10,
-                        }}
+                        style={styles.signInButton}
                     >
-                        <Text style={{
-                            color: '#fff',
-                            textAlign: 'center',
-                            fontSize: 16,
-                            fontWeight: '600',
-                        }}>
-                            Sign In
-                        </Text>
+                        <Text style={styles.signInButtonText}>Sign In</Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Additional Options */}
-                <View style={{
-                    marginTop: 30,
-                    alignItems: 'center',
-                    gap: 20,
-                }}>
+                <View style={styles.additionalOptions}>
                     <TouchableOpacity>
-                        <Text style={{
-                            color: '#007AFF',
-                            fontSize: 15,
-                        }}>
-                            Forgot Password?
-                        </Text>
+                        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                     </TouchableOpacity>
 
-                    <View style={{
-                        flexDirection: 'row',
-                        gap: 5,
-                    }}>
-                        <Text style={{ color: '#666' }}>
-                            Don't have an account?
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => router.push('/register')}>
-                            <Text style={{
-                                color: '#007AFF',
-                                fontWeight: '600',
-                            }}>
-                                Sign Up
-                            </Text>
+                    <View style={styles.signUpSection}>
+                        <Text style={styles.signUpText}>Don't have an account?</Text>
+                        <TouchableOpacity onPress={() => router.push('/register')}>
+                            <Text style={styles.signUpLink}>Sign Up</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -25,7 +25,8 @@ export default function BlogCard({ blog }) {
                 source={{ uri: blog.imageUrl }}
                 style={{
                     height: 130,
-                    borderRadius: 15
+                    borderRadius: 15,
+                    resizeMode: 'stretch',
                 }}
             />
             <View style={{ marginTop: 7, gap: 5 }}>

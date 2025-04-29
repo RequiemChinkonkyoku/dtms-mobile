@@ -7,6 +7,7 @@ import { uploadImageToCloudinary } from '../../services/UploadFileService';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { fetchDogBreeds } from '../../services/DogBreedService';
+import { styles } from '../../styles/EditDogStyles';
 
 export default function EditDog() {
     const { id } = useLocalSearchParams();
@@ -132,16 +133,18 @@ export default function EditDog() {
     };
 
     return (
-        <View style={{ padding: 20 }}>
-            <TouchableOpacity style={{ marginTop: 20 }} onPress={onImagePick}>
-                {image ? (
-                    <Image source={{ uri: image }} style={{ width: 100, height: 100, borderRadius: 15 }} />
-                ) : (
-                    <Image source={require('./../../assets/images/placeholder.png')} style={{ width: 100, height: 100 }} />
-                )}
-            </TouchableOpacity>
+        <View style={styles.container}>
+            <View style={styles.imagePickerContainer}>
+                <TouchableOpacity onPress={onImagePick}>
+                    {image ? (
+                        <Image source={{ uri: image }} style={styles.selectedImage} />
+                    ) : (
+                        <Image source={require('./../../assets/images/placeholder.png')} style={styles.placeholderImage} />
+                    )}
+                </TouchableOpacity>
+            </View>
 
-            <View>
+            <View style={styles.formContainer}>
                 <TextInput
                     placeholder='Dog Name'
                     value={name}
@@ -205,33 +208,3 @@ export default function EditDog() {
         </View>
     );
 }
-
-const styles = {
-    input: {
-        padding: 10,
-        borderWidth: 1,
-        borderRadius: 5,
-        fontSize: 17,
-        backgroundColor: '#fff',
-        marginTop: 10,
-    },
-    pickerContainer: {
-        borderWidth: 1,
-        borderRadius: 5,
-        fontSize: 17,
-        backgroundColor: '#fff',
-        marginTop: 10,
-    },
-    updateButton: {
-        padding: 15,
-        borderRadius: 5,
-        marginTop: 20,
-        backgroundColor: '#007AFF',
-    },
-    buttonText: {
-        textAlign: 'center',
-        color: '#fff',
-        fontSize: 16,
-        fontFamily: 'outfit-medium',
-    }
-};
