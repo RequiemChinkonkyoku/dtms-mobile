@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import CourseCard from './CourseCard';
 import { fetchCourses, fetchCoursesByCategoryId } from '../../services/CourseService';
 import { fetchCategories } from '../../services/CategoriesService';
+import { styles } from '../../styles/CourseListStyles';
 
 export default function CourseList({ searchQuery }) {
     const [courses, setCourses] = useState([]);
@@ -49,41 +50,27 @@ export default function CourseList({ searchQuery }) {
     }, [courses, searchQuery]);
 
     return (
-        <View style={{
-            flex: 0,
-            backgroundColor: '#f5f5f5',
-            borderRadius: 15,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-            margin: 10,
-            padding: 15,
-        }}>
+        <View style={styles.container}>
             {/* Categories Section */}
             <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
-                style={{ marginBottom: 20 }}
+                style={styles.categoryScroll}
             >
                 <TouchableOpacity
-                    style={{
-                        paddingHorizontal: 16,
-                        paddingVertical: 8,
-                        borderRadius: 20,
-                        backgroundColor: !selectedCategory ? '#007AFF' : '#E8E8E8',
-                        marginRight: 10,
-                    }}
+                    style={[
+                        styles.categoryButton,
+                        !selectedCategory ? styles.categoryButtonActive : styles.categoryButtonInactive
+                    ]}
                     onPress={() => {
                         setSelectedCategory(null);
                         loadCourses();
                     }}
                 >
-                    <Text style={{
-                        color: !selectedCategory ? '#FFF' : '#333',
-                        fontWeight: '600',
-                    }}>
+                    <Text style={[
+                        styles.categoryText,
+                        !selectedCategory ? styles.categoryTextActive : styles.categoryTextInactive
+                    ]}>
                         All
                     </Text>
                 </TouchableOpacity>
@@ -91,78 +78,46 @@ export default function CourseList({ searchQuery }) {
                 {categories.map((category) => (
                     <TouchableOpacity
                         key={category.id}
-                        style={{
-                            paddingHorizontal: 16,
-                            paddingVertical: 8,
-                            borderRadius: 20,
-                            backgroundColor: selectedCategory === category.id ? '#007AFF' : '#E8E8E8',
-                            marginRight: 10,
-                        }}
+                        style={[
+                            styles.categoryButton,
+                            selectedCategory === category.id ? styles.categoryButtonActive : styles.categoryButtonInactive
+                        ]}
                         onPress={() => handleCategoryPress(category.id)}
                     >
-                        <Text style={{
-                            color: selectedCategory === category.id ? '#FFF' : '#333',
-                            fontWeight: '600',
-                        }}>
+                        <Text style={[
+                            styles.categoryText,
+                            selectedCategory === category.id ? styles.categoryTextActive : styles.categoryTextInactive
+                        ]}>
                             {category.name}
                         </Text>
                     </TouchableOpacity>
                 ))}
             </ScrollView>
 
-            <Text style={{
-                fontSize: 26,
-                fontWeight: 'bold',
-                marginBottom: 15,
-                color: '#333',
-                paddingHorizontal: 5,
-                borderLeftWidth: 4,
-                borderLeftColor: '#007AFF',
-                paddingLeft: 10,
-            }}>
+            <Text style={styles.sectionTitle}>
                 Courses
             </Text>
 
             {loading ? (
-                <View style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: 20,
-                }}>
+                <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#007AFF" />
                 </View>
             ) : 
             filteredCourses.length > 0 ? (
                 <FlatList
-                    style={{
-                        paddingHorizontal: 5,
-                    }}
+                    style={styles.courseList}
                     data={filteredCourses}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (<CourseCard course={item} />)}
-                    contentContainerStyle={{
-                        paddingBottom: 20,
-                        gap: 15,
-                    }}
+                    contentContainerStyle={styles.courseListContent}
                     showsVerticalScrollIndicator={false}
-                    ListFooterComponent={<View style={{ height: 425 }} />}
+                    ListFooterComponent={<View style={styles.listFooter} />}
                     onRefresh={() => loadCourses(selectedCategory)}
                     refreshing={loading}
                 />
             ) : (
-                <View style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: 30,
-                }}>
-                    <Text style={{
-                        textAlign: 'center',
-                        fontSize: 16,
-                        color: '#666',
-                        lineHeight: 24,
-                    }}>
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>
                         {searchQuery ? 'No matching courses found' : 'No courses available'}
                     </Text>
                 </View>

@@ -4,6 +4,7 @@ import { useNavigation } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNotification } from '../../contexts/NotificationContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { styles } from '../../styles/NotificationStyles';
 
 export default function NotificationsScreen() {
     const navigation = useNavigation();
@@ -18,7 +19,7 @@ export default function NotificationsScreen() {
             headerShown: true,
             headerRight: () => (
                 userNotifications.length > 0 && (
-                    <TouchableOpacity onPress={clearAll} style={{ marginRight: 16 }}>
+                    <TouchableOpacity onPress={clearAll} style={styles.clearButton}>
                         <MaterialIcons name="delete-sweep" size={24} color="#FF3B30" />
                     </TouchableOpacity>
                 )
@@ -59,35 +60,29 @@ export default function NotificationsScreen() {
 
     const renderNotification = ({ item }) => (
         <TouchableOpacity
-            onPress={() => {
-                markAsRead(item.id);
-            }}
-            style={{
-                padding: 16,
-                backgroundColor: item.isRead ? 'white' : '#f0f9ff',
-                borderBottomWidth: 1,
-                borderBottomColor: '#eee',
-            }}
+            onPress={() => markAsRead(item.id)}
+            style={[
+                styles.notificationItem,
+                item.isRead ? styles.notificationRead : styles.notificationUnread
+            ]}
         >
-            <Text style={{
-                fontSize: 16,
-                color: '#333',
-                fontWeight: item.isRead ? 'normal' : 'bold',
-                marginBottom: 4
-            }}>
+            <Text style={[
+                styles.title,
+                item.isRead ? styles.titleRead : styles.titleUnread
+            ]}>
                 {item.title}
             </Text>
-            <Text style={{ fontSize: 14, color: '#666' }}>
+            <Text style={styles.message}>
                 {item.message}
             </Text>
-            <Text style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+            <Text style={styles.timestamp}>
                 {formatDateTime(item.timestamp)}
             </Text>
         </TouchableOpacity>
     );
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+        <View style={styles.container}>
             <FlatList
                 data={userNotifications}
                 renderItem={renderNotification}
@@ -101,14 +96,9 @@ export default function NotificationsScreen() {
                     />
                 }
                 ListEmptyComponent={() => (
-                    <View style={{
-                        flex: 1,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        paddingTop: 50
-                    }}>
+                    <View style={styles.emptyContainer}>
                         <MaterialIcons name="notifications-none" size={60} color="#ccc" />
-                        <Text style={{ fontSize: 16, color: '#666', marginTop: 16 }}>
+                        <Text style={styles.emptyText}>
                             No notifications yet
                         </Text>
                     </View>

@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import { fetchPretestsByClass, updatePretestStatus } from '../../services/PretestService';
-
+import { styles } from '../../styles/ClassDetailsStyles';
 
 export default function ClassDetails({ classData, onClose, onRefresh }) {
     const router = useRouter();
@@ -136,8 +136,8 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
 
     if (!classData) {
         return (
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <SafeAreaView style={styles.container}>
+                <View style={styles.loadingContainer}>
                     <Text>Loading class details...</Text>
                 </View>
             </SafeAreaView>
@@ -145,40 +145,30 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     }
 
     const renderInfoCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
                 <MaterialIcons name="info" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Class Information</Text>
+                <Text style={styles.cardTitle}>Class Information</Text>
             </View>
 
-            <View style={{ gap: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.infoGap}>
+                <View style={styles.infoRow}>
                     <MaterialIcons name="pets" size={20} color="#666" />
-                    <Text style={{ marginLeft: 8, color: '#333' }}>
+                    <Text style={styles.infoText}>
                         {classData.enrolledDogCount} Dogs Enrolled
                     </Text>
                 </View>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.infoRow}>
                     <MaterialIcons name="calendar-today" size={20} color="#666" />
-                    <Text style={{ marginLeft: 8, color: '#333' }}>
+                    <Text style={styles.infoText}>
                         Starts {formatDate(classData.startingDate)}
                     </Text>
                 </View>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.infoRow}>
                     <MaterialIcons name="person" size={20} color="#666" />
-                    <Text style={{ marginLeft: 8, color: '#333' }}>
+                    <Text style={styles.infoText}>
                         {classData.assignedTrainerCount} Trainer(s) Assigned
                     </Text>
                 </View>
@@ -187,20 +177,10 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     );
 
     const renderScheduleCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.scheduleCard}>
+            <View style={styles.scheduleHeader}>
                 <MaterialIcons name="schedule" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Class Schedule</Text>
+                <Text style={styles.scheduleTitle}>Class Schedule</Text>
             </View>
 
             <Calendar
@@ -231,55 +211,34 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     textMonthFontSize: 16,
                     textDayHeaderFontSize: 14
                 }}
-                style={{
-                    borderRadius: 10,
-                    marginBottom: selectedDate ? 16 : 0,
-                }}
+                style={styles.calendar}
             />
 
             {selectedDate && (
-                <View style={{ marginTop: 8 }}>
-                    <Text style={{
-                        fontSize: 16,
-                        fontWeight: '600',
-                        color: '#333',
-                        marginBottom: 8
-                    }}>
+                <View style={styles.selectedDateView}>
+                    <Text style={styles.selectedDateText}>
                         Classes on {formatDate(selectedDate)}
                     </Text>
                     {getSlotsByDate(selectedDate).map((slot) => (
-                        <View key={slot.id} style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            paddingVertical: 12,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#eee'
-                        }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View key={slot.id} style={styles.slotRow}>
+                            <View style={styles.slotTimeContainer}>
                                 <MaterialIcons name="access-time" size={20} color="#666" />
-                                <Text style={{ marginLeft: 8, color: '#666' }}>
+                                <Text style={styles.slotTimeText}>
                                     {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                                 </Text>
                             </View>
-                            <View style={{
-                                backgroundColor: getSlotStatusColor(slot.status),
-                                paddingHorizontal: 12,
-                                paddingVertical: 6,
-                                borderRadius: 12,
-                            }}>
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 12,
-                                    fontWeight: '600'
-                                }}>
+                            <View style={[
+                                styles.statusBadge,
+                                { backgroundColor: getSlotStatusColor(slot.status) }
+                            ]}>
+                                <Text style={styles.statusText}>
                                     {getSlotStatusText(slot.status)}
                                 </Text>
                             </View>
                         </View>
                     ))}
                     {getSlotsByDate(selectedDate).length === 0 && (
-                        <Text style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
+                        <Text style={styles.noClassesText}>
                             No classes scheduled for this date
                         </Text>
                     )}
@@ -289,44 +248,41 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     );
 
     const renderEnrollmentsCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
                 <MaterialIcons name="pets" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Enrolled Dogs</Text>
+                <Text style={styles.cardTitle}>Enrolled Dogs</Text>
             </View>
 
             {classData.classEnrollments.filter(enrollment => enrollment.status !== 0).length === 0 ? (
-                <View style={{ alignItems: 'center', padding: 20 }}>
+                <View style={styles.emptyStateContainer}>
                     <MaterialIcons name="sentiment-dissatisfied" size={48} color="#666" />
-                    <Text style={{ color: '#666', marginTop: 8, textAlign: 'center' }}>
+                    <Text style={styles.emptyStateText}>
                         No dogs enrolled yet
                     </Text>
                 </View>
             ) : (
-                classData.classEnrollments.filter(enrollment => enrollment.status !== 0).map((enrollment) => (
-                    <View key={enrollment.id} style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingVertical: 8,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#eee'
-                    }}>
-                        <MaterialIcons name="pets" size={20} color="#666" />
-                        <Text style={{ marginLeft: 8, color: '#333' }}>
-                            {enrollment.dogName}
-                        </Text>
-                    </View>
-                ))
+                <View style={styles.enrollmentsList}>
+                    {classData.classEnrollments
+                        .filter(enrollment => enrollment.status !== 0)
+                        .map((enrollment) => (
+                            <View key={enrollment.id} style={styles.enrollmentItem}>
+                                <View style={styles.enrollmentContent}>
+                                    <MaterialIcons name="pets" size={20} color="#666" />
+                                    <Text style={styles.dogName}>
+                                        {enrollment.dogName}
+                                    </Text>
+                                </View>
+                                {enrollment.isBoarding && (
+                                    <View style={styles.boardingBadge}>
+                                        <MaterialIcons name="home" size={16} color="#007AFF" />
+                                        <Text style={styles.boardingText}>Boarding</Text>
+                                    </View>
+                                )}
+                            </View>
+                        ))
+                    }
+                </View>
             )}
         </View>
     );
@@ -352,39 +308,29 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     };
 
     const renderPretestCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.pretestCard}>
+            <View style={styles.cardHeader}>
                 <MaterialIcons name="assignment" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Pretest Exam</Text>
+                <Text style={styles.cardTitle}>Pretest Exam</Text>
             </View>
 
             {loadingPretests ? (
-                <View style={{ padding: 20, alignItems: 'center' }}>
-                    <Text style={{ color: '#666' }}>Loading pretests...</Text>
+                <View style={styles.pretestLoadingContainer}>
+                    <Text style={styles.pretestLoadingText}>Loading pretests...</Text>
                 </View>
             ) : pretests.length === 0 ? (
-                <View style={{ alignItems: 'center', padding: 20 }}>
+                <View style={styles.emptyStateContainer}>
                     <MaterialIcons name="assignment-late" size={48} color="#666" />
-                    <Text style={{ color: '#666', marginTop: 8, textAlign: 'center' }}>
+                    <Text style={styles.emptyStateText}>
                         No pretests scheduled yet
                     </Text>
                 </View>
             ) : (
                 <View>
                     {pretests[0]?.testDate && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                        <View style={styles.pretestDateContainer}>
                             <MaterialIcons name="event" size={20} color="#666" />
-                            <Text style={{ marginLeft: 8, color: '#333', fontWeight: '500' }}>
+                            <Text style={styles.pretestDateText}>
                                 {formatDate(pretests[0].testDate)}
                             </Text>
                         </View>
@@ -392,33 +338,20 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     {classData.classEnrollments.map((enrollment) => {
                         const dogPretest = pretests.find(p => p.dogId === enrollment.dogId);
                         return (
-                            <View key={enrollment.id} style={{
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: 8,
-                                padding: 12,
-                                marginBottom: 8,
-                            }}>
-                                <View style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                            <View key={enrollment.id} style={styles.pretestDogItem}>
+                                <View style={styles.pretestDogHeader}>
+                                    <View style={styles.pretestDogInfo}>
                                         <MaterialIcons name="pets" size={20} color="#666" />
-                                        <View style={{ marginLeft: 8, flex: 1 }}>
-                                            <Text style={{ color: '#333', fontWeight: '500' }}>
+                                        <View style={styles.pretestDogContent}>
+                                            <Text style={styles.pretestDogName}>
                                                 {enrollment.dogName}
                                             </Text>
                                             {dogPretest && (
-                                                <View style={{
-                                                    backgroundColor: getStatusColor(dogPretest.status),
-                                                    paddingHorizontal: 8,
-                                                    paddingVertical: 2,
-                                                    borderRadius: 12,
-                                                    alignSelf: 'flex-start',
-                                                    marginTop: 4
-                                                }}>
-                                                    <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>
+                                                <View style={[
+                                                    styles.pretestStatusBadge,
+                                                    { backgroundColor: getStatusColor(dogPretest.status) }
+                                                ]}>
+                                                    <Text style={styles.pretestStatusText}>
                                                         {getStatusText(dogPretest.status)}
                                                     </Text>
                                                 </View>
@@ -427,24 +360,17 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                                     </View>
 
                                     {dogPretest && dogPretest.status === 0 && (
-                                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                                        <View style={styles.pretestActionButtons}>
                                             <TouchableOpacity
                                                 onPress={() => {
                                                     setSelectedPretest(dogPretest);
                                                     setTargetStatus(1);
                                                     setNoteModalVisible(true);
                                                 }}
-                                                style={{
-                                                    backgroundColor: '#34C759',
-                                                    paddingHorizontal: 12,
-                                                    paddingVertical: 6,
-                                                    borderRadius: 8,
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center',
-                                                }}
+                                                style={styles.acceptButton}
                                             >
                                                 <MaterialIcons name="check" size={16} color="white" />
-                                                <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Accept</Text>
+                                                <Text style={styles.buttonText}>Accept</Text>
                                             </TouchableOpacity>
 
                                             <TouchableOpacity
@@ -453,38 +379,27 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                                                     setTargetStatus(2);
                                                     setNoteModalVisible(true);
                                                 }}
-                                                style={{
-                                                    backgroundColor: '#FF3B30',
-                                                    paddingHorizontal: 12,
-                                                    paddingVertical: 6,
-                                                    borderRadius: 8,
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center',
-                                                }}
+                                                style={styles.rejectButton}
                                             >
                                                 <MaterialIcons name="close" size={16} color="white" />
-                                                <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Reject</Text>
+                                                <Text style={styles.buttonText}>Reject</Text>
                                             </TouchableOpacity>
                                         </View>
                                     )}
                                 </View>
 
                                 {dogPretest && dogPretest.note && dogPretest.status !== 0 && (
-                                    <View style={{
-                                        backgroundColor: '#f0f0f0',
-                                        padding: 10,
-                                        borderRadius: 6,
-                                        marginTop: 8,
-                                        borderLeftWidth: 3,
-                                        borderLeftColor: getStatusColor(dogPretest.status)
-                                    }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                    <View style={[
+                                        styles.pretestNoteContainer,
+                                        { borderLeftColor: getStatusColor(dogPretest.status) }
+                                    ]}>
+                                        <View style={styles.pretestNoteHeader}>
                                             <MaterialIcons name="notes" size={16} color="#666" />
-                                            <Text style={{ marginLeft: 6, fontSize: 13, color: '#666', fontWeight: '500' }}>
+                                            <Text style={styles.pretestNoteTitle}>
                                                 Trainer's Note
                                             </Text>
                                         </View>
-                                        <Text style={{ color: '#333', fontSize: 14, lineHeight: 20 }}>
+                                        <Text style={styles.pretestNoteText}>
                                             {dogPretest.note}
                                         </Text>
                                     </View>
@@ -495,84 +410,39 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                 </View>
             )}
 
-            {/* Note Modal */}
             <Modal
                 visible={noteModalVisible}
                 transparent={true}
                 animationType="fade"
                 onRequestClose={() => setNoteModalVisible(false)}
             >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    justifyContent: 'center',
-                    padding: 20,
-                }}>
-                    <View style={{
-                        backgroundColor: 'white',
-                        borderRadius: 12,
-                        padding: 20,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 4,
-                        elevation: 5,
-                    }}>
-                        <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>
-                            {targetStatus === 1 ? 'Accept Pretest' : 'Reject Pretest'}
-                        </Text>
-
-                        <Text style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
-                            {targetStatus === 1 ? 'Add a note (optional)' : 'Please provide a reason for rejection'}
-                        </Text>
-
-                        <TextInput
-                            multiline
-                            numberOfLines={4}
-                            value={note}
-                            onChangeText={setNote}
-                            placeholder={targetStatus === 1 ? "Add your notes here..." : "Reason for rejection..."}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: '#ddd',
-                                borderRadius: 8,
-                                padding: 12,
-                                marginBottom: 16,
-                                textAlignVertical: 'top',
-                                minHeight: 100,
+                <View style={styles.noteModal}>
+                    <Text style={styles.cardTitle}>
+                        {targetStatus === 1 ? 'Accept' : 'Reject'} Pretest
+                    </Text>
+                    <TextInput
+                        style={styles.noteInput}
+                        placeholder={targetStatus === 1 ? "Add any comments (optional)" : "Reason for rejection (required)"}
+                        value={note}
+                        onChangeText={setNote}
+                        multiline
+                    />
+                    <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setNoteModalVisible(false);
+                                setNote('');
                             }}
-                        />
-
-                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12 }}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setNoteModalVisible(false);
-                                    setNote('');
-                                }}
-                                style={{
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderRadius: 8,
-                                    backgroundColor: '#f1f1f1',
-                                }}
-                            >
-                                <Text style={{ color: '#666' }}>Cancel</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={handleStatusUpdateWithNote}
-                                style={{
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderRadius: 8,
-                                    backgroundColor: targetStatus === 1 ? '#34C759' : '#FF3B30',
-                                }}
-                            >
-                                <Text style={{ color: 'white', fontWeight: '500' }}>
-                                    {targetStatus === 1 ? 'Accept' : 'Reject'}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
+                            style={[styles.rejectButton, { flex: 1 }]}
+                        >
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleStatusUpdateWithNote}
+                            style={[styles.acceptButton, { flex: 1 }]}
+                        >
+                            <Text style={styles.buttonText}>Confirm</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
@@ -610,7 +480,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                         {classData.name}
                     </Text>
                     <Text style={{ fontSize: 16, color: '#fff', opacity: 0.9 }}>
-                        {classData.courseName}
+                        Course: {classData.courseName}
                     </Text>
                 </LinearGradient>
 
