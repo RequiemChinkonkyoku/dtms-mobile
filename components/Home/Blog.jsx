@@ -2,7 +2,6 @@ import { View, Text, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { fetchBlogs } from '../../services/BlogService';
 import BlogCard from './BlogCard';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function BlogList() {
     const [blogs, setBlogs] = useState([]);
