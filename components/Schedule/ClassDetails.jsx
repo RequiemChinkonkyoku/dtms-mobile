@@ -417,32 +417,34 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                 onRequestClose={() => setNoteModalVisible(false)}
             >
                 <View style={styles.noteModal}>
-                    <Text style={styles.cardTitle}>
-                        {targetStatus === 1 ? 'Accept' : 'Reject'} Pretest
-                    </Text>
-                    <TextInput
-                        style={styles.noteInput}
-                        placeholder={targetStatus === 1 ? "Add any comments (optional)" : "Reason for rejection (required)"}
-                        value={note}
-                        onChangeText={setNote}
-                        multiline
-                    />
-                    <View style={styles.modalButtons}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                setNoteModalVisible(false);
-                                setNote('');
-                            }}
-                            style={[styles.rejectButton, { flex: 1 }]}
-                        >
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={handleStatusUpdateWithNote}
-                            style={[styles.acceptButton, { flex: 1 }]}
-                        >
-                            <Text style={styles.buttonText}>Confirm</Text>
-                        </TouchableOpacity>
+                    <View style={styles.noteModalContent}>
+                        <Text style={styles.cardTitle}>
+                            {targetStatus === 1 ? 'Accept' : 'Reject'} Pretest
+                        </Text>
+                        <TextInput
+                            style={styles.noteInput}
+                            placeholder={targetStatus === 1 ? "Add any comments (optional)" : "Reason for rejection (required)"}
+                            value={note}
+                            onChangeText={setNote}
+                            multiline
+                        />
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setNoteModalVisible(false);
+                                    setNote('');
+                                }}
+                                style={[styles.rejectButton, { flex: 1 }]}
+                            >
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleStatusUpdateWithNote}
+                                style={[styles.acceptButton, { flex: 1 }]}
+                            >
+                                <Text style={styles.buttonText}>Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
