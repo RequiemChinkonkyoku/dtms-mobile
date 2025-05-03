@@ -18,6 +18,7 @@ export default function ProfileDetailPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { userInfo } = useAuth();
+  const isCustomer = userInfo?.role?.includes("Customer");
 
   const loadProfile = async () => {
     try {
@@ -60,7 +61,7 @@ export default function ProfileDetailPage() {
         />
       )}
 
-      {userInfo?.unique_name === id && (
+      {userInfo?.unique_name === id && isCustomer && (
         <TouchableOpacity
           style={{
             flexDirection: "row",

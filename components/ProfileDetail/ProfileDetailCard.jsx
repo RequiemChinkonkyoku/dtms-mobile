@@ -15,7 +15,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import { styles } from "../../styles/ProfileDetailStyles";
 
 export default function ProfileDetailCard({ profileData, onRefreshProfile }) {
-  const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
   const [memberships, setMemberships] = useState([]);
   const [refreshing, setRefreshing] = useState(false);

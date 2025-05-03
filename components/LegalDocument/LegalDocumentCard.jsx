@@ -11,21 +11,21 @@ export default function LegalDocumentCard({ document }) {
     switch (status) {
       case 0:
         return {
-          backgroundColor: "#ffebee",
-          textColor: "#d32f2f",
-          text: "Rejected",
-        };
-      case 1:
-        return {
           backgroundColor: "#fff3e0",
           textColor: "#f57c00",
           text: "Pending",
         };
-      case 2:
+      case 1:
         return {
           backgroundColor: "#e8f5e9",
           textColor: "#2e7d32",
           text: "Approved",
+        };
+      case 2:
+        return {
+          backgroundColor: "#ffebee",
+          textColor: "#d32f2f",
+          text: "Rejected",
         };
       default:
         return {
@@ -52,14 +52,8 @@ export default function LegalDocumentCard({ document }) {
           <Image
             source={{ uri: document.imageUrl }}
             style={legalDocumentStyles.documentImage}
-            resizeMode="cover"
+            resizeMode="stretch"
           />
-        )}
-
-        {document.description && (
-          <Text style={legalDocumentStyles.description}>
-            {document.description}
-          </Text>
         )}
 
         <View style={legalDocumentStyles.footer}>
