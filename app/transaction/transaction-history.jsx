@@ -31,7 +31,10 @@ export default function TransactionHistory() {
         try {
             setLoading(true);
             const data = await fetchTransactionsByAccountId(userInfo?.unique_name);
-            setTransactions(data || []);
+            const sortedData = [...(data || [])].sort((a, b) => 
+                new Date(b.paymentTime) - new Date(a.paymentTime)
+            );
+            setTransactions(sortedData);
         } catch (error) {
             console.error('Error loading transactions:', error);
         } finally {
