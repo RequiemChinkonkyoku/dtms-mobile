@@ -23,6 +23,9 @@ export default function DogCard({ dog, onRefresh }) {
           <Text style={dogCardStyles.info}>
             Gender: {dog.gender === 0 ? "Male" : "Female"}
           </Text>
+          <Text style={dogCardStyles.info}>
+            Breed: {dog.dogBreedName}
+          </Text>
         </View>
       </TouchableOpacity>
 

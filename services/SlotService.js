@@ -20,7 +20,10 @@ export const checkinSlot = async (slotId) => {
         return response.data;
     } catch (error) {
         console.error('Error checking in slot:', error);
-        throw error;
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to check in slot'
+        };
     }
 };
 

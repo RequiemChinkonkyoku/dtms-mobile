@@ -33,7 +33,7 @@ export default function EnrollmentModal({ visible, onClose, courseId, maxDogs, c
         >
             <Text style={courseDetailsStyles.className}>{classItem.name}</Text>
             <Text style={courseDetailsStyles.classInfo}>
-                Starting: {new Date(classItem.startingDate).toLocaleDateString()}
+                Starting: {new Date(classItem.startingDate).toLocaleDateString("vi-VN")}
             </Text>
             <Text style={courseDetailsStyles.classInfo}>
                 Students: {classItem.enrolledDogCount} / {maxDogs} dogs enrolled

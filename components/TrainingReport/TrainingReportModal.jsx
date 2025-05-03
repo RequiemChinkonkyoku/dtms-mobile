@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Switch } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { createTrainingReport, fetchTrainingReportsByEnrollmentId } from '../../services/TrainingReportService';
+import { createTrainingReport, updateTrainingReport, fetchTrainingReportsByEnrollmentId } from '../../services/TrainingReportService';
 import { styles } from '../../styles/TrainingReportModalStyles';
 
+import { useNotification } from '../../contexts/NotificationContext';
+import { fetchDogById } from '../../services/DogService';
+
 const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId }) => {
+
+    const { addNotification } = useNotification();
+
     const [report, setReport] = useState({
         behaviorType: '',
         intensity: 5,
@@ -22,12 +28,23 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
     const [existingReports, setExistingReports] = useState([]);
     const [viewMode, setViewMode] = useState(false);
 
+    const [editingReport, setEditingReport] = useState(null);
+
     useEffect(() => {
         if (visible && enrollment?.enrollmentId) {
             loadExistingReports();
         }
 
     }, [visible, enrollment]);
+
+    useEffect(() => {
+        if (enrollment?.enrollmentId) {
+            setReport(prev => ({
+                ...prev,
+                enrollmentId: enrollment.enrollmentId
+            }));
+        }
+    }, [enrollment]);
 
     const loadExistingReports = async () => {
         setIsLoading(true);
@@ -62,18 +79,40 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
 
     const handleSubmit = async () => {
         if (isSubmitting) return;
+
         setIsSubmitting(true);
         try {
-            const response = await createTrainingReport(report);
+            const response = editingReport
+                ? await updateTrainingReport(editingReport.id, report)
+                : await createTrainingReport(report);
+
             if (response.success) {
-                Alert.alert('Success', 'Training report submitted successfully');
+                const dogDetails = await fetchDogById(enrollment.dogId);
+
+                if (dogDetails && dogDetails.customerProfileId) {
+                    addNotification({
+                        title: 'New Training Report',
+                        message: `A new training report has been created for ${enrollment.dogName} in your dog's training program.`,
+                        userId: trainerProfileId, // sender (trainer)
+                        recipientId: dogDetails.customerProfileId // recipient (dog owner)
+                    });
+                }
+
+                Alert.alert('Success', `Training report ${editingReport ? 'updated' : 'submitted'} successfully`);
                 resetForm();
+                setEditingReport(null);
                 onClose();
             } else {
-                Alert.alert('Error', response.error || 'Failed to submit training report');
+                Alert.alert('Error', response.message || `Failed to ${editingReport ? 'update' : 'submit'} training report`);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to submit training report');
+            console.error('Submission error details:', error.response?.data || error.message);
+            Alert.alert(
+                'Error',
+                error.response?.data ||
+                error.message ||
+                `Failed to ${editingReport ? 'update' : 'submit'} training report`
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -136,6 +175,22 @@ const TrainingReportModal = ({ visible, onClose, enrollment, trainerProfileId })
                                         <Text style={styles.fieldLabel}>Notes:</Text>
                                         <Text style={styles.fieldValue}>{report.notes}</Text>
                                     </View>
+
+                                    <TouchableOpacity
+                                        style={styles.editButton}
+                                        onPress={() => {
+                                            setReport({
+                                                ...report,
+                                                enrollmentId: enrollment?.enrollmentId,
+                                                trainerProfileId: trainerProfileId
+                                            });
+                                            setEditingReport(report);
+                                            setViewMode(false);
+                                        }}
+                                    >
+                                        <MaterialIcons name="edit" size={20} color="#007AFF" />
+                                        <Text style={styles.editButtonText}>Edit Report</Text>
+                                    </TouchableOpacity>
                                 </View>
                             ))}
                         </ScrollView>

@@ -74,11 +74,11 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
                                         ]
                                     );
                                 } else {
-                                    Alert.alert('Error', 'Failed to check in slot');
+                                    Alert.alert('Error', response.message || 'Failed to check in slot');
                                 }
                             } catch (error) {
                                 console.error('Error checking in slot:', error);
-                                Alert.alert('Error', 'Failed to check in slot');
+                                Alert.alert('Error', error.message || 'Failed to check in slot');
                             }
                         }
                     }
@@ -107,11 +107,23 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
                     onPress={() => handleSlotPress(slot)}
                 >
                     <View style={styles.slotContent}>
-                        <View style={styles.timeContainer}>
-                            <MaterialIcons name="access-time" size={20} color="#007AFF" />
-                            <Text style={styles.timeText}>
-                                {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                            </Text>
+                        <View>
+                            <View style={styles.timeContainer}>
+                                <MaterialIcons name="access-time" size={20} color="#007AFF" />
+                                <Text style={styles.timeText}>
+                                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                                </Text>
+                            </View>
+                            {slot.lessonName && (
+                                <Text style={{
+                                    color: '#666',
+                                    fontSize: 14,
+                                    marginTop: 4,
+                                    marginLeft: 24
+                                }}>
+                                    Lesson: {slot.lessonName}
+                                </Text>
+                            )}
                         </View>
 
                         <View style={{

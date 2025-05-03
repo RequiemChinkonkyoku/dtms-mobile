@@ -8,11 +8,30 @@ export const styles = StyleSheet.create({
     contentContainer: {
         padding: 16
     },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 12,
+    },
+    iconContainer: {
+        backgroundColor: '#e6f3ff',
+        padding: 8,
+        borderRadius: 10,
+    },
+    headerTextContainer: {
+        flex: 1,
+    },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#333'
+        fontFamily: 'outfit-bold',
+        fontSize: 20,
+        color: '#333',
+        marginBottom: 2,
+    },
+    subtitle: {
+        fontFamily: 'outfit',
+        fontSize: 13,
+        color: '#666',
     },
     emptyStateContainer: {
         padding: 20,

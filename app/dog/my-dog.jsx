@@ -5,7 +5,6 @@ import DogCard from '../../components/DogList/DogCard';
 import { useNavigation, useFocusEffect } from 'expo-router';
 import { useAuth } from "../../contexts/AuthContext";
 import { MaterialIcons } from '@expo/vector-icons';
-import { fetchCustomerProfile } from '../../services/ProfileService';
 
 export default function MyDogs() {
   const navigation = useNavigation();
@@ -31,7 +30,6 @@ export default function MyDogs() {
     try {
       setLoading(true);
       if (!userInfo) return;
-      // const customerProfile = await fetchCustomerProfile(userInfo.unique_name);
       const data = await fetchUserDog(userInfo.unique_name);
       if (data) {
         const activeDogs = data.filter(dog => dog.status === 1);

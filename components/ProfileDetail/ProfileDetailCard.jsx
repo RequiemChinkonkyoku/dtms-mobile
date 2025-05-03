@@ -7,6 +7,7 @@ import {
   RefreshControl,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
 import { fetchAllMemberships } from "../../services/MembershipService";

@@ -2,6 +2,7 @@ import { View, Text, Image, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { fetchBlogs } from '../../services/BlogService';
+import { styles } from '../../styles/BlogDetailStyles';
 
 export default function BlogDetail() {
     const { id } = useLocalSearchParams();
@@ -13,12 +14,11 @@ export default function BlogDetail() {
     }, []);
 
     useEffect(() => {
-          navigation.setOptions({
+        navigation.setOptions({
             headerTitle: 'Blog',
             headerShown: true
-          });
-      }, []);
-    
+        });
+    }, []);
 
     const loadBlogDetail = async () => {
         const blogs = await fetchBlogs();
@@ -30,41 +30,25 @@ export default function BlogDetail() {
 
     if (!blog) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={styles.loadingContainer}>
                 <Text>Loading...</Text>
             </View>
         );
     }
 
     return (
-        <ScrollView style={{ flex: 1, backgroundColor: '#fff', padding: 20 }}>
+        <ScrollView style={styles.container}>
             <Image 
                 source={{ uri: blog.imageUrl }}
-                style={{
-                    width: '100%',
-                    height: 250,
-                    borderRadius: 10,
-                }}
+                style={styles.blogImage}
             />
-            <Text style={{ 
-                fontSize: 24, 
-                fontWeight: 'bold', 
-                marginTop: 15 
-            }}>
+            <Text style={styles.title}>
                 {blog.title}
             </Text>
-            <Text style={{ 
-                fontSize: 14, 
-                color: 'gray', 
-                marginTop: 5 
-            }}>
+            <Text style={styles.publishDate}>
                 Published on {new Date(blog.timePublished).toLocaleDateString()}
             </Text>
-            <Text style={{ 
-                fontSize: 16, 
-                marginTop: 15, 
-                lineHeight: 24 
-            }}>
+            <Text style={styles.content}>
                 {blog.content}
             </Text>
         </ScrollView>

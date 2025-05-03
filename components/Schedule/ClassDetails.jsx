@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, RefreshControl, Alert, Modal, TextInput } from 'react-native';
 import React, { useMemo, useState, useEffect } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import { fetchPretestsByClass, updatePretestStatus } from '../../services/PretestService';
-
+import { styles } from '../../styles/ClassDetailsStyles';
 
 export default function ClassDetails({ classData, onClose, onRefresh }) {
     const router = useRouter();
@@ -13,6 +13,10 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     const [refreshing, setRefreshing] = useState(false);
     const [pretests, setPretests] = useState([]);
     const [loadingPretests, setLoadingPretests] = useState(false);
+    const [noteModalVisible, setNoteModalVisible] = useState(false);
+    const [selectedPretest, setSelectedPretest] = useState(null);
+    const [note, setNote] = useState('');
+    const [targetStatus, setTargetStatus] = useState(null);
 
     useEffect(() => {
         loadPretests();
@@ -29,16 +33,6 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
             setPretests([]);
         } finally {
             setLoadingPretests(false);
-        }
-    };
-
-    const handleStatusUpdate = async (pretestId, newStatus) => {
-        try {
-            await updatePretestStatus(pretestId, newStatus);
-            await loadPretests();
-            Alert.alert('Success', 'Pretest status updated successfully');
-        } catch (error) {
-            Alert.alert('Error', 'Failed to update pretest status');
         }
     };
 
@@ -122,10 +116,28 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
         }
     };
 
+    const handleStatusUpdateWithNote = async () => {
+        if (targetStatus === 2 && !note.trim()) {
+            Alert.alert('Note Required', 'Please provide a reason for rejection');
+            return;
+        }
+
+        try {
+            await updatePretestStatus(selectedPretest.id, targetStatus, note);
+            await loadPretests();
+            setNoteModalVisible(false);
+            setNote('');
+            setSelectedPretest(null);
+            Alert.alert('Success', 'Pretest status updated successfully');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update pretest status');
+        }
+    };
+
     if (!classData) {
         return (
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <SafeAreaView style={styles.container}>
+                <View style={styles.loadingContainer}>
                     <Text>Loading class details...</Text>
                 </View>
             </SafeAreaView>
@@ -133,40 +145,30 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     }
 
     const renderInfoCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
                 <MaterialIcons name="info" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Class Information</Text>
+                <Text style={styles.cardTitle}>Class Information</Text>
             </View>
 
-            <View style={{ gap: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.infoGap}>
+                <View style={styles.infoRow}>
                     <MaterialIcons name="pets" size={20} color="#666" />
-                    <Text style={{ marginLeft: 8, color: '#333' }}>
+                    <Text style={styles.infoText}>
                         {classData.enrolledDogCount} Dogs Enrolled
                     </Text>
                 </View>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.infoRow}>
                     <MaterialIcons name="calendar-today" size={20} color="#666" />
-                    <Text style={{ marginLeft: 8, color: '#333' }}>
+                    <Text style={styles.infoText}>
                         Starts {formatDate(classData.startingDate)}
                     </Text>
                 </View>
 
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.infoRow}>
                     <MaterialIcons name="person" size={20} color="#666" />
-                    <Text style={{ marginLeft: 8, color: '#333' }}>
+                    <Text style={styles.infoText}>
                         {classData.assignedTrainerCount} Trainer(s) Assigned
                     </Text>
                 </View>
@@ -175,20 +177,10 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     );
 
     const renderScheduleCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.scheduleCard}>
+            <View style={styles.scheduleHeader}>
                 <MaterialIcons name="schedule" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Class Schedule</Text>
+                <Text style={styles.scheduleTitle}>Class Schedule</Text>
             </View>
 
             <Calendar
@@ -219,55 +211,34 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     textMonthFontSize: 16,
                     textDayHeaderFontSize: 14
                 }}
-                style={{
-                    borderRadius: 10,
-                    marginBottom: selectedDate ? 16 : 0,
-                }}
+                style={styles.calendar}
             />
 
             {selectedDate && (
-                <View style={{ marginTop: 8 }}>
-                    <Text style={{
-                        fontSize: 16,
-                        fontWeight: '600',
-                        color: '#333',
-                        marginBottom: 8
-                    }}>
+                <View style={styles.selectedDateView}>
+                    <Text style={styles.selectedDateText}>
                         Classes on {formatDate(selectedDate)}
                     </Text>
                     {getSlotsByDate(selectedDate).map((slot) => (
-                        <View key={slot.id} style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            paddingVertical: 12,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#eee'
-                        }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View key={slot.id} style={styles.slotRow}>
+                            <View style={styles.slotTimeContainer}>
                                 <MaterialIcons name="access-time" size={20} color="#666" />
-                                <Text style={{ marginLeft: 8, color: '#666' }}>
+                                <Text style={styles.slotTimeText}>
                                     {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                                 </Text>
                             </View>
-                            <View style={{
-                                backgroundColor: getSlotStatusColor(slot.status),
-                                paddingHorizontal: 12,
-                                paddingVertical: 6,
-                                borderRadius: 12,
-                            }}>
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 12,
-                                    fontWeight: '600'
-                                }}>
+                            <View style={[
+                                styles.statusBadge,
+                                { backgroundColor: getSlotStatusColor(slot.status) }
+                            ]}>
+                                <Text style={styles.statusText}>
                                     {getSlotStatusText(slot.status)}
                                 </Text>
                             </View>
                         </View>
                     ))}
                     {getSlotsByDate(selectedDate).length === 0 && (
-                        <Text style={{ color: '#666', textAlign: 'center', marginTop: 8 }}>
+                        <Text style={styles.noClassesText}>
                             No classes scheduled for this date
                         </Text>
                     )}
@@ -277,44 +248,41 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     );
 
     const renderEnrollmentsCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
                 <MaterialIcons name="pets" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Enrolled Dogs</Text>
+                <Text style={styles.cardTitle}>Enrolled Dogs</Text>
             </View>
 
-            {classData.classEnrollments.length === 0 ? (
-                <View style={{ alignItems: 'center', padding: 20 }}>
+            {classData.classEnrollments.filter(enrollment => enrollment.status !== 0).length === 0 ? (
+                <View style={styles.emptyStateContainer}>
                     <MaterialIcons name="sentiment-dissatisfied" size={48} color="#666" />
-                    <Text style={{ color: '#666', marginTop: 8, textAlign: 'center' }}>
+                    <Text style={styles.emptyStateText}>
                         No dogs enrolled yet
                     </Text>
                 </View>
             ) : (
-                classData.classEnrollments.map((enrollment) => (
-                    <View key={enrollment.id} style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingVertical: 8,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#eee'
-                    }}>
-                        <MaterialIcons name="pets" size={20} color="#666" />
-                        <Text style={{ marginLeft: 8, color: '#333' }}>
-                            {enrollment.dogName}
-                        </Text>
-                    </View>
-                ))
+                <View style={styles.enrollmentsList}>
+                    {classData.classEnrollments
+                        .filter(enrollment => enrollment.status !== 0)
+                        .map((enrollment) => (
+                            <View key={enrollment.id} style={styles.enrollmentItem}>
+                                <View style={styles.enrollmentContent}>
+                                    <MaterialIcons name="pets" size={20} color="#666" />
+                                    <Text style={styles.dogName}>
+                                        {enrollment.dogName}
+                                    </Text>
+                                </View>
+                                {enrollment.isBoarding && (
+                                    <View style={styles.boardingBadge}>
+                                        <MaterialIcons name="home" size={16} color="#007AFF" />
+                                        <Text style={styles.boardingText}>Boarding</Text>
+                                    </View>
+                                )}
+                            </View>
+                        ))
+                    }
+                </View>
             )}
         </View>
     );
@@ -340,39 +308,29 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
     };
 
     const renderPretestCard = () => (
-        <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-        }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <View style={styles.pretestCard}>
+            <View style={styles.cardHeader}>
                 <MaterialIcons name="assignment" size={24} color="#007AFF" />
-                <Text style={{ fontSize: 18, fontWeight: '600', marginLeft: 8 }}>Pretest Exam</Text>
+                <Text style={styles.cardTitle}>Pretest Exam</Text>
             </View>
 
             {loadingPretests ? (
-                <View style={{ padding: 20, alignItems: 'center' }}>
-                    <Text style={{ color: '#666' }}>Loading pretests...</Text>
+                <View style={styles.pretestLoadingContainer}>
+                    <Text style={styles.pretestLoadingText}>Loading pretests...</Text>
                 </View>
             ) : pretests.length === 0 ? (
-                <View style={{ alignItems: 'center', padding: 20 }}>
+                <View style={styles.emptyStateContainer}>
                     <MaterialIcons name="assignment-late" size={48} color="#666" />
-                    <Text style={{ color: '#666', marginTop: 8, textAlign: 'center' }}>
+                    <Text style={styles.emptyStateText}>
                         No pretests scheduled yet
                     </Text>
                 </View>
             ) : (
                 <View>
                     {pretests[0]?.testDate && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                        <View style={styles.pretestDateContainer}>
                             <MaterialIcons name="event" size={20} color="#666" />
-                            <Text style={{ marginLeft: 8, color: '#333', fontWeight: '500' }}>
+                            <Text style={styles.pretestDateText}>
                                 {formatDate(pretests[0].testDate)}
                             </Text>
                         </View>
@@ -380,69 +338,70 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     {classData.classEnrollments.map((enrollment) => {
                         const dogPretest = pretests.find(p => p.dogId === enrollment.dogId);
                         return (
-                            <View key={enrollment.id} style={{
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: 8,
-                                padding: 12,
-                                marginBottom: 8,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                            }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                    <MaterialIcons name="pets" size={20} color="#666" />
-                                    <View style={{ marginLeft: 8, flex: 1 }}>
-                                        <Text style={{ color: '#333', fontWeight: '500' }}>
-                                            {enrollment.dogName}
-                                        </Text>
-                                        {dogPretest && (
-                                            <View style={{
-                                                backgroundColor: getStatusColor(dogPretest.status),
-                                                paddingHorizontal: 8,
-                                                paddingVertical: 2,
-                                                borderRadius: 12,
-                                                alignSelf: 'flex-start',
-                                                marginTop: 4
-                                            }}>
-                                                <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>
-                                                    {getStatusText(dogPretest.status)}
-                                                </Text>
-                                            </View>
-                                        )}
+                            <View key={enrollment.id} style={styles.pretestDogItem}>
+                                <View style={styles.pretestDogHeader}>
+                                    <View style={styles.pretestDogInfo}>
+                                        <MaterialIcons name="pets" size={20} color="#666" />
+                                        <View style={styles.pretestDogContent}>
+                                            <Text style={styles.pretestDogName}>
+                                                {enrollment.dogName}
+                                            </Text>
+                                            {dogPretest && (
+                                                <View style={[
+                                                    styles.pretestStatusBadge,
+                                                    { backgroundColor: getStatusColor(dogPretest.status) }
+                                                ]}>
+                                                    <Text style={styles.pretestStatusText}>
+                                                        {getStatusText(dogPretest.status)}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
                                     </View>
+
+                                    {dogPretest && dogPretest.status === 0 && (
+                                        <View style={styles.pretestActionButtons}>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setSelectedPretest(dogPretest);
+                                                    setTargetStatus(1);
+                                                    setNoteModalVisible(true);
+                                                }}
+                                                style={styles.acceptButton}
+                                            >
+                                                <MaterialIcons name="check" size={16} color="white" />
+                                                <Text style={styles.buttonText}>Accept</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setSelectedPretest(dogPretest);
+                                                    setTargetStatus(2);
+                                                    setNoteModalVisible(true);
+                                                }}
+                                                style={styles.rejectButton}
+                                            >
+                                                <MaterialIcons name="close" size={16} color="white" />
+                                                <Text style={styles.buttonText}>Reject</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </View>
 
-                                {dogPretest && dogPretest.status === 0 && (
-                                    <View style={{ flexDirection: 'row', gap: 8 }}>
-                                        <TouchableOpacity
-                                            onPress={() => handleStatusUpdate(dogPretest.id, 1)}
-                                            style={{
-                                                backgroundColor: '#34C759',
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 8,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                            }}
-                                        >
-                                            <MaterialIcons name="check" size={16} color="white" />
-                                            <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Accept</Text>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            onPress={() => handleStatusUpdate(dogPretest.id, 2)}
-                                            style={{
-                                                backgroundColor: '#FF3B30',
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 6,
-                                                borderRadius: 8,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                            }}
-                                        >
-                                            <MaterialIcons name="close" size={16} color="white" />
-                                            <Text style={{ color: 'white', marginLeft: 4, fontWeight: '600' }}>Reject</Text>
-                                        </TouchableOpacity>
+                                {dogPretest && dogPretest.note && dogPretest.status !== 0 && (
+                                    <View style={[
+                                        styles.pretestNoteContainer,
+                                        { borderLeftColor: getStatusColor(dogPretest.status) }
+                                    ]}>
+                                        <View style={styles.pretestNoteHeader}>
+                                            <MaterialIcons name="notes" size={16} color="#666" />
+                                            <Text style={styles.pretestNoteTitle}>
+                                                Trainer's Note
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.pretestNoteText}>
+                                            {dogPretest.note}
+                                        </Text>
                                     </View>
                                 )}
                             </View>
@@ -450,6 +409,45 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                     })}
                 </View>
             )}
+
+            <Modal
+                visible={noteModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setNoteModalVisible(false)}
+            >
+                <View style={styles.noteModal}>
+                    <View style={styles.noteModalContent}>
+                        <Text style={styles.cardTitle}>
+                            {targetStatus === 1 ? 'Accept' : 'Reject'} Pretest
+                        </Text>
+                        <TextInput
+                            style={styles.noteInput}
+                            placeholder={targetStatus === 1 ? "Add any comments (optional)" : "Reason for rejection (required)"}
+                            value={note}
+                            onChangeText={setNote}
+                            multiline
+                        />
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setNoteModalVisible(false);
+                                    setNote('');
+                                }}
+                                style={[styles.rejectButton, { flex: 1 }]}
+                            >
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={handleStatusUpdateWithNote}
+                                style={[styles.acceptButton, { flex: 1 }]}
+                            >
+                                <Text style={styles.buttonText}>Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 
@@ -484,7 +482,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
                         {classData.name}
                     </Text>
                     <Text style={{ fontSize: 16, color: '#fff', opacity: 0.9 }}>
-                        {classData.courseName}
+                        Course: {classData.courseName}
                     </Text>
                 </LinearGradient>
 

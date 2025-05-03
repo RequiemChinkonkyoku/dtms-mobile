@@ -16,6 +16,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "../../contexts/AuthContext";
 import { fetchDogBreeds } from "../../services/DogBreedService";
+import { styles } from '../../styles/AddDogStyles';
 
 export default function AddDog() {
   const navigation = useNavigation();
@@ -41,7 +42,8 @@ export default function AddDog() {
     try {
       const breeds = await fetchDogBreeds();
       if (breeds) {
-        setDogBreeds(breeds);
+        const sortedBreeds = breeds.sort((a, b) => a.name.localeCompare(b.name));
+        setDogBreeds(sortedBreeds);
       }
     } catch (error) {
       console.error("Error loading dog breeds:", error);
@@ -126,35 +128,35 @@ export default function AddDog() {
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 25 }}>Add New Dog</Text>
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>Add New Dog</Text>
       <Text>Fill all details to add a new dog</Text>
 
-      <TouchableOpacity style={{ marginTop: 20 }} onPress={onImagePick}>
-        {image ? (
-          <Image
-            source={{ uri: image }}
-            style={{ width: 100, height: 100, borderRadius: 15 }}
-          />
-        ) : (
-          <Image
-            source={require("./../../assets/images/placeholder.png")}
-            style={{ width: 100, height: 100 }}
-          />
-        )}
-      </TouchableOpacity>
+      <View style={styles.imagePickerContainer}>
+        <TouchableOpacity onPress={onImagePick}>
+          {image ? (
+            <Image
+              source={{ uri: image }}
+              style={styles.selectedImage}
+            />
+          ) : (
+            <Image
+              source={require("./../../assets/images/placeholder.png")}
+              style={styles.placeholderImage}
+            />
+          )}
+        </TouchableOpacity>
+      </View>
 
-      <View>
+      <View style={styles.formContainer}>
         <TextInput
           placeholder="Dog Name"
           onChangeText={(v) => setName(v)}
-          style={inputStyle}
+          style={styles.input}
         />
 
-        {/* <TextInput placeholder='Date of Birth (YYYY-MM-DD)' onChangeText={(v) => setDateOfBirth(v)} style={inputStyle} /> */}
-        {/* Date Picker Button */}
         <TouchableOpacity
-          style={inputStyle}
+          style={styles.input}
           onPress={() => setShowDatePicker(true)}
         >
           <Text>{dateOfBirth ? dateOfBirth : "Select Date of Birth"}</Text>
@@ -166,18 +168,12 @@ export default function AddDog() {
             mode="date"
             display="default"
             onChange={handleDateChange}
+            maximumDate={new Date(new Date().setDate(new Date().getDate() - 1))}
+            minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
           />
         )}
 
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 5,
-            fontSize: 17,
-            backgroundColor: "#fff",
-            marginTop: 10,
-          }}
-        >
+        <View style={styles.pickerContainer}>
           <Picker
             selectedValue={dogBreedId}
             onValueChange={(itemValue) => setDogBreedId(itemValue)}
@@ -189,21 +185,10 @@ export default function AddDog() {
           </Picker>
         </View>
 
-        <View
-          style={{
-            borderWidth: 1,
-            borderRadius: 5,
-            fontSize: 17,
-            backgroundColor: "#fff",
-            marginTop: 10,
-          }}
-        >
+        <View style={styles.pickerContainer}>
           <Picker
             selectedValue={gender}
-            onValueChange={(itemValue) => {
-              console.log("Selected gender:", itemValue); // Add this for debugging
-              setGender(itemValue);
-            }}
+            onValueChange={(itemValue) => setGender(itemValue)}
           >
             <Picker.Item label="Select Gender" value={null} />
             <Picker.Item label="Male" value="0" />
@@ -214,37 +199,15 @@ export default function AddDog() {
 
       <TouchableOpacity
         disabled={loading}
-        style={{
-          padding: 15,
-          borderRadius: 5,
-          marginTop: 20,
-          backgroundColor: "blue",
-        }}
+        style={styles.submitButton}
         onPress={onAddNewDog}
       >
         {loading ? (
           <ActivityIndicator size={"large"} color={"#fff"} />
         ) : (
-          <Text
-            style={{
-              textAlign: "center",
-              fontFamily: "outfit-medium",
-              color: "#fff",
-            }}
-          >
-            Add Dog
-          </Text>
+          <Text style={styles.submitButtonText}>Add Dog</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 }
-
-const inputStyle = {
-  padding: 10,
-  borderWidth: 1,
-  borderRadius: 5,
-  fontSize: 17,
-  backgroundColor: "#fff",
-  marginTop: 10,
-};

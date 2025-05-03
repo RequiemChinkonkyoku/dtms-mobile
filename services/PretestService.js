@@ -47,9 +47,12 @@ export const fetchClassPretests = async (classId, dogId) => {
     }
 };
 
-export const updatePretestStatus = async (pretestId, status) => {
+export const updatePretestStatus = async (pretestId, status, note) => {
     try {
-        const response = await ApiManager.put(`/pretest/update-pretest-status/${pretestId}?pretestStatus=${status}`);
+        const response = await ApiManager.put(`/pretest/update-pretest-status/${pretestId}`, {
+            status: status,
+            note: note
+        });
         return response.data;
     } catch (error) {
         console.error('Error updating pretest status:', error);

@@ -127,4 +127,18 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
     },
+    editButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f0f0f0',
+        padding: 8,
+        borderRadius: 8,
+        marginTop: 10,
+    },
+    editButtonText: {
+        color: '#007AFF',
+        marginLeft: 5,
+        fontSize: 14,
+        fontWeight: '500',
+    },
 });

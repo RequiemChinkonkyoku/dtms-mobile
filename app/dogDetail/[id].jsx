@@ -80,7 +80,7 @@ export default function DogDetail() {
         <View style={dogDetailsStyles.headerSection}>
           <Text style={dogDetailsStyles.name}>{dog.name}</Text>
           <View style={dogDetailsStyles.badgeContainer}>
-            <Text style={dogDetailsStyles.badge}>{dog.id}</Text>
+            <Text style={dogDetailsStyles.badge}>{dog.dogCode}</Text>
           </View>
         </View>
 
@@ -94,11 +94,6 @@ export default function DogDetail() {
           />
 
           <InfoItem icon="pets" label="Breed" value={dog.dogBreedName} />
-        </View>
-
-        <View style={dogDetailsStyles.descriptionSection}>
-          <Text style={dogDetailsStyles.sectionTitle}>About</Text>
-          <Text style={dogDetailsStyles.description}>{dog.description}</Text>
         </View>
 
         <TouchableOpacity

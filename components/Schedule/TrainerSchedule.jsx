@@ -108,9 +108,16 @@ export default function TrainerSchedule() {
                 }
             >
                 <View style={styles.contentContainer}>
-                    <Text style={styles.title}>
-                        My Teaching Schedule
-                    </Text>
+
+                    <View style={styles.headerContent}>
+                        <View style={styles.iconContainer}>
+                            <MaterialIcons name="schedule" size={18} color="#007AFF" />
+                        </View>
+                        <View style={styles.headerTextContainer}>
+                            <Text style={styles.title}>My Teaching Schedule</Text>
+                            <Text style={styles.subtitle}>Manage your classes and training sessions</Text>
+                        </View>
+                    </View>
 
                     {Object.keys(slots).length === 0
                         ? <EmptyState />
