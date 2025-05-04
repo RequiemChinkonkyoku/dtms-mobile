@@ -63,7 +63,7 @@ export default function Login() {
                         style={styles.logo}
                     />
                     <Text style={styles.title}>Welcome Back</Text>
-                    <Text style={styles.subtitle}>Sign in to continue to DTMS</Text>
+                    <Text style={styles.subtitle}>Sign in to continue to P.A.W</Text>
                 </View>
 
                 <View style={styles.formSection}>
@@ -97,7 +97,7 @@ export default function Login() {
                 </View>
 
                 <View style={styles.additionalOptions}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.push('/forgotPassword')}>
                         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                     </TouchableOpacity>
 

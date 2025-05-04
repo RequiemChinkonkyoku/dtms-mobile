@@ -154,7 +154,7 @@ export default function MenuList() {
       <Text style={{
         textAlign:'center',
         marginTop:50,
-      }}>Project by DTMS @ 2025</Text>
+      }}>Project by P.A.W @ 2025</Text>
     </View>
   )
 }
