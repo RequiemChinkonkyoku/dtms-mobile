@@ -85,6 +85,12 @@ export default function MenuList() {
                 name: 'Transactions',
                 icon: require('./../../assets/images/transaction.png'),
                 path: '/transaction/transaction-history'
+            },
+            {
+                id: 5,
+                name: 'Wishlists',
+                icon: require('./../../assets/images/wishlist.png'),
+                path: '/wishlist/my-wishlist'
             }
         ] : []),
 
