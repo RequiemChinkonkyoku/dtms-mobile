@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { fetchCourseById } from '../../services/CourseService';
@@ -9,6 +9,8 @@ import { fetchSkillById } from '../../services/SkillService';
 import { LinearGradient } from 'expo-linear-gradient';
 import EnrollmentModal from '../../components/CourseDetail/EnrollmentModal';
 import { fetchAccountById } from '../../services/AccountService';
+import { addToWishlist, fetchWishlist } from '../../services/WishlistService';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function CourseDetail() {
     const navigation = useNavigation();
@@ -19,10 +21,25 @@ export default function CourseDetail() {
     const [trainerName, setTrainerName] = useState('Unknown');
     const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
     const [lessonSkills, setLessonSkills] = useState({});
+    const [isInWishlist, setIsInWishlist] = useState(false);
     const router = useRouter();
+    const { userInfo } = useAuth();
+
+    const checkWishlistStatus = async () => {
+        try {
+            const response = await fetchWishlist(userInfo.unique_name);
+            if (response.success && response.data) {
+                const isWishlisted = response.data.some(item => item.courseId === id);
+                setIsInWishlist(isWishlisted);
+            }
+        } catch (error) {
+            console.error('Error checking wishlist status:', error);
+        }
+    };
 
     useEffect(() => {
         loadCourseDetail();
+        checkWishlistStatus();
     }, []);
 
     useEffect(() => {
@@ -87,6 +104,35 @@ export default function CourseDetail() {
         router.push(`/courseDetail/${prerequisiteId}`);
     };
 
+    const handleAddToWishlist = async (customerAccountId, courseId) => {
+        try {
+            const wishlistData = {
+                customerAccountId,
+                courseId
+            };
+            const response = await addToWishlist(wishlistData);
+            
+            if (response.success) {
+                Alert.alert(
+                    'Success',
+                    'Course added to wishlist successfully!'
+                );
+                await checkWishlistStatus();
+            } else {
+                Alert.alert(
+                    'Error',
+                    response.error || 'Failed to add course to wishlist'
+                );
+            }
+        } catch (error) {
+            console.error('Error adding to wishlist:', error);
+            Alert.alert(
+                'Error',
+                'Something went wrong while adding to wishlist'
+            );
+        }
+    };
+
     return (
         <>
             <ScrollView style={courseDetailsStyles.container}>
@@ -99,7 +145,15 @@ export default function CourseDetail() {
 
                 {/* Course Header */}
                 <View style={courseDetailsStyles.headerContainer}>
-                    <Text style={courseDetailsStyles.title}>{course.name}</Text>
+                    <View style={courseDetailsStyles.headerRow}>
+                        <Text style={courseDetailsStyles.title}>{course.name}</Text>
+                        <TouchableOpacity
+                            style={courseDetailsStyles.wishlistButton}
+                            onPress={() => handleAddToWishlist(userInfo.unique_name, id)}
+                        >
+                            <MaterialIcons name={isInWishlist ? "favorite" : "favorite-border"} size={24} color={isInWishlist ? "#FF3B30" : "#666"} />
+                        </TouchableOpacity>
+                    </View>
                     <Text style={courseDetailsStyles.trainer}>
                         Created by {trainerName}
                     </Text>

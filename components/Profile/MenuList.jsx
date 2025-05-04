@@ -85,6 +85,12 @@ export default function MenuList() {
                 name: 'Transactions',
                 icon: require('./../../assets/images/transaction.png'),
                 path: '/transaction/transaction-history'
+            },
+            {
+                id: 5,
+                name: 'Wishlists',
+                icon: require('./../../assets/images/wishlist.png'),
+                path: '/wishlist/my-wishlist'
             }
         ] : []),
 
@@ -148,7 +154,7 @@ export default function MenuList() {
       <Text style={{
         textAlign:'center',
         marginTop:50,
-      }}>Project by DTMS @ 2025</Text>
+      }}>Project by P.A.W @ 2025</Text>
     </View>
   )
 }

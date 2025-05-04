@@ -570,4 +570,19 @@ export const courseDetailsStyles = StyleSheet.create({
         fontWeight: '500',
         marginLeft: 8,
     },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    wishlistButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
 });

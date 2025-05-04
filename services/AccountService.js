@@ -26,7 +26,6 @@ export const fetchAccountById = async (accountId) => {
 export const loginAccount = async (credentials) => {
   try {
     const response = await ApiManager.post('/accounts/login', credentials);
-    // console.log('Login Response:', response.data);
 
     if (response.data.token === null){
       return {
@@ -98,6 +97,38 @@ export const verifyOTP = async (email, otp) => {
     return {
       success: false,
       error: 'Verification failed. Please try again.'
+    };
+  }
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await ApiManager.post(`/accounts/forgotPassword?email=${email}`);
+    return {
+      success: true,
+      message: response.data.message
+    };
+  } catch (error) {
+    console.error('Error in forgot password:', error);
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Failed to process forgot password request'
+    };
+  }
+};
+
+export const resetPassword = async (email, otpCode, newPassword) => {
+  try {
+    const response = await ApiManager.put(`/accounts/resetPassword?email=${email}&otpCode=${otpCode}&newPassword=${newPassword}`);
+    return {
+      success: true,
+      message: response.data
+    };
+  } catch (error) {
+    console.error('Error in reset password:', error);
+    return {
+      success: false,
+      error: error.response?.data || 'Failed to reset password'
     };
   }
 };
