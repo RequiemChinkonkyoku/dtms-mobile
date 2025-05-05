@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Calendar } from "react-native-calendars";
@@ -14,6 +14,7 @@ import { fetchDogClassProgressReports } from "../../services/ProgressReportServi
 import { useRouter } from "expo-router";
 import { fetchTrainingReportsByEnrollmentId } from "../../services/TrainingReportService";
 import { fetchCageById } from "../../services/CageService";
+import { fetchAccountById } from "../../services/AccountService";
 
 export default function EnrolledClasses({ dogId }) {
   const router = useRouter();
@@ -30,11 +31,13 @@ export default function EnrolledClasses({ dogId }) {
   const [trainingReports, setTrainingReports] = useState({});
   const [expandedTrainingReports, setExpandedTrainingReports] = useState({});
   const [cagesData, setCagesData] = useState({});
+  const [membershipPoints, setMembershipPoints] = useState(0);
 
   const { userInfo } = useAuth();
 
   useEffect(() => {
     loadEnrolledClasses();
+    loadMembershipPoints();
   }, [dogId]);
 
   const loadEnrolledClasses = async () => {
@@ -61,6 +64,19 @@ export default function EnrolledClasses({ dogId }) {
 
       setClassDetails(prev => ({ ...prev, [classItem.id]: details }));
       setClassPretests(prev => ({ ...prev, [classItem.id]: pretests }));
+    }
+  };
+
+  const loadMembershipPoints = async () => {
+    try {
+      if (userInfo?.unique_name) {
+        const accountData = await fetchAccountById(userInfo.unique_name);
+        if (accountData) {
+          setMembershipPoints(accountData.membershipPoints || 0);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading membership points:', error);
     }
   };
 
@@ -190,7 +206,6 @@ export default function EnrolledClasses({ dogId }) {
       }
     });
 
-    // Make sure today is always marked if it's not already marked
     if (!marked[today]) {
       marked[today] = {
         marked: true,
@@ -203,20 +218,6 @@ export default function EnrolledClasses({ dogId }) {
   };
 
   const getStatusColor = (status) => {
-    // switch (status) {
-    //   case 0:
-    //     return "#8E8E93"; // Inactive
-    //   case 1:
-    //     return "#34C759"; // Active
-    //   case 2:
-    //     return "#007AFF"; // Ongoing
-    //   case 3:
-    //     return "#FF9500"; // Closed
-    //   case 4:
-    //     return "#FF3B30"; // Completed
-    //   default:
-    //     return "#8E8E93";
-    // }
 
     switch (status) {
       case 0:
@@ -233,20 +234,6 @@ export default function EnrolledClasses({ dogId }) {
   };
 
   const getStatusText = (status) => {
-    // switch (status) {
-    //   case 0:
-    //     return "Inactive";
-    //   case 1:
-    //     return "Active";
-    //   case 2:
-    //     return "Ongoing";
-    //   case 3:
-    //     return "Closed";
-    //   case 4:
-    //     return "Completed";
-    //   default:
-    //     return "Unknown";
-    // }
 
     switch (status) {
       case 0:
@@ -326,44 +313,104 @@ export default function EnrolledClasses({ dogId }) {
     }
   };
 
-  const handlePayment = async (classItem) => {
+  const calculatePaymentPreview = async (classItem) => {
     try {
       const classDetail = classDetails[classItem.id];
-      if (
-        !classDetail ||
-        !classDetail.classEnrollments ||
-        classDetail.classEnrollments.length === 0
-      ) {
-        Alert.alert("Error", "Enrollment information not found");
-        return;
+      if (!classDetail || !classDetail.classEnrollments || classDetail.classEnrollments.length === 0) {
+        throw new Error("Enrollment information not found");
       }
-
+  
       const enrollment = classDetail.classEnrollments.find(
         (e) => e.dogId === dogId
       );
       if (!enrollment) {
-        Alert.alert("Error", "Enrollment for this dog not found");
-        return;
+        throw new Error("Enrollment for this dog not found");
       }
-
-      // Fetch course details to get the price
+  
       const courseDetails = await fetchCourseById(classDetail.courseId);
       if (!courseDetails) {
-        Alert.alert("Error", "Could not fetch course price");
-        return;
+        throw new Error("Could not fetch course price");
       }
+  
+      // Base amount is the course price
+      let totalAmount = courseDetails.price;
+      
+      // Calculate cage fee if assigned
+      const numberOfSlots = classDetail.classSlots.length;
+      let cageFee = 0;
+      if (enrollment.cageId && enrollment.cageId !== "-1") {
+        cageFee = numberOfSlots * 100000; // 100,000 VND per slot for cage
+        totalAmount += cageFee;
+      }
+  
+      // Calculate membership discount
+      let discountPercentage = 0;
+      if (membershipPoints >= 1000) {
+        discountPercentage = 20; // Platinum tier
+      } else if (membershipPoints >= 500) {
+        discountPercentage = 10; // Gold tier
+      }
+  
+      const discountAmount = Math.floor((totalAmount * discountPercentage) / 100);
+      const finalAmount = totalAmount - discountAmount;
+  
+      return {
+        basePrice: courseDetails.price,
+        cageFee,
+        numberOfSlots,
+        discountPercentage,
+        discountAmount,
+        finalAmount,
+        enrollmentId: enrollment.enrollmentId
+      };
+    } catch (error) {
+      throw error;
+    }
+  };
+  
+  const handlePaymentPreview = async (classItem) => {
+    try {
+      const paymentDetails = await calculatePaymentPreview(classItem);
+      
+      Alert.alert(
+        'Payment Preview',
+        `Course Fee Breakdown:\n\n` +
+        `Base Course Price: ${paymentDetails.basePrice.toLocaleString('vi-VN')}đ\n` +
+        `${paymentDetails.cageFee > 0 ? 
+          `Cage Fee (${paymentDetails.numberOfSlots} slots): ${paymentDetails.cageFee.toLocaleString('vi-VN')}đ\n` : 
+          ''}` +
+        `${paymentDetails.discountPercentage > 0 ? 
+          `Membership Discount (${paymentDetails.discountPercentage}%): -${paymentDetails.discountAmount.toLocaleString('vi-VN')}đ\n` : 
+          ''}` +
+        `\nTotal Amount: ${paymentDetails.finalAmount.toLocaleString('vi-VN')}đ`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Proceed to Payment',
+            onPress: () => handlePayment(classItem, paymentDetails)
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert("Error", error.message || "Failed to calculate payment preview");
+    }
+  };
 
+  const handlePayment = async (classItem, paymentDetails) => {
+    try {
       const paymentData = {
         orderType: "ClassEnrollment",
-        amount: courseDetails.price,
-        enrollmentId: enrollment.enrollmentId,
+        amount: paymentDetails.finalAmount,
+        enrollmentId: paymentDetails.enrollmentId,
         customerID: userInfo.unique_name,
       };
-
+  
       const paymentResult = await createVNPayPayment(paymentData);
-
+  
       if (paymentResult.success && paymentResult.data) {
-        // onclose();
         console.log("Payment successful!");
       } else {
         Alert.alert(
@@ -1027,7 +1074,7 @@ export default function EnrolledClasses({ dogId }) {
                           justifyContent: "center",
                           marginTop: 16,
                         }}
-                        onPress={() => handlePayment(classItem)}
+                        onPress={() => handlePaymentPreview(classItem)}
                       >
                         <MaterialIcons
                           name="payment"
