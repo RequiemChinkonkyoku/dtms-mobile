@@ -121,18 +121,18 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             const dogDetails = await fetchDogById(selectedDog.dogId);
 
             if (existingReportId) {
-                    const response = await updateProgressReport(existingReportId, {
-                        ...reportData,
-                        attendanceId: attendanceId,
-                        trainerId: userInfo.unique_name
-                    });
-                    if (!response.success) {
-                        Alert.alert(
-                            'Error',
-                            response.message || 'Failed to update progress report. Please try again.'
-                        );
-                        return;
-                    }
+                const response = await updateProgressReport(existingReportId, {
+                    ...reportData,
+                    attendanceId: attendanceId,
+                    trainerId: userInfo.unique_name
+                });
+                if (!response.success) {
+                    Alert.alert(
+                        'Error',
+                        response.message || 'Failed to update progress report. Please try again.'
+                    );
+                    return;
+                }
             } else {
                 await submitProgressReport({
                     ...reportData,
@@ -199,7 +199,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
             setLoading(true);
             const response = await checkoutAttendance(attendanceId);
             if (response.success) {
-                await loadData(); // Refresh the attendance data
+                await loadData();
                 Alert.alert('Success', 'Dog checked out successfully!');
             } else {
                 Alert.alert('Error', 'Failed to check out dog');
@@ -311,9 +311,25 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                     </Text>
                                                 </View>
                                             ) : attendanceData[enrollment.dogId] && (
-                                                <View style={[styles.statusBadge, styles.presentBadge]}>
-                                                    <Text style={styles.statusText}>Present</Text>
-                                                </View>
+                                                <>
+                                                    <View style={[styles.statusBadge, styles.presentBadge]}>
+                                                        <Text style={styles.statusText}>Present</Text>
+                                                    </View>
+                                                    {enrollment.requiredNightStay ? (
+                                                        <View style={[styles.statusBadge, styles.boardingBadge]}>
+                                                            <Text style={styles.statusText}>Boarding</Text>
+                                                        </View>
+                                                    ) : (
+                                                        <View style={[
+                                                            styles.statusBadge,
+                                                            attendanceStatus[enrollment.dogId] === 1 ? styles.checkedInBadge : styles.checkedOutBadge
+                                                        ]}>
+                                                            <Text style={styles.statusText}>
+                                                                {attendanceStatus[enrollment.dogId] === 1 ? 'Checked In' : 'Checked Out'}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                </>
                                             )}
                                         </View>
                                         <View style={styles.actionButtons}>
@@ -326,7 +342,7 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                             />
                                             {attendanceData[enrollment.dogId] && (
                                                 <>
-                                                    {attendanceStatus[enrollment.dogId] === 1 && (
+                                                    {attendanceStatus[enrollment.dogId] === 1 && enrollment.cageId === "-1" && (
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 Alert.alert(

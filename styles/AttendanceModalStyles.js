@@ -105,6 +105,15 @@ export const styles = StyleSheet.create({
   absentBadge: {
     backgroundColor: '#FF3B30'
   },
+  boardingBadge: {
+    backgroundColor: '#3F51B5',
+  },
+  checkedInBadge: {
+    backgroundColor: '#5856D6',
+  },
+  checkedOutBadge: {
+    backgroundColor: '#FF9500',
+  },
   statusText: {
     color: 'white',
     fontSize: 12
