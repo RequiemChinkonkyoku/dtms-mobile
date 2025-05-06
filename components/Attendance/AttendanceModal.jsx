@@ -180,11 +180,11 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                 onRefresh?.();
                                 onClose();
                             } else {
-                                Alert.alert('Error', 'Failed to conclude slot');
+                                Alert.alert('Error', response.message || 'Failed to conclude slot');
                             }
                         } catch (error) {
                             console.error('Error concluding slot:', error);
-                            Alert.alert('Error', 'Failed to conclude slot');
+                            Alert.alert('Error', error?.message || 'Failed to conclude slot');
                         } finally {
                             setLoading(false);
                         }
@@ -301,16 +301,8 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                             ]}>
                                                 {enrollment.dogName}
                                             </Text>
-                                            {isSlotConcluded() ? (
-                                                <View style={[
-                                                    styles.statusBadge,
-                                                    attendanceData[enrollment.dogId] ? styles.presentBadge : styles.absentBadge
-                                                ]}>
-                                                    <Text style={styles.statusText}>
-                                                        {attendanceData[enrollment.dogId] ? 'Present' : 'Absent'}
-                                                    </Text>
-                                                </View>
-                                            ) : attendanceData[enrollment.dogId] && (
+
+                                            {attendanceData[enrollment.dogId] ? (
                                                 <>
                                                     <View style={[styles.statusBadge, styles.presentBadge]}>
                                                         <Text style={styles.statusText}>Present</Text>
@@ -330,6 +322,10 @@ export default function AttendanceModal({ visible, onClose, slot, onRefresh }) {
                                                         </View>
                                                     )}
                                                 </>
+                                            ) : (
+                                                <View style={[styles.statusBadge, styles.absentBadge]}>
+                                                    <Text style={styles.statusText}>Absent</Text>
+                                                </View>
                                             )}
                                         </View>
                                         <View style={styles.actionButtons}>

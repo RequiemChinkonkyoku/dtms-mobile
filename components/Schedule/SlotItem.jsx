@@ -3,14 +3,21 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { styles } from '../../styles/TrainerScheduleStyles';
 import { format } from 'date-fns';
 import AttendanceModal from '../Attendance/AttendanceModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { checkinSlot } from '../../services/SlotService';
-
+import { fetchLessonById } from '../../services/LessonService';
 
 export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isAttendanceModalVisible, setIsAttendanceModalVisible] = useState(false);
+    const [lessonEquipments, setLessonEquipments] = useState([]);
+    const [isEquipmentModalVisible, setIsEquipmentModalVisible] = useState(false);
 
+    useEffect(() => {
+        slots.forEach(slot => {
+            fetchEquipments(slot);
+        });
+    }, [slots]);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -43,6 +50,22 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
         }
     };
 
+    const fetchEquipments = async (slot) => {
+        if (slot.lessonId && !lessonEquipments[slot.lessonId]) {
+            try {
+                const lessonData = await fetchLessonById(slot.lessonId);
+                if (lessonData && lessonData.lessonEquipments) {
+                    setLessonEquipments(prev => ({
+                        ...prev,
+                        [slot.lessonId]: lessonData.lessonEquipments
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching lesson equipment:', error);
+            }
+        }
+    };
+
     const handleSlotPress = async (slot) => {
         if (slot.status === 0) {
             Alert.alert(
@@ -67,7 +90,7 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
                                                 text: 'OK',
                                                 onPress: () => {
                                                     onRefresh?.();
-                                                    setSelectedSlot({...slot, status: 1});
+                                                    setSelectedSlot({ ...slot, status: 1 });
                                                     setIsAttendanceModalVisible(true);
                                                 }
                                             }
@@ -90,6 +113,49 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
         }
     };
 
+    const renderEquipmentModal = () => {
+        if (!selectedSlot || !selectedSlot.lessonId || !lessonEquipments[selectedSlot.lessonId]) return null;
+
+        return (
+            <Modal
+                visible={isEquipmentModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsEquipmentModalVisible(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setIsEquipmentModalVisible(false)}
+                >
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>
+                            Required Equipment
+                        </Text>
+                        {lessonEquipments[selectedSlot.lessonId].map((equipment, index) => (
+                            <View
+                                key={equipment.id}
+                                style={[
+                                    styles.equipmentItem,
+                                    index === lessonEquipments[selectedSlot.lessonId].length - 1 && { borderBottomWidth: 0 }
+                                ]}
+                            >
+                                <MaterialIcons name="sports-handball" size={24} color="#007AFF" />
+                                <View style={styles.equipmentInfo}>
+                                    <Text style={styles.equipmentName}>
+                                        {equipment.equipmentName}
+                                    </Text>
+                                    <Text style={styles.equipmentQuantity}>
+                                        Quantity: {equipment.quantity}
+                                    </Text>
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        );
+    };
 
     return (
         <View style={styles.slotContainer}>
@@ -115,39 +181,46 @@ export const SlotItem = ({ date, slots, formatTime, onRefresh }) => {
                                 </Text>
                             </View>
                             {slot.lessonName && (
-                                <Text style={{
-                                    color: '#666',
-                                    fontSize: 14,
-                                    marginTop: 4,
-                                    marginLeft: 24
-                                }}>
-                                    Lesson: {slot.lessonName}
-                                </Text>
+                                <View style={styles.lessonNameContainer}>
+                                    <Text style={styles.lessonNameText}>
+                                        Lesson: {slot.lessonName}
+                                    </Text>
+                                    {slot.lessonId && lessonEquipments[slot.lessonId] && (
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setSelectedSlot(slot);
+                                                setIsEquipmentModalVisible(true);
+                                            }}
+                                            style={styles.equipmentButton}
+                                        >
+                                            <MaterialIcons name="inventory" size={16} color="#007AFF" />
+                                            <Text style={styles.equipmentButtonText}>
+                                                View Equipment
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             )}
                         </View>
 
-                        <View style={{
-                            backgroundColor: getSlotStatusColor(slot.status),
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 12,
-                            flexDirection: 'row',
-                            alignItems: 'center'
-                        }}>
+                        <View style={[styles.slotStatusContainer, { backgroundColor: getSlotStatusColor(slot.status) }]}>
                             {slot.status === 1 && (
-                                <MaterialIcons name="check-circle" size={16} color="white" style={{ marginRight: 4 }} />
+                                <MaterialIcons
+                                    name="check-circle"
+                                    size={16}
+                                    color="white"
+                                    style={styles.slotStatusIcon}
+                                />
                             )}
-                            <Text style={{
-                                color: 'white',
-                                fontSize: 12,
-                                fontWeight: '600'
-                            }}>
+                            <Text style={styles.slotStatusText}>
                                 {getSlotStatusText(slot.status, slot.attendanceCount)}
                             </Text>
                         </View>
                     </View>
                 </TouchableOpacity>
             ))}
+
+            {renderEquipmentModal()}
 
             <AttendanceModal
                 visible={isAttendanceModalVisible}

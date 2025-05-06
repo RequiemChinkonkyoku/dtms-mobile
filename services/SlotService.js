@@ -33,6 +33,9 @@ export const concludeSlot = async (slotId) => {
         return response.data;
     } catch (error) {
         console.error('Error concluding slot:', error);
-        throw error;
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to check in slot'
+        };
     }
 };
