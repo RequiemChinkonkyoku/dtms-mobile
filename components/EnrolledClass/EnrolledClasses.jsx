@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { fetchTrainingReportsByEnrollmentId } from "../../services/TrainingReportService";
 import { fetchCageById } from "../../services/CageService";
 import { fetchAccountById } from "../../services/AccountService";
+import { fetchDogFirstEnroll } from "../../services/EnrollmentService";
 
 export default function EnrolledClasses({ dogId }) {
   const router = useRouter();
@@ -332,8 +333,10 @@ export default function EnrolledClasses({ dogId }) {
         throw new Error("Could not fetch course price");
       }
   
-      // Base amount is the course price
-      let totalAmount = courseDetails.price;
+      const isFirstEnroll = await fetchDogFirstEnroll(dogId, courseDetails.id);
+
+      // Base amount is the course price, halved if not first enrollment
+      let totalAmount = isFirstEnroll ? courseDetails.price : courseDetails.price / 2;
       
       // Calculate cage fee if assigned
       const numberOfSlots = classDetail.classSlots.length;
@@ -356,6 +359,7 @@ export default function EnrolledClasses({ dogId }) {
   
       return {
         basePrice: courseDetails.price,
+        isFirstEnroll,
         cageFee,
         numberOfSlots,
         discountPercentage,
@@ -376,6 +380,7 @@ export default function EnrolledClasses({ dogId }) {
         'Payment Preview',
         `Course Fee Breakdown:\n\n` +
         `Base Course Price: ${paymentDetails.basePrice.toLocaleString('vi-VN')}đ\n` +
+        `${!paymentDetails.isFirstEnroll ? `Re-enrollment Discount: -${(paymentDetails.basePrice / 2).toLocaleString('vi-VN')}đ\n` : ''}` +
         `${paymentDetails.cageFee > 0 ? 
           `Cage Fee (${paymentDetails.numberOfSlots} slots): ${paymentDetails.cageFee.toLocaleString('vi-VN')}đ\n` : 
           ''}` +
