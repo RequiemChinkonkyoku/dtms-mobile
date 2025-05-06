@@ -130,7 +130,7 @@ export default function ClassDetails({ classData, onClose, onRefresh }) {
             setSelectedPretest(null);
             Alert.alert('Success', 'Pretest status updated successfully');
         } catch (error) {
-            Alert.alert('Error', 'Failed to update pretest status');
+            Alert.alert('Error', error.message || 'Failed to update pretest status');
         }
     };
 

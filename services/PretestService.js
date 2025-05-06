@@ -56,6 +56,9 @@ export const updatePretestStatus = async (pretestId, status, note) => {
         return response.data;
     } catch (error) {
         console.error('Error updating pretest status:', error);
-        throw error;
+        return {
+            success: false,
+            message: error.response?.data?.message || error.message || 'Failed to update pretest status'
+        };
     }
 };
