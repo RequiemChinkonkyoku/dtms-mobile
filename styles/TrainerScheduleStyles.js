@@ -83,7 +83,9 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         marginLeft: 8,
-        gap: 8,
+        marginRight: 8,
+        flexWrap: 'wrap',
+        gap: 8
     },
     headerRight: {
         flexDirection: 'row',
@@ -94,11 +96,13 @@ export const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#007AFF',
+        flexShrink: 1
     },
     statusBadge: {
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 12,
+        alignSelf: 'flex-start'
     },
     statusText: {
         color: 'white',
