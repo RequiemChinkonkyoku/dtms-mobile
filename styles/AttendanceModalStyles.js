@@ -97,7 +97,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-    marginLeft: 8
+    marginLeft: 5
   },
   presentBadge: {
     backgroundColor: '#34C759'

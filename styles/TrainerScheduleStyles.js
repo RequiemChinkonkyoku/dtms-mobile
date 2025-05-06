@@ -105,6 +105,22 @@ export const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '500',
     },
+    slotStatusContainer: {
+        backgroundColor: '#FF9500', // Will be dynamically set
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    slotStatusText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '600'
+    },
+    slotStatusIcon: {
+        marginRight: 4
+    },
     slotCount: {
         fontSize: 14,
         color: '#666',
@@ -195,6 +211,31 @@ export const styles = StyleSheet.create({
         top: '50%',
         transform: [{ translateY: -12 }],
     },
+    lessonNameContainer: {
+        flexDirection: 'column',
+        gap: 8
+    },
+    lessonNameText: {
+        color: '#666',
+        fontSize: 14,
+        marginTop: 4,
+        marginLeft: 24
+    },
+    equipmentButton: {
+        marginLeft: 24,
+        backgroundColor: '#f0f7ff',
+        padding: 6,
+        borderRadius: 6,
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start'
+    },
+    equipmentButtonText: {
+        color: '#007AFF',
+        fontSize: 12,
+        marginLeft: 4,
+        fontWeight: '500'
+    },
     reportsSection: {
         padding: 16,
         borderTopWidth: 1,
@@ -251,5 +292,45 @@ export const styles = StyleSheet.create({
     viewReportText: {
         fontSize: 12,
         color: '#666',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        borderRadius: 16,
+        padding: 20,
+        width: '80%',
+        maxHeight: '70%'
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#1a1a1a',
+        marginBottom: 16
+    },
+    equipmentItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0'
+    },
+    equipmentInfo: {
+        marginLeft: 12,
+        flex: 1
+    },
+    equipmentName: {
+        fontSize: 16,
+        color: '#1a1a1a',
+        fontWeight: '500'
+    },
+    equipmentQuantity: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 4
     },
 });
